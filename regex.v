@@ -167,6 +167,7 @@ Qed.
 
 Theorem or_assoc : forall (xs: list X) (r s t: regex),
   matches (or r (or s t)) xs = matches (or (or r s) t) xs.
+Proof.
 unfold matches.
 induction xs.
 - simpl.
@@ -230,6 +231,7 @@ Qed.
 
 Theorem compare_reflex : forall (r: regex), 
  compare_regex r r = Eq.
+Proof.
 induction r; try reflexivity; simpl.
 - apply proof_compare_reflex.
 - rewrite IHr1. rewrite IHr2. reflexivity.
@@ -239,6 +241,7 @@ Qed.
 
 Theorem or_idemp : forall (xs: list X) (r1 r2: regex) (p: compare_regex r1 r2 = Eq),
   matches (or r1 r2) xs = matches r1 xs.
+Proof.
 unfold matches.
 induction xs.
 - simpl.
@@ -255,6 +258,7 @@ Qed.
 
 Theorem or_id : forall (xs: list X) (r: regex),
   matches (or r nothing) xs = matches r xs.
+Proof.
 unfold matches.
 induction xs.
 - simpl.
@@ -266,6 +270,7 @@ Qed.
 
 Theorem concat_nothing : forall (xs: list X) (r: regex),
   matches (concat nothing r) xs = matches nothing xs.
+Proof.
 unfold matches.
 induction xs.
 - simpl.
