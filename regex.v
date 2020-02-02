@@ -8,8 +8,10 @@ Parameter compare : X -> X -> comparison.
 Parameter hash: X -> nat.
 Parameter proof_compare_equal: forall (x y: X) (p: compare x y = Eq),
   x = y.
+Parameter proof_compare_reflex: forall (x: X), compare x x = Eq. 
 Parameter proof_is_eq_equal: forall (x y: X) (p: is_eq x y = true),
   x = y.
+Parameter proof_is_eq_reflex: forall (x: X), is_eq x x = true.
 
 Inductive regex :=
   nothing : regex
@@ -226,8 +228,14 @@ induction r1.
     reflexivity.
 Qed.
 
-Theorem compare_reflex : forall (r: regex) (x: X), compare_regex r r = Eq
-Admitted. 
+Theorem compare_reflex : forall (r: regex), 
+ compare_regex r r = Eq.
+induction r; try reflexivity; simpl.
+- apply proof_compare_reflex.
+- rewrite IHr1. rewrite IHr2. reflexivity.
+- rewrite IHr1. rewrite IHr2. reflexivity.
+- rewrite IHr. reflexivity.
+Qed.
 
 Theorem or_idemp : forall (xs: list X) (r1 r2: regex) (p: compare_regex r1 r2 = Eq),
   matches (or r1 r2) xs = matches r1 xs.
