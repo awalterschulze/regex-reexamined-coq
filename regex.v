@@ -99,23 +99,32 @@ Definition matches (r: regex) (xs: list X) : bool :=
   nullable (fold_left derive xs r)
 .
 
-Fixpoint simplify (r: regex) : regex :=
+(* sderive is the same as derive, except that it applies
+   simplification rules by construction.
+   This way we don't have to apply simplification after derivation.
+   We hope this will also make it easier to prove things.
+*)
+Fixpoint sderive (r: regex) (x: X) : regex :=
   match r with
   | nothing => nothing
-  | empty => empty
-  | char x => char x
-  | or r1 r2 => match compare_regex r1 r2 with
-    | Lt => or (simplify r1) (simplify r2)
-    | Eq => simplify r1
-    | Gt => or (simplify r2) (simplify r1)
+  | empty => nothing
+  | char y => if is_eq x y
+    then empty
+    else nothing
+  | or s t => 
+    let ds := derive s x in
+    let dt := derive t x in
+    match compare_regex ds dt with
+    | Eq => ds
+    | Lt => or ds dt
+    | Gt => or dt ds
     end
-  | concat r1 r2 => concat r1 r2
-  | zero_or_more r1 => zero_or_more r1
+  | concat s t =>
+    if nullable s
+    then or (concat (derive s x) t) (derive t x)
+    else concat (derive s x) t
+  | zero_or_more s => concat (derive s x) (zero_or_more s)
   end.
-
-Definition sderive (r: regex) (x: X) : regex :=
-  simplify (derive r x)
-.
 
 Definition smatches (r: regex) (xs: list X) : bool :=
   nullable (fold_left sderive xs r)
