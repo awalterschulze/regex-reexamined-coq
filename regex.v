@@ -95,29 +95,6 @@ Fixpoint derive (r: regex) (x: X) : regex :=
   | zero_or_more s => concat (derive s x) (zero_or_more s)
   end.
 
-(*
-ab(ab)*
-concat a (concat b (zeroormore (concat a b)))
-b(ab)*
-concat empty (concat b ...)
-
-(ab)*ab
-concat (zeroormore (concat a b)) (concat a b)
-or
-  (concat (derive (zeroormore a b) a) (concat a b))
-  (derive (concat a b) a)
-  
-or 
-  (concat (concat (concat empty b) (zeroormore a b)) (concat a b))
-  (concat empty b)
-
-emptyb(ab)*ab | emptyb
-nothingb(ab)*ab | (ab)*ab | nothingb | empty
-nothingb(ab)*ab | 
-
-empty(ab)*ab | empty
-*)
-
 Definition matches (r: regex) (xs: list X) : bool :=
   nullable (fold_left derive xs r)
 .
@@ -143,15 +120,6 @@ Definition sderive (r: regex) (x: X) : regex :=
 Definition smatches (r: regex) (xs: list X) : bool :=
   nullable (fold_left sderive xs r)
 .
-
-(* Theorem derive_eq_sderive : forall (r: regex) (x: X),
-  derive r x = sderive r x.
-Proof.
-induction r; unfold sderive; simpl.
-- reflexivity.
-- reflexivity.
-- intros.
-*)
 
 Theorem or_comm : forall (xs: list X) (r s: regex),
   matches (or r s) xs = matches (or s r) xs.
@@ -253,7 +221,6 @@ induction xs.
   rewrite (compare_equal r1 r2 p).
   apply IHxs.
   apply compare_reflex.
-  exact a.
 Qed.
 
 Theorem or_id : forall (xs: list X) (r: regex),
