@@ -280,6 +280,89 @@ Definition smatches (r: regex) (xs: list X) : bool :=
   Regular-expression derivatives reexamined - Scott Owens, John Reppy, Aaron Turon
 *)
 
+(* TODO *)
+(* r&r = r *)
+Theorem and_idemp : forall (xs: list X) (r1 r2: regex) (p: compare_regex r1 r2 = Eq),
+  matches (and r1 r2) xs = matches r1 xs.
+Admitted.
+
+(* TODO *)
+(* r&s = s&r *)
+Theorem and_comm : forall (xs: list X) (r1 r2: regex),
+  matches (and r1 r2) xs = matches (and r2 r1) xs.
+Admitted.
+
+(* TODO *)
+(* (r&s)&t = r&(s&t) *)
+Theorem and_assoc : forall (xs: list X) (r s t: regex),
+  matches (and (and r s) t) xs = matches (and r (and s t)) xs.
+Admitted.
+
+(* TODO *)
+(* nothing&r = nothing *)
+Theorem and_nothing : forall (xs: list X) (r: regex),
+  matches (and nothing r) xs = matches nothing xs.
+Admitted.
+
+(* TODO *)
+(* not(nothing)&r = r *)
+Theorem and_not_nothing : forall (xs: list X) (r: regex),
+  matches (and (not nothing) r) xs = matches r xs.
+Admitted.
+
+(* TODO *)
+(* (r.s).t = r.(s.t) *)
+Theorem concat_assoc: forall (xs: list X) (r s t: regex),
+  matches (concat (concat r s) t) xs = matches (concat r (concat s t)) xs.
+Admitted.
+
+(* nothing.r = nothing *)
+Theorem concat_nothing : forall (xs: list X) (r: regex),
+  matches (concat nothing r) xs = matches nothing xs.
+Proof.
+unfold matches.
+induction xs.
+- simpl.
+  reflexivity.
+- simpl.
+  exact IHxs.
+Qed.
+
+(* TODO *)
+(* r.nothing = nothing *)
+Theorem concat_nothing2 : forall (xs: list X) (r: regex),
+  matches (concat r nothing) xs = matches nothing xs.
+Admitted.
+
+(* TODO *)
+(* empty.r = r *)
+Theorem concat_empty : forall (xs: list X) (r: regex),
+  matches (concat empty r) xs = matches r xs.
+Admitted.
+
+(* TODO *)
+(* r.empty = r *)
+Theorem concat_empty2: forall (xs: list X) (r: regex),
+  matches (concat r empty) xs = matches r xs.
+Admitted.
+
+(* r|r = r *)
+Theorem or_idemp : forall (xs: list X) (r1 r2: regex) (p: compare_regex r1 r2 = Eq),
+  matches (or r1 r2) xs = matches r1 xs.
+Proof.
+unfold matches.
+induction xs.
+- simpl.
+  intros.
+  rewrite (compare_equal r1 r2 p).
+  induction (nullable r2); compute; reflexivity.
+- simpl.
+  intros.
+  rewrite (compare_equal r1 r2 p).
+  apply IHxs.
+  apply compare_reflex.
+Qed.
+
 (* r|s = s|r *)
 Theorem or_comm : forall (xs: list X) (r s: regex),
   matches (or r s) xs = matches (or s r) xs.
@@ -306,22 +389,11 @@ induction xs.
   apply IHxs.
 Qed.
 
-(* r|r = r *)
-Theorem or_idemp : forall (xs: list X) (r1 r2: regex) (p: compare_regex r1 r2 = Eq),
-  matches (or r1 r2) xs = matches r1 xs.
-Proof.
-unfold matches.
-induction xs.
-- simpl.
-  intros.
-  rewrite (compare_equal r1 r2 p).
-  induction (nullable r2); compute; reflexivity.
-- simpl.
-  intros.
-  rewrite (compare_equal r1 r2 p).
-  apply IHxs.
-  apply compare_reflex.
-Qed.
+(* TODO *)
+(* not(nothing)|r = not(nothing) *)
+Theorem or_not_nothing : forall (xs: list X) (r: regex),
+  matches (or (not nothing) r) xs = matches (not nothing) xs.
+Admitted.
 
 (* nothing|r = r *)
 Theorem or_id : forall (xs: list X) (r: regex),
@@ -336,17 +408,17 @@ induction xs.
   apply IHxs.
 Qed.
 
-(* nothing.r = r *)
-Theorem concat_nothing : forall (xs: list X) (r: regex),
-  matches (concat nothing r) xs = matches nothing xs.
-Proof.
-unfold matches.
-induction xs.
-- simpl.
-  reflexivity.
-- simpl.
-  exact IHxs.
-Qed.
+(* TODO *)
+(* zero_or_more(zero_or_more(r)) = zero_or_more(r) *)
+Theorem zero_or_more_zero_or_more : forall (xs: list X) (r: regex),
+  matches (zero_or_more (zero_or_more r)) xs = matches (zero_or_more r) xs.
+Admitted.
+
+(* TODO *)
+(* (empty)* = empty *)
+Theorem zero_or_more_empty : forall (xs: list X),
+  matches (zero_or_more empty) xs = matches empty xs.
+Admitted.
 
 (* (nothing)* = empty *)
 Theorem nothing_zero_or_more : forall (xs: list X),
@@ -359,6 +431,12 @@ induction xs.
 - simpl.
   apply concat_nothing.
 Qed.
+
+(* TODO *)
+(* not(not(r)) = r *)
+Theorem not_not : forall (xs: list X) (r: regex),
+  matches (not (not r)) xs = matches r xs.
+Admitted.
 
 (* mathing without simplification is the same as with simplification *)
 Theorem simplify_is_correct : forall (xs: list X) (r: regex),
