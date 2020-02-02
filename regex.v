@@ -2,21 +2,27 @@ Require Import List.
 
 Section Regexes.
 
+(* A character for a regular expression is generic,
+   but it needs to implement an interface.
+   It needs to be comparable.
+*)
+
 Variable X: Set.
-Parameter is_eq : X -> X -> bool.
 Parameter compare : X -> X -> comparison.
-Parameter hash: X -> nat.
 Parameter proof_compare_equal: forall (x y: X) (p: compare x y = Eq),
   x = y.
 Parameter proof_compare_reflex: forall (x: X), compare x x = Eq. 
-Parameter proof_is_eq_equal: forall (x y: X) (p: is_eq x y = true),
-  x = y.
-Parameter proof_is_eq_reflex: forall (x: X), is_eq x x = true.
+
+Definition is_eq (x y: X) : bool :=
+  match compare x y with
+  | Eq => true
+  | _ => false
+  end.
 
 Inductive regex :=
-  nothing : regex
-  | empty : regex
-  | char : X -> regex
+  nothing : regex (* matches no strings *)
+  | empty : regex (* matches the empty string *)
+  | char : X -> regex (* matches a single character *)
   | or : regex -> regex -> regex
   | concat : regex -> regex -> regex
   | zero_or_more : regex -> regex
@@ -132,6 +138,14 @@ induction r; try reflexivity; simpl.
 - rewrite IHr. reflexivity.
 Qed.
 
+(* nullable returns whether the regular expression matches the
+   empty string, for example:
+   nullable (ab)*        = true
+   nullable a(ab)*       = false
+   nullable a            = false
+   nullable (abc)*|ab    = true
+   nullable a(abc)*|ab   = false
+*)
 Fixpoint nullable (r: regex) : bool :=
   match r with
   | nothing => false
@@ -142,6 +156,13 @@ Fixpoint nullable (r: regex) : bool :=
   | zero_or_more _ => true
   end.
 
+(* derive returns the regular expression that is left to match
+   after matching the input character x, for example:
+   derive (ba)* b = a(ba)*
+   derive a     a = empty
+   derive b     a = nothing
+   derive ab|a  a = b|empty
+*)
 Fixpoint derive (r: regex) (x: X) : regex :=
   match r with
   | nothing => nothing
@@ -203,7 +224,7 @@ Definition smatches (r: regex) (xs: list X) : bool :=
   Regular-expression derivatives reexamined - Scott Owens, John Reppy, Aaron Turon
 *)
 
-(* r + s \u2248 s + r *)
+(* r|s = s|r *)
 Theorem or_comm : forall (xs: list X) (r s: regex),
   matches (or r s) xs = matches (or s r) xs.
 Proof.
@@ -216,7 +237,7 @@ induction xs.
   apply IHxs.
 Qed.
 
-(* (r + s) + t \u2248 r + (s + t) *)
+(* (r|s)|t = r|(s|t) *)
 Theorem or_assoc : forall (xs: list X) (r s t: regex),
   matches (or r (or s t)) xs = matches (or (or r s) t) xs.
 Proof.
@@ -229,7 +250,7 @@ induction xs.
   apply IHxs.
 Qed.
 
-(* r + r \u2248 r *)
+(* r|r = r *)
 Theorem or_idemp : forall (xs: list X) (r1 r2: regex) (p: compare_regex r1 r2 = Eq),
   matches (or r1 r2) xs = matches r1 xs.
 Proof.
@@ -246,6 +267,7 @@ induction xs.
   apply compare_reflex.
 Qed.
 
+(* nothing|r = r *)
 Theorem or_id : forall (xs: list X) (r: regex),
   matches (or r nothing) xs = matches r xs.
 Proof.
@@ -258,6 +280,7 @@ induction xs.
   apply IHxs.
 Qed.
 
+(* nothing.r = r *)
 Theorem concat_nothing : forall (xs: list X) (r: regex),
   matches (concat nothing r) xs = matches nothing xs.
 Proof.
@@ -269,6 +292,7 @@ induction xs.
   exact IHxs.
 Qed.
 
+(* (nothing)* = empty *)
 Theorem nothing_zero_or_more : forall (xs: list X),
   matches (zero_or_more nothing) xs = matches empty xs.
 Proof.
@@ -280,6 +304,7 @@ induction xs.
   apply concat_nothing.
 Qed.
 
+(* mathing without simplification is the same as with simplification *)
 Theorem simplify_is_correct : forall (xs: list X) (r: regex),
   matches r xs = smatches r xs.
 Proof.
