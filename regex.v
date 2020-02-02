@@ -70,90 +70,6 @@ Fixpoint compare_regex (r s: regex) : comparison :=
     end
   end.
 
-Fixpoint nullable (r: regex) : bool :=
-  match r with
-  | nothing => false
-  | empty => true
-  | char _ => false
-  | or s t => nullable s || nullable t
-  | concat s t => nullable s && nullable t
-  | zero_or_more _ => true
-  end.
-
-Fixpoint derive (r: regex) (x: X) : regex :=
-  match r with
-  | nothing => nothing
-  | empty => nothing
-  | char y => if is_eq x y
-    then empty
-    else nothing
-  | or s t => or (derive s x) (derive t x)
-  | concat s t =>
-    if nullable s
-    then or (concat (derive s x) t) (derive t x)
-    else concat (derive s x) t
-  | zero_or_more s => concat (derive s x) (zero_or_more s)
-  end.
-
-Definition matches (r: regex) (xs: list X) : bool :=
-  nullable (fold_left derive xs r)
-.
-
-(* sderive is the same as derive, except that it applies
-   simplification rules by construction.
-   This way we don't have to apply simplification after derivation.
-   We hope this will also make it easier to prove things.
-*)
-Fixpoint sderive (r: regex) (x: X) : regex :=
-  match r with
-  | nothing => nothing
-  | empty => nothing
-  | char y => if is_eq x y
-    then empty
-    else nothing
-  | or s t => 
-    let ds := derive s x in
-    let dt := derive t x in
-    match compare_regex ds dt with
-    | Eq => ds
-    | Lt => or ds dt
-    | Gt => or dt ds
-    end
-  | concat s t =>
-    if nullable s
-    then or (concat (derive s x) t) (derive t x)
-    else concat (derive s x) t
-  | zero_or_more s => concat (derive s x) (zero_or_more s)
-  end.
-
-Definition smatches (r: regex) (xs: list X) : bool :=
-  nullable (fold_left sderive xs r)
-.
-
-Theorem or_comm : forall (xs: list X) (r s: regex),
-  matches (or r s) xs = matches (or s r) xs.
-Proof.
-unfold matches.
-induction xs.
-- simpl.
-  firstorder.
-- simpl.
-  intros.
-  apply IHxs.
-Qed.
-
-Theorem or_assoc : forall (xs: list X) (r s t: regex),
-  matches (or r (or s t)) xs = matches (or (or r s) t) xs.
-Proof.
-unfold matches.
-induction xs.
-- simpl.
-  intros.
-  firstorder.
-- intros.
-  apply IHxs.
-Qed.
-
 Theorem compare_equal : forall (r1 r2: regex) (p: compare_regex r1 r2 = Eq),
   r1 = r2.
 Proof.
@@ -216,6 +132,104 @@ induction r; try reflexivity; simpl.
 - rewrite IHr. reflexivity.
 Qed.
 
+Fixpoint nullable (r: regex) : bool :=
+  match r with
+  | nothing => false
+  | empty => true
+  | char _ => false
+  | or s t => nullable s || nullable t
+  | concat s t => nullable s && nullable t
+  | zero_or_more _ => true
+  end.
+
+Fixpoint derive (r: regex) (x: X) : regex :=
+  match r with
+  | nothing => nothing
+  | empty => nothing
+  | char y => if is_eq x y
+    then empty
+    else nothing
+  | or s t => or (derive s x) (derive t x)
+  | concat s t =>
+    if nullable s
+    then or (concat (derive s x) t) (derive t x)
+    else concat (derive s x) t
+  | zero_or_more s => concat (derive s x) (zero_or_more s)
+  end.
+
+Definition matches (r: regex) (xs: list X) : bool :=
+  nullable (fold_left derive xs r)
+.
+
+(* sderive is the same as derive, except that it applies
+   simplification rules by construction.
+   This way we don't have to apply simplification after derivation.
+   We hope this will also make it easier to prove things.
+*)
+Fixpoint sderive (r: regex) (x: X) : regex :=
+  match r with
+  | nothing => nothing
+  | empty => nothing
+  | char y => if is_eq x y
+    then empty
+    else nothing
+  | or s t => 
+    let ds := derive s x in
+    let dt := derive t x in
+    match compare_regex ds dt with
+    | Eq => ds
+    | Lt => or ds dt
+    | Gt => or dt ds
+    end
+  | concat s t =>
+    if nullable s
+    then or (concat (derive s x) t) (derive t x)
+    else concat (derive s x) t
+  | zero_or_more s => concat (derive s x) (zero_or_more s)
+  end.
+
+Definition smatches (r: regex) (xs: list X) : bool :=
+  nullable (fold_left sderive xs r)
+.
+
+(*Using only or_comm, or_assoc and or_idemp 
+  Brzozowski proved that a notion of RE similarity including only
+  r + r \u2248 r
+  r + s \u2248 s + r
+  (r + s) + t \u2248 r + (s + t)
+  is enough to ensure that every RE has only a finite number of dissimilar derivatives. 
+  Hence, DFA construction is guaranteed to terminate if we use similarity as an approximation for equivalence
+  see https://www.ccs.neu.edu/home/turon/re-deriv.pdf
+  Regular-expression derivatives reexamined - Scott Owens, John Reppy, Aaron Turon
+*)
+
+(* r + s \u2248 s + r *)
+Theorem or_comm : forall (xs: list X) (r s: regex),
+  matches (or r s) xs = matches (or s r) xs.
+Proof.
+unfold matches.
+induction xs.
+- simpl.
+  firstorder.
+- simpl.
+  intros.
+  apply IHxs.
+Qed.
+
+(* (r + s) + t \u2248 r + (s + t) *)
+Theorem or_assoc : forall (xs: list X) (r s t: regex),
+  matches (or r (or s t)) xs = matches (or (or r s) t) xs.
+Proof.
+unfold matches.
+induction xs.
+- simpl.
+  intros.
+  firstorder.
+- intros.
+  apply IHxs.
+Qed.
+
+(* r + r \u2248 r *)
 Theorem or_idemp : forall (xs: list X) (r1 r2: regex) (p: compare_regex r1 r2 = Eq),
   matches (or r1 r2) xs = matches r1 xs.
 Proof.
@@ -275,14 +289,12 @@ induction xs.
 - simpl.
   reflexivity.
 - simpl.
-  induction r; unfold sderive at 2; simpl.
+  induction r; simpl.
   * apply IHxs.
   * apply IHxs.
   * induction (is_eq a x).
-    + unfold simplify.
-      apply IHxs.
-    + unfold simplify.
-      apply IHxs.
+    + apply IHxs.
+    + apply IHxs.
   * remember (compare_regex (derive r1 a) (derive r2 a)).
     induction c.
     + symmetry in Heqc.
@@ -291,48 +303,16 @@ induction xs.
       remember (e0 Heqc).
       unfold matches in e1.
       rewrite e1.
-      apply IHr1.
-    + assert (derive (or r1 r2) a = (or (derive r1 a) (derive r2 a))).
-      simpl.
-      reflexivity.
-      assert (sderive (or r1 r2) a = (or (simplify (derive r1 a)) (simplify (derive r2 a)))).
-      unfold sderive.
-      rewrite H.
-      simpl.
-      rewrite <- Heqc.
-      reflexivity.
-      rewrite <- H.
-      rewrite <- H0.
-      assert (forall f, fold_left f xs (f (or r1 r2) a) = fold_left f (a::xs) (or r1 r2)).
-      simpl.
-      reflexivity.
-      rewrite (H1 sderive).
-      rewrite (H1 derive).
-      rewrite <- (IHxs (or r1 r2)).
-       fold fold_left.
-      rewrite IHxs.
-      unfold simplify.
-      simpl.
-      unfold derive.
-      cbn.
-      simpl.
-      
-      
-      
-      
-      
-    
+      apply IHxs.
+    + apply IHxs.
+    + remember or_comm.
+      unfold matches in e.
+      rewrite e.
+      apply IHxs.
+  * apply IHxs.
+  * apply IHxs.
+Qed.
 
-(*Using only or_comm, or_assoc and or_idemp 
-  Brzozowski proved that a notion of RE similarity including only
-  r + r \u2248 r
-  r + s \u2248 s + r
-  (r + s) + t \u2248 r + (s + t)
-  is enough to ensure that every RE has only a finite number of dissimilar derivatives. 
-  Hence, DFA construction is guaranteed to terminate if we use similarity as an approximation for equivalence
-  see https://www.ccs.neu.edu/home/turon/re-deriv.pdf
-  Regular-expression derivatives reexamined - Scott Owens, John Reppy, Aaron Turon
-*)
 End Regexes.
 
 
