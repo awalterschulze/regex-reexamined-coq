@@ -24,7 +24,9 @@ Inductive regex :=
   | empty : regex (* matches the empty string *)
   | char : X -> regex (* matches a single character *)
   | or : regex -> regex -> regex
+  | and : regex -> regex -> regex
   | concat : regex -> regex -> regex
+  | not : regex -> regex
   | zero_or_more : regex -> regex
   .
 
@@ -57,11 +59,25 @@ Fixpoint compare_regex (r s: regex) : comparison :=
       end
     | _ => Lt
     end
+  | and r1 r2 => match s with
+    | nothing => Gt
+    | empty => Gt
+    | char _ => Gt
+    | or _ _ => Gt
+    | and s1 s2 =>
+      match compare_regex r1 s1 with
+      | Lt => Lt
+      | Eq => compare_regex r2 s2
+      | Gt => Gt
+      end
+    | _ => Lt
+    end
   | concat r1 r2 => match s with
     | nothing => Gt
     | empty => Gt
     | char _ => Gt
     | or _ _ => Gt
+    | and _ _ => Gt
     | concat s1 s2 =>
       match compare_regex r1 s1 with
       | Lt => Lt
@@ -70,9 +86,19 @@ Fixpoint compare_regex (r s: regex) : comparison :=
       end
     | _ => Lt
     end
+  | not r1 => match s with
+    | nothing => Gt
+    | empty => Gt
+    | char _ => Gt
+    | or _ _ => Gt
+    | and _ _ => Gt
+    | concat _ _ => Gt
+    | not s1 => compare_regex r1 s1
+    | _ => Lt
+    end
   | zero_or_more r1 => match s with
     | zero_or_more s1 => compare_regex r1 s1
-    | _ => Lt
+    | _ => Gt
     end
   end.
 
@@ -104,6 +130,21 @@ induction r1.
          rewrite e2.
          reflexivity.
          apply Heqc.
+ - induction r2; simpl; try discriminate. (* and *)
+  + remember (compare_regex r1_1 r2_1).
+    remember (compare_regex r1_2 r2_2).
+    induction c; try discriminate.
+    * induction c0; try discriminate.
+      -- symmetry in Heqc.
+         symmetry in Heqc0.
+         remember (IHr1_1 r2_1).
+         remember (e Heqc).
+         rewrite e.
+         remember (IHr1_2 r2_2).
+         remember (e1 Heqc0).
+         rewrite e2.
+         reflexivity.
+         apply Heqc.
  - induction r2; simpl; try discriminate. (* concat *)
   + remember (compare_regex r1_1 r2_1).
     remember (compare_regex r1_2 r2_2).
@@ -119,6 +160,13 @@ induction r1.
          rewrite e2.
          reflexivity.
          apply Heqc.
+ - induction r2; simpl; try discriminate. (* not *)
+  + remember (IHr1 r2).
+    remember (IHr1 (not r2)).
+    intros.
+    remember (e p).
+    rewrite e1.
+    reflexivity.
  - induction r2; simpl; try discriminate. (* zero_or_more *)
   + remember (IHr1 r2).
     remember (IHr1 (zero_or_more r2)).
@@ -135,6 +183,8 @@ induction r; try reflexivity; simpl.
 - apply proof_compare_reflex.
 - rewrite IHr1. rewrite IHr2. reflexivity.
 - rewrite IHr1. rewrite IHr2. reflexivity.
+- rewrite IHr1. rewrite IHr2. reflexivity.
+- rewrite IHr. reflexivity.
 - rewrite IHr. reflexivity.
 Qed.
 
@@ -152,7 +202,9 @@ Fixpoint nullable (r: regex) : bool :=
   | empty => true
   | char _ => false
   | or s t => nullable s || nullable t
+  | and s t => nullable s && nullable t
   | concat s t => nullable s && nullable t
+  | not s => negb (nullable s)
   | zero_or_more _ => true
   end.
 
@@ -171,10 +223,12 @@ Fixpoint derive (r: regex) (x: X) : regex :=
     then empty
     else nothing
   | or s t => or (derive s x) (derive t x)
+  | and s t => and (derive s x) (derive t x)
   | concat s t =>
     if nullable s
     then or (concat (derive s x) t) (derive t x)
     else concat (derive s x) t
+  | not s => not (derive s x)
   | zero_or_more s => concat (derive s x) (zero_or_more s)
   end.
 
@@ -202,10 +256,12 @@ Fixpoint sderive (r: regex) (x: X) : regex :=
     | Lt => or ds dt
     | Gt => or dt ds
     end
+  | and s t => and (derive s x) (derive t x)
   | concat s t =>
     if nullable s
     then or (concat (derive s x) t) (derive t x)
     else concat (derive s x) t
+  | not s => not (derive s x)
   | zero_or_more s => concat (derive s x) (zero_or_more s)
   end.
 
@@ -314,12 +370,7 @@ induction xs.
 - simpl.
   reflexivity.
 - simpl.
-  induction r; simpl.
-  * apply IHxs.
-  * apply IHxs.
-  * induction (is_eq a x).
-    + apply IHxs.
-    + apply IHxs.
+  induction r; simpl; try (apply IHxs).
   * remember (compare_regex (derive r1 a) (derive r2 a)).
     induction c.
     + symmetry in Heqc.
@@ -334,8 +385,6 @@ induction xs.
       unfold matches in e.
       rewrite e.
       apply IHxs.
-  * apply IHxs.
-  * apply IHxs.
 Qed.
 
 End Regexes.
