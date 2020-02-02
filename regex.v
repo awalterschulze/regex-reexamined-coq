@@ -253,7 +253,6 @@ induction xs.
   rewrite (compare_equal r1 r2 p).
   apply IHxs.
   apply compare_reflex.
-  exact a.
 Qed.
 
 Theorem or_id : forall (xs: list X) (r: regex),
