@@ -241,6 +241,13 @@ Definition matches (r: regex) (xs: list X) : bool :=
    This way we don't have to apply simplification after derivation.
    We hope this will also make it easier to prove things.
 *)
+Definition smart_or (r s: regex) : regex :=
+  match compare_regex r s with
+  | Eq => s
+  | Lt => or r s
+  | Gt => or s r
+  end.
+
 Fixpoint sderive (r: regex) (x: X) : regex :=
   match r with
   | nothing => nothing
@@ -248,14 +255,7 @@ Fixpoint sderive (r: regex) (x: X) : regex :=
   | char y => if is_eq x y
     then empty
     else nothing
-  | or s t => 
-    let ds := derive s x in
-    let dt := derive t x in
-    match compare_regex ds dt with
-    | Eq => ds
-    | Lt => or ds dt
-    | Gt => or dt ds
-    end
+  | or s t => smart_or (derive s x) (derive t x)
   | and s t => and (derive s x) (derive t x)
   | concat s t =>
     if nullable s
@@ -271,9 +271,9 @@ Definition smatches (r: regex) (xs: list X) : bool :=
 
 (*Using only or_comm, or_assoc and or_idemp 
   Brzozowski proved that a notion of RE similarity including only
-  r + r \u2248 r
-  r + s \u2248 s + r
-  (r + s) + t \u2248 r + (s + t)
+  r + r = r
+  r + s = s + r
+  (r + s) + t = r + (s + t)
   is enough to ensure that every RE has only a finite number of dissimilar derivatives. 
   Hence, DFA construction is guaranteed to terminate if we use similarity as an approximation for equivalence
   see https://www.ccs.neu.edu/home/turon/re-deriv.pdf
@@ -527,19 +527,23 @@ induction xs.
   reflexivity.
 - simpl.
   induction r; simpl; try (apply IHxs).
-  * remember (compare_regex (derive r1 a) (derive r2 a)).
+  * unfold smart_or.
+    remember (compare_regex (derive r1 a) (derive r2 a)).
     induction c.
     + symmetry in Heqc.
-      remember or_idemp.
-      remember (e xs (derive r1 a) (derive r2 a)).
-      remember (e0 Heqc).
-      unfold matches in e1.
-      rewrite e1.
+      remember or_idemp as H_or_idemp.
+      remember (H_or_idemp xs (derive r1 a) (derive r2 a)) as Hmatch_or_if.
+      remember (Hmatch_or_if Heqc) as Hmatch_or.
+      unfold matches in Hmatch_or.
+      rewrite Hmatch_or.
+      remember compare_equal as H_compare_equal.
+      remember (H_compare_equal (derive r1 a) (derive r2 a) Heqc) as Heq_r1_r2.
+      rewrite Heq_r1_r2.
       apply IHxs.
     + apply IHxs.
-    + remember or_comm.
-      unfold matches in e.
-      rewrite e.
+    + remember or_comm as H_or_comm.
+      unfold matches in H_or_comm.
+      rewrite H_or_comm.
       apply IHxs.
 Qed.
 
