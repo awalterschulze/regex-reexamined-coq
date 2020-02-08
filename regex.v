@@ -310,11 +310,18 @@ induction xs.
   apply IHxs.
 Qed.
 
-(* TODO *)
 (* (r&s)&t = r&(s&t) *)
 Theorem and_assoc : forall (xs: list X) (r s t: regex),
-  matches (and (and r s) t) xs = matches (and r (and s t)) xs.
-Admitted.
+    matches (and (and r s) t) xs = matches (and r (and s t)) xs.
+Proof.
+unfold matches.
+induction xs.
+- simpl.
+  firstorder.
+- simpl.
+  intros.
+  apply IHxs.
+Qed.
 
 (* TODO *)
 (* nothing&r = nothing *)
