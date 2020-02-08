@@ -336,11 +336,18 @@ induction xs.
   apply IHxs.
 Qed.
 
-(* TODO *)
 (* not(nothing)&r = r *)
 Theorem and_not_nothing : forall (xs: list X) (r: regex),
-  matches (and (not nothing) r) xs = matches r xs.
-Admitted.
+    matches (and (not nothing) r) xs = matches r xs.
+Proof.
+unfold matches.
+induction xs.
+- simpl.
+  trivial.
+- simpl.
+  intros.
+  apply IHxs.
+Qed.
 
 (* TODO *)
 (* (r.s).t = r.(s.t) *)
