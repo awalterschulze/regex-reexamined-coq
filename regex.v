@@ -367,11 +367,50 @@ induction xs.
   exact IHxs.
 Qed.
 
-(* TODO *)
+Lemma fold_at_nothing : forall (xs : list X), (fold_left derive xs nothing = nothing).
+Proof.
+simpl.
+intros.
+induction xs.
+- simpl.
+  trivial.
+- simpl.
+  apply IHxs.
+Qed.
+
+Lemma nullable_fold : forall (xs : list X) (r s: regex), (nullable (fold_left derive xs (or r s))) = (orb (nullable (fold_left derive xs r)) (nullable (fold_left derive xs s))).
+Proof.
+induction xs.
+- intros.
+  simpl.
+  reflexivity.
+- intros.
+  simpl.
+  apply IHxs.
+Qed.
+
 (* r.nothing = nothing *)
 Theorem concat_nothing2 : forall (xs: list X) (r: regex),
   matches (concat r nothing) xs = matches nothing xs.
-Admitted.
+Proof.
+unfold matches.
+induction xs.
+- intros.
+  simpl.
+  apply Bool.andb_false_r.
+- simpl.
+  intros.
+  remember (nullable r).
+  destruct b.
+  + rewrite nullable_fold.
+    case (nullable(fold_left derive xs nothing)).
+    * firstorder.
+    * rewrite IHxs.
+      rewrite fold_at_nothing.
+      simpl.
+      trivial.
+  + apply IHxs.
+Qed.
 
 (* TODO *)
 (* empty.r = r *)
