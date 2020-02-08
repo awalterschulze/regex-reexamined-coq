@@ -280,35 +280,74 @@ Definition smatches (r: regex) (xs: list X) : bool :=
   Regular-expression derivatives reexamined - Scott Owens, John Reppy, Aaron Turon
 *)
 
-(* TODO *)
 (* r&r = r *)
 Theorem and_idemp : forall (xs: list X) (r1 r2: regex) (p: compare_regex r1 r2 = Eq),
   matches (and r1 r2) xs = matches r1 xs.
-Admitted.
+Proof.
+unfold matches.
+induction xs.
+- simpl.
+  intros.
+  rewrite (compare_equal r1 r2 p).
+  apply Bool.andb_diag.
+- simpl.
+  intros.
+  rewrite (compare_equal r1 r2 p).
+  apply IHxs.
+  apply compare_reflex.
+Qed.
 
-(* TODO *)
 (* r&s = s&r *)
 Theorem and_comm : forall (xs: list X) (r1 r2: regex),
   matches (and r1 r2) xs = matches (and r2 r1) xs.
-Admitted.
+Proof.
+unfold matches.
+induction xs.
+- simpl.
+  firstorder.
+- simpl.
+  intros.
+  apply IHxs.
+Qed.
 
-(* TODO *)
 (* (r&s)&t = r&(s&t) *)
 Theorem and_assoc : forall (xs: list X) (r s t: regex),
-  matches (and (and r s) t) xs = matches (and r (and s t)) xs.
-Admitted.
+    matches (and (and r s) t) xs = matches (and r (and s t)) xs.
+Proof.
+unfold matches.
+induction xs.
+- simpl.
+  firstorder.
+- simpl.
+  intros.
+  apply IHxs.
+Qed.
 
-(* TODO *)
 (* nothing&r = nothing *)
 Theorem and_nothing : forall (xs: list X) (r: regex),
   matches (and nothing r) xs = matches nothing xs.
-Admitted.
+Proof.
+unfold matches.
+induction xs.
+- simpl.
+  trivial.
+- simpl.
+  intros.
+  apply IHxs.
+Qed.
 
-(* TODO *)
 (* not(nothing)&r = r *)
 Theorem and_not_nothing : forall (xs: list X) (r: regex),
-  matches (and (not nothing) r) xs = matches r xs.
-Admitted.
+    matches (and (not nothing) r) xs = matches r xs.
+Proof.
+unfold matches.
+induction xs.
+- simpl.
+  trivial.
+- simpl.
+  intros.
+  apply IHxs.
+Qed.
 
 (* TODO *)
 (* (r.s).t = r.(s.t) *)
@@ -328,11 +367,50 @@ induction xs.
   exact IHxs.
 Qed.
 
-(* TODO *)
+Lemma fold_at_nothing : forall (xs : list X), (fold_left derive xs nothing = nothing).
+Proof.
+simpl.
+intros.
+induction xs.
+- simpl.
+  trivial.
+- simpl.
+  apply IHxs.
+Qed.
+
+Lemma nullable_fold : forall (xs : list X) (r s: regex), (nullable (fold_left derive xs (or r s))) = (orb (nullable (fold_left derive xs r)) (nullable (fold_left derive xs s))).
+Proof.
+induction xs.
+- intros.
+  simpl.
+  reflexivity.
+- intros.
+  simpl.
+  apply IHxs.
+Qed.
+
 (* r.nothing = nothing *)
 Theorem concat_nothing2 : forall (xs: list X) (r: regex),
   matches (concat r nothing) xs = matches nothing xs.
-Admitted.
+Proof.
+unfold matches.
+induction xs.
+- intros.
+  simpl.
+  apply Bool.andb_false_r.
+- simpl.
+  intros.
+  remember (nullable r).
+  destruct b.
+  + rewrite nullable_fold.
+    case (nullable(fold_left derive xs nothing)).
+    * firstorder.
+    * rewrite IHxs.
+      rewrite fold_at_nothing.
+      simpl.
+      trivial.
+  + apply IHxs.
+Qed.
 
 (* TODO *)
 (* empty.r = r *)
