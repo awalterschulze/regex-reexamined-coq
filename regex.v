@@ -210,10 +210,14 @@ Fixpoint nullable (r: regex) : bool :=
 
 (* derive returns the regular expression that is left to match
    after matching the input character x, for example:
-   derive (ba)* b = a(ba)*
-   derive a     a = empty
-   derive b     a = nothing
-   derive ab|a  a = b|empty
+   derive (ba)*      b    = a(ba)*
+   derive a          a    = empty
+   derive b          a    = nothing
+   derive ab|a       a    = b|empty
+   derive bc         b    = c
+   derive (a|empty)b a    = b
+   derive (a|empty)b b    = empty
+   derive empty b    b    = empty
 *)
 Fixpoint derive (r: regex) (x: X) : regex :=
   match r with
