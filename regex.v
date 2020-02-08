@@ -280,11 +280,22 @@ Definition smatches (r: regex) (xs: list X) : bool :=
   Regular-expression derivatives reexamined - Scott Owens, John Reppy, Aaron Turon
 *)
 
-(* TODO *)
 (* r&r = r *)
 Theorem and_idemp : forall (xs: list X) (r1 r2: regex) (p: compare_regex r1 r2 = Eq),
   matches (and r1 r2) xs = matches r1 xs.
-Admitted.
+Proof.
+unfold matches.
+induction xs.
+- simpl.
+  intros.
+  rewrite (compare_equal r1 r2 p).
+  apply Bool.andb_diag.
+- simpl.
+  intros.
+  rewrite (compare_equal r1 r2 p).
+  apply IHxs.
+  apply compare_reflex.
+Qed.
 
 (* TODO *)
 (* r&s = s&r *)
