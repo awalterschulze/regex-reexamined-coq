@@ -297,11 +297,18 @@ induction xs.
   apply compare_reflex.
 Qed.
 
-(* TODO *)
 (* r&s = s&r *)
 Theorem and_comm : forall (xs: list X) (r1 r2: regex),
   matches (and r1 r2) xs = matches (and r2 r1) xs.
-Admitted.
+Proof.
+unfold matches.
+induction xs.
+- simpl.
+  firstorder.
+- simpl.
+  intros.
+  apply IHxs.
+Qed.
 
 (* TODO *)
 (* (r&s)&t = r&(s&t) *)
