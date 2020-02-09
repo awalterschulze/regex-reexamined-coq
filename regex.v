@@ -581,8 +581,13 @@ Lemma eqv_or : forall (a b: X) (r s: regex)
   (eqvr: eqv_char a b r) (eqvs: eqv_char a b s),
 eqv_char a b (or r s).
 Proof.
-(* TODO *)
-Admitted.
+unfold eqv_char.
+intros.
+simpl.
+rewrite eqvr.
+rewrite eqvs.
+reflexivity.
+Qed.
 
 Lemma eqv_and : forall (a b: X) (r s: regex)
   (eqvr: eqv_char a b r) (eqvs: eqv_char a b s),
