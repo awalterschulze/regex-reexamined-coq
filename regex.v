@@ -552,6 +552,59 @@ induction xs.
       apply IHxs.
 Qed.
 
+(* Definition 4.2
+   Two input characters are equivalent if for the same regex r
+   they produce the same derivative.
+*)
+Definition eqv_char (a b: X) (r: regex) : Prop :=
+  derive r a = derive r b.
+
+(* Lemma 4.1 proves that given the equivalent_character property
+   it also holds for the combinators.
+   If characters a and b are equivalent for regular expressions r and s.
+   Then they are also equivalent for the:
+   - concat
+   - or
+   - and
+   - zero_or_more
+   - not
+   or those regular expressions.
+*)
+Lemma eqv_concat : forall (a b: X) (r s: regex)
+  (eqvr: eqv_char a b r) (eqvs: eqv_char a b s),
+eqv_char a b (concat r s).
+Proof.
+(* TODO *)
+Admitted.
+
+Lemma eqv_or : forall (a b: X) (r s: regex)
+  (eqvr: eqv_char a b r) (eqvs: eqv_char a b s),
+eqv_char a b (or r s).
+Proof.
+(* TODO *)
+Admitted.
+
+Lemma eqv_and : forall (a b: X) (r s: regex)
+  (eqvr: eqv_char a b r) (eqvs: eqv_char a b s),
+eqv_char a b (and r s).
+Proof.
+(* TODO *)
+Admitted.
+
+Lemma eqv_zero_or_more : forall (a b: X) (r: regex)
+  (eqvr: eqv_char a b r),
+eqv_char a b (zero_or_more r).
+Proof.
+(* TODO *)
+Admitted.
+
+Lemma eqv_not : forall (a b: X) (r: regex)
+  (eqvr: eqv_char a b r),
+eqv_char a b (not r).
+Proof.
+(* TODO *)
+Admitted.
+
 End Regexes.
 
 
