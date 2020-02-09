@@ -245,6 +245,7 @@ Definition matches (r: regex) (xs: list X) : bool :=
    This way we don't have to apply simplification after derivation.
    We hope this will also make it easier to prove things.
 *)
+(* TODO add associativity *)
 Definition smart_or (r s: regex) : regex :=
   match compare_regex r s with
   | Eq => s
