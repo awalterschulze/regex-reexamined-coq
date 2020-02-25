@@ -1,3 +1,5 @@
+![Check Proofs](https://github.com/awalterschulze/regex-reexamined-coq/workflows/Check%20Proofs/badge.svg)
+
 # Regular-expression derivatives reexamined with Coq
 
 [Regular-expression derivatives reexamined](https://www.ccs.neu.edu/home/turon/re-deriv.pdf) is a paper by Scott Owens, John Reppy and Aaron Turon.
