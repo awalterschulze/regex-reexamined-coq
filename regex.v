@@ -9,9 +9,93 @@ Section Regexes.
 
 Variable X: Set.
 Parameter compare : X -> X -> comparison.
-Parameter proof_compare_equal: forall (x y: X) (p: compare x y = Eq),
+Parameter proof_compare_eq_is_equal: forall (x y: X) (p: compare x y = Eq),
   x = y.
-Parameter proof_compare_reflex: forall (x: X), compare x x = Eq. 
+Parameter proof_compare_eq_reflex: forall (x: X), compare x x = Eq.
+Parameter proof_compare_eq_trans: forall (x y z: X) (p: compare x y = Eq) (q: compare y z = Eq),
+  compare x z = Eq.
+Parameter proof_compare_lt_assoc: forall (x y z: X) (p: compare x y = Lt) (q: compare y z = Lt),
+  compare x z = Lt.
+Parameter proof_compare_gt_assoc: forall (x y z: X) (p: compare x y = Gt) (q: compare y z = Gt),
+  compare x z = Gt.
+
+Lemma proof_compare_eq_symm: forall (x y: X) (p: compare x y = Eq),
+  compare y x = Eq.
+Proof.
+intros.
+assert (p1 := p).
+apply proof_compare_eq_is_equal in p.
+rewrite p.
+rewrite p in p1.
+assumption.
+Qed.
+
+Lemma compare_eq_is_only_equal: forall (x1 x2: X) (p: compare x1 x2 = compare x2 x1),
+  compare x1 x2 = Eq.
+Proof.
+intros.
+remember (compare x1 x2) as c.
+induction c.
+- reflexivity.
+- symmetry in Heqc.
+  symmetry in p.
+  remember (proof_compare_lt_assoc x1 x2 x1 Heqc p).
+  rewrite <- e.
+  apply proof_compare_eq_reflex.
+- symmetry in Heqc.
+  symmetry in p.
+  remember (proof_compare_gt_assoc x1 x2 x1 Heqc p).
+  rewrite <- e.
+  apply proof_compare_eq_reflex.
+Qed.
+
+Lemma compare_lt_not_symm_1 : forall (x1 x2: X) (c12: compare x1 x2 = Lt) (c21: compare x2 x1 = Lt),
+  False.
+Proof.
+intros x1 x2 c12 c21.
+assert (p1 := proof_compare_lt_assoc x1 x2 x1 c12 c21).
+assert (p2 := proof_compare_eq_reflex x1).
+rewrite p1 in p2.
+discriminate.
+Qed.
+
+Lemma compare_lt_not_symm_2 : forall (x1 x2: X) (c12: compare x1 x2 = Lt) (c21: compare x2 x1 = Lt),
+  False.
+Proof.
+intros x1 x2 c12 c21.
+assert (c := c21).
+rewrite <- c12 in c.
+apply compare_eq_is_only_equal in c.
+rewrite c21 in c.
+discriminate.
+Qed.
+
+Lemma compare_gt_not_symm : forall (x1 x2: X) (c12: compare x1 x2 = Gt) (c21: compare x2 x1 = Gt),
+  False.
+(* TODO *)
+Admitted.
+
+Lemma compare_lt_gt_symm : forall (x1 x2: X) (p: compare x1 x2 = Lt),
+  compare x2 x1 = Gt.
+Proof.
+intros.
+remember (compare x2 x1) as iH.
+induction iH.
+- symmetry in HeqiH.
+  apply proof_compare_eq_symm in HeqiH.
+  rewrite HeqiH in p.
+  discriminate.
+- symmetry in HeqiH.
+  assert (a := proof_compare_lt_assoc x1 x2 x1 p HeqiH).
+  rewrite proof_compare_eq_reflex in a.
+  discriminate.
+- reflexivity.
+Qed.
+
+Lemma compare_gt_lt_symm : forall (x1 x2: X) (p: compare x1 x2 = Gt),
+  compare x2 x1 = Lt.
+(* TODO *)
+Admitted.
 
 Definition is_eq (x y: X) : bool :=
   match compare x y with
@@ -102,6 +186,38 @@ Fixpoint compare_regex (r s: regex) : comparison :=
     end
   end.
 
+Lemma test_compare_regex_char : forall (x1 x2: X) (p: compare x1 x2 = Lt),
+  compare_regex (char x1) (char x2) = Lt.
+Proof. intros. simpl. now (rewrite p). Qed.
+
+(* 
+(or (char x1) (or (char x2) (or (char x2) (char x1))))
+or
+- x1
+- or
+  - x2
+  - or
+    - x2
+    - x1
+*)
+Lemma test_compare_regex_or_all_left : forall (x1 x2: X) (p: compare x1 x2 = Lt),
+  compare_regex (char x1) (or (char x2) (or (char x2) (char x1))) = Lt.
+Proof. intros. simpl. reflexivity. Qed.
+
+(*
+(or (or (char x1) (char x2)) (or (char x2) (char x1)))
+or
+  - or
+    - x1
+    - x2
+  - or
+    - x2
+    - x1
+*)
+Lemma test_compare_regex_or_symmetric: forall (x1 x2: X) (p: compare x1 x2 = Lt),
+  compare_regex (or (char x1) (char x2)) (or (char x2) (char x1)) = Lt.
+Proof. intros. simpl. now (rewrite p). Qed.
+
 Theorem compare_equal : forall (r1 r2: regex) (p: compare_regex r1 r2 = Eq),
   r1 = r2.
 Proof.
@@ -112,7 +228,7 @@ induction r1.
   + remember (compare x x0).
     induction c; simpl; try discriminate.
     * symmetry in Heqc.
-      apply proof_compare_equal in Heqc.
+      apply proof_compare_eq_is_equal in Heqc.
       rewrite <- Heqc.
       reflexivity.
  - induction r2; simpl; try discriminate. (* or *)
@@ -180,13 +296,104 @@ Theorem compare_reflex : forall (r: regex),
  compare_regex r r = Eq.
 Proof.
 induction r; try reflexivity; simpl.
-- apply proof_compare_reflex.
+- apply proof_compare_eq_reflex.
 - rewrite IHr1. rewrite IHr2. reflexivity.
 - rewrite IHr1. rewrite IHr2. reflexivity.
 - rewrite IHr1. rewrite IHr2. reflexivity.
 - rewrite IHr. reflexivity.
 - rewrite IHr. reflexivity.
 Qed.
+
+(* simplified is a property that a regex's ors are somewhat simplified *)
+Fixpoint simplified (r: regex) : Prop :=
+  match r with
+  | nothing => True
+  | empty => True
+  | char _ => True
+  | or s t =>
+    simplified s
+    /\ simplified t
+    /\ compare_regex s t = Lt
+    /\ match s with
+       | or _ _ => False
+       | _ => True
+       end
+    /\ match t with
+       | or tl _ => compare_regex s tl = Lt
+       | _ => True
+       end
+  | and s t => simplified s /\ simplified t
+  | concat s t => simplified s /\ simplified t
+  | not s => simplified s
+  | zero_or_more s => simplified s
+  end.
+
+(*
+(or (char x1) (or (char x2) (or (char x3) (char x4))))
+or
+- x1
+- or
+  - x2
+  - or
+    - x3
+    - x4
+*)
+Lemma test_simplified_or_all_left_in_order : forall (x1 x2 x3 x4: X)
+  (p12: compare x1 x2 = Lt)
+  (p23: compare x2 x3 = Lt)
+  (p34: compare x3 x4 = Lt),
+  simplified (or (char x1) (or (char x2) (or (char x3) (char x4)))) -> True.
+Proof.
+intros.
+firstorder.
+Qed.
+
+(*
+(or (char x1) (or (char x2) (or (char x2) (char x1))))
+or
+- x1
+- or
+  - x2
+  - or
+    - x2
+    - x1
+*)
+Lemma test_simplified_or_all_left_out_of_order : forall (x1 x2 x3 x4: X)
+  (p12: compare x1 x2 = Lt)
+  (p23: compare x2 x3 = Lt)
+  (p34: compare x3 x4 = Lt),
+  simplified (or (char x1) (or (char x3) (or (char x2) (char x4)))) -> False.
+Proof.
+intros x1 x2 x3 x4.
+intros p12 p23 p34.
+simpl.
+firstorder.
+assert (p := proof_compare_lt_assoc x2 x3 x2 p23 H7).
+rewrite proof_compare_eq_reflex in p.
+discriminate.
+Qed.
+
+(*
+(or (or (char x1) (char x2)) (or (char x3) (char x4)))
+or
+  - or
+    - x1
+    - x2
+  - or
+    - x3
+    - x4
+*)
+Lemma test_simplified_or_symmetric: forall (x1 x2 x3 x4: X)
+  (p12: compare x1 x2 = Lt)
+  (p23: compare x2 x3 = Lt)
+  (p34: compare x3 x4 = Lt),
+  simplified (or (or (char x1) (char x2)) (or (char x3) (char x4))) -> False.
+Proof.
+intros x1 x2 x3 x4 p12 p23 p34.
+simpl.
+firstorder.
+Qed.
+
 
 (* nullable returns whether the regular expression matches the
    empty string, for example:
@@ -240,11 +447,6 @@ Definition matches (r: regex) (xs: list X) : bool :=
   nullable (fold_left derive xs r)
 .
 
-(* sderive is the same as derive, except that it applies
-   simplification rules by construction.
-   This way we don't have to apply simplification after derivation.
-   We hope this will also make it easier to prove things.
-*)
 (* TODO add associativity *)
 Definition smart_or (r s: regex) : regex :=
   match compare_regex r s with
@@ -253,6 +455,186 @@ Definition smart_or (r s: regex) : regex :=
   | Gt => or s r
   end.
 
+(* simple is a simpler version of simplified to learn how to prove simplified in future *)
+Fixpoint simple (r: regex) : Prop :=
+  match r with
+  | nothing => True
+  | empty => True
+  | char _ => True
+  | or s t => simple s /\ simple t
+    /\ ~(compare_regex s t = Eq)
+  | and s t => simple s /\ simple t
+  | concat s t => simple s /\ simple t
+  | not s => simple s
+  | zero_or_more s => simple s
+  end.
+
+Lemma smart_or_is_simple: forall (r s: regex) (simple_r: simple r) (simple_s: simple s),
+  simple (smart_or r s).
+intros.
+induction r, s; simpl; try easy.
+- unfold smart_or.
+  remember (compare_regex (char x) (char x0)) as c.
+  induction c.
+  + assumption.
+  + simpl.
+    simpl in Heqc.
+    rewrite <- Heqc.
+    firstorder.
+    Locate "<>".
+    unfold Logic.not.
+    discriminate.
+  + simpl.
+    firstorder.
+    unfold Logic.not.
+    simpl in Heqc.
+    intros.
+    apply (proof_compare_eq_symm x0 x) in H.
+    rewrite H in Heqc.
+    discriminate.
+- unfold smart_or.
+  remember (compare_regex (or r1 r2) (or s1 s2)) as c.
+  induction c.
+  + assumption.
+  + unfold simple.
+    fold simple.
+    simpl in simple_r.
+    simpl in simple_s.
+    split.
+    * assumption.
+    * split.
+      -- assumption.
+      -- unfold Logic.not.
+         intros.
+         rewrite H in Heqc.
+         discriminate.
+  + unfold simple; fold simple.
+    split.
+    * assumption.
+    * split.
+      -- assumption.
+      -- unfold Logic.not.
+         intros.
+         assert (h := H).
+         apply compare_equal in H.
+         rewrite H in Heqc.
+         rewrite compare_reflex in Heqc.
+         discriminate.
+- unfold smart_or.
+  remember (compare_regex (and r1 r2) (and s1 s2)) as c.
+  induction c.
+  + assumption.
+  + unfold simple; fold simple.
+    simpl in simple_r.
+    simpl in simple_s.
+    split.
+    * assumption.
+    * split.
+      -- assumption.
+      -- unfold Logic.not.
+         intros.
+         rewrite H in Heqc.
+         discriminate.
+  + unfold simple; fold simple.
+    split.
+    * assumption.
+    * split.
+      -- assumption.
+      -- unfold Logic.not.
+         intros.
+         assert (h := H).
+         apply compare_equal in H.
+         rewrite H in Heqc.
+         rewrite compare_reflex in Heqc.
+         discriminate.
+- unfold smart_or.
+  remember (compare_regex (concat r1 r2) (concat s1 s2)) as c.
+  induction c.
+  + assumption.
+  + unfold simple; fold simple.
+    simpl in simple_r.
+    simpl in simple_s.
+    split.
+    * assumption.
+    * split.
+      -- assumption.
+      -- unfold Logic.not.
+         intros.
+         rewrite H in Heqc.
+         discriminate.
+  + unfold simple; fold simple.
+    split.
+    * assumption.
+    * split.
+      -- assumption.
+      -- unfold Logic.not.
+         intros.
+         assert (h := H).
+         apply compare_equal in H.
+         rewrite H in Heqc.
+         rewrite compare_reflex in Heqc.
+         discriminate.
+- unfold smart_or.
+  remember (compare_regex (not r) (not s)) as c.
+  induction c.
+  + assumption.
+  + unfold simple; fold simple.
+    simpl in simple_r.
+    simpl in simple_s.
+    split.
+    * assumption.
+    * split.
+      -- assumption.
+      -- unfold Logic.not.
+         intros.
+         rewrite H in Heqc.
+         discriminate.
+  + unfold simple; fold simple.
+    split.
+    * assumption.
+    * split.
+      -- assumption.
+      -- unfold Logic.not.
+         intros.
+         assert (h := H).
+         apply compare_equal in H.
+         rewrite H in Heqc.
+         rewrite compare_reflex in Heqc.
+         discriminate.
+- unfold smart_or.
+  remember (compare_regex (zero_or_more r) (zero_or_more s)) as c.
+  induction c.
+  + assumption.
+  + unfold simple; fold simple.
+    simpl in simple_r.
+    simpl in simple_s.
+    split.
+    * assumption.
+    * split.
+      -- assumption.
+      -- unfold Logic.not.
+         intros.
+         rewrite H in Heqc.
+         discriminate.
+  + unfold simple; fold simple.
+    split.
+    * assumption.
+    * split.
+      -- assumption.
+      -- unfold Logic.not.
+         intros.
+         assert (h := H).
+         apply compare_equal in H.
+         rewrite H in Heqc.
+         rewrite compare_reflex in Heqc.
+         discriminate.
+Qed.
+
+(* sderive is the same as derive, except that it applies
+   simplification rules by construction.
+   This way we don't have to apply simplification after derivation.
+   We hope this will also make it easier to prove things.
+*)
 Fixpoint sderive (r: regex) (x: X) : regex :=
   match r with
   | nothing => nothing
