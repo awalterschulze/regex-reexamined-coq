@@ -41,4 +41,4 @@ jobs:
         eval $(opam env)
         coqc --version
         cd $GITHUB_WORKSPACE
-        coqc regex.v -verbose
+        make
