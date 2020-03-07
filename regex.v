@@ -72,8 +72,14 @@ Qed.
 
 Lemma compare_gt_not_symm : forall (x1 x2: X) (c12: compare x1 x2 = Gt) (c21: compare x2 x1 = Gt),
   False.
-(* TODO *)
-Admitted.
+Proof.
+intros x1 x2 c12 c21.
+assert (c := c12).
+rewrite <- c21 in c.
+apply compare_eq_is_only_equal in c.
+rewrite c12 in c.
+discriminate.
+Qed.
 
 Lemma compare_lt_gt_symm : forall (x1 x2: X) (p: compare x1 x2 = Lt),
   compare x2 x1 = Gt.
