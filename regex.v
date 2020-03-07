@@ -1,7 +1,9 @@
 Require Import List.
 Require Import MyCompareClass.
+Set Implicit Arguments.
+Set Asymmetric Patterns.
 
-Section Regexes.
+Section Regex.
 
 (* A character for a regular expression is generic,
    but it needs to implement an interface.
@@ -10,12 +12,6 @@ Section Regexes.
 
 Variable X: Set.
 Parameter TC: comparable X.
-
-Definition is_eq (x y: X) : bool :=
-  match compare x y with
-  | Eq => true
-  | _ => false
-  end.
 
 Inductive regex :=
   nothing : regex (* matches no strings *)
@@ -28,7 +24,15 @@ Inductive regex :=
   | zero_or_more : regex -> regex
   .
 
-Fixpoint compare_regex (r s: regex) : comparison :=
+End Regex.
+
+Definition is_eq {X: Set} {tc: comparable X} (x y: X) : bool :=
+  match compare x y with
+  | Eq => true
+  | _ => false
+  end.
+
+Fixpoint compare_regex {X: Set} {tc: comparable X} (r s: regex X) : comparison :=
   match r with
   | nothing => match s with
     | nothing => Eq
@@ -100,7 +104,7 @@ Fixpoint compare_regex (r s: regex) : comparison :=
     end
   end.
 
-Lemma test_compare_regex_char : forall (x1 x2: X) (p: compare x1 x2 = Lt),
+Lemma test_compare_regex_char : forall {X: Set} {tc: comparable X} (x1 x2: X) (p: compare x1 x2 = Lt),
   compare_regex (char x1) (char x2) = Lt.
 Proof. intros. simpl. now (rewrite p). Qed.
 
@@ -114,7 +118,7 @@ or
     - x2
     - x1
 *)
-Lemma test_compare_regex_or_all_left : forall (x1 x2: X) (p: compare x1 x2 = Lt),
+Lemma test_compare_regex_or_all_left : forall {X: Set} {tc: comparable X} (x1 x2: X) (p: compare x1 x2 = Lt),
   compare_regex (char x1) (or (char x2) (or (char x2) (char x1))) = Lt.
 Proof. intros. simpl. reflexivity. Qed.
 
@@ -128,11 +132,11 @@ or
     - x2
     - x1
 *)
-Lemma test_compare_regex_or_symmetric: forall (x1 x2: X) (p: compare x1 x2 = Lt),
+Lemma test_compare_regex_or_symmetric: forall {X: Set} {tc: comparable X} (x1 x2: X) (p: compare x1 x2 = Lt),
   compare_regex (or (char x1) (char x2)) (or (char x2) (char x1)) = Lt.
 Proof. intros. simpl. now (rewrite p). Qed.
 
-Theorem compare_equal : forall (r1 r2: regex) (p: compare_regex r1 r2 = Eq),
+Theorem compare_equal : forall {X: Set} {tc: comparable X} (r1 r2: regex X) (p: compare_regex r1 r2 = Eq),
   r1 = r2.
 Proof.
 induction r1.
@@ -206,7 +210,7 @@ induction r1.
     reflexivity.
 Qed.
 
-Theorem compare_reflex : forall (r: regex), 
+Theorem compare_reflex : forall {X: Set} {tc: comparable X} (r: regex X), 
  compare_regex r r = Eq.
 Proof.
 induction r; try reflexivity; simpl.
@@ -219,7 +223,7 @@ induction r; try reflexivity; simpl.
 Qed.
 
 (* simplified is a property that a regex's ors are somewhat simplified *)
-Fixpoint simplified (r: regex) : Prop :=
+Fixpoint simplified {X: Set} {tc: comparable X} (r: regex X) : Prop :=
   match r with
   | nothing => True
   | empty => True
@@ -252,7 +256,7 @@ or
     - x3
     - x4
 *)
-Lemma test_simplified_or_all_left_in_order : forall (x1 x2 x3 x4: X)
+Lemma test_simplified_or_all_left_in_order : forall {X: Set} {tc: comparable X} (x1 x2 x3 x4: X)
   (p12: compare x1 x2 = Lt)
   (p23: compare x2 x3 = Lt)
   (p34: compare x3 x4 = Lt),
@@ -272,12 +276,16 @@ or
     - x2
     - x1
 *)
-Lemma test_simplified_or_all_left_out_of_order : forall (x1 x2 x3 x4: X)
+Lemma test_simplified_or_all_left_out_of_order : forall
+  {X: Set}
+  {tc: comparable X}
+  (x1 x2 x3 x4: X)
   (p12: compare x1 x2 = Lt)
   (p23: compare x2 x3 = Lt)
   (p34: compare x3 x4 = Lt),
   simplified (or (char x1) (or (char x3) (or (char x2) (char x4)))) -> False.
 Proof.
+intros x tc.
 intros x1 x2 x3 x4.
 intros p12 p23 p34.
 simpl.
@@ -297,12 +305,13 @@ or
     - x3
     - x4
 *)
-Lemma test_simplified_or_symmetric: forall (x1 x2 x3 x4: X)
+Lemma test_simplified_or_symmetric: forall {X: Set} {tc: comparable X} (x1 x2 x3 x4: X)
   (p12: compare x1 x2 = Lt)
   (p23: compare x2 x3 = Lt)
   (p34: compare x3 x4 = Lt),
   simplified (or (or (char x1) (char x2)) (or (char x3) (char x4))) -> False.
 Proof.
+intros x tc.
 intros x1 x2 x3 x4 p12 p23 p34.
 simpl.
 firstorder.
@@ -317,7 +326,7 @@ Qed.
    nullable (abc)*|ab    = true
    nullable a(abc)*|ab   = false
 *)
-Fixpoint nullable (r: regex) : bool :=
+Fixpoint nullable {X: Set} {tc: comparable X} (r: regex X) : bool :=
   match r with
   | nothing => false
   | empty => true
@@ -340,13 +349,13 @@ Fixpoint nullable (r: regex) : bool :=
    derive (a|empty)b b    = empty
    derive empty b    b    = empty
 *)
-Fixpoint derive (r: regex) (x: X) : regex :=
+Fixpoint derive {X: Set} {tc: comparable X} (r: regex X) (x: X) : regex X :=
   match r with
-  | nothing => nothing
-  | empty => nothing
+  | nothing => nothing _
+  | empty => nothing _
   | char y => if is_eq x y
-    then empty
-    else nothing
+    then empty _
+    else nothing _
   | or s t => or (derive s x) (derive t x)
   | and s t => and (derive s x) (derive t x)
   | concat s t =>
@@ -357,12 +366,12 @@ Fixpoint derive (r: regex) (x: X) : regex :=
   | zero_or_more s => concat (derive s x) (zero_or_more s)
   end.
 
-Definition matches (r: regex) (xs: list X) : bool :=
+Definition matches {X: Set} {tc: comparable X} (r: regex X) (xs: list X) : bool :=
   nullable (fold_left derive xs r)
 .
 
 (* TODO add associativity *)
-Definition smart_or (r s: regex) : regex :=
+Definition smart_or {X: Set} {tc: comparable X} (r s: regex X) : regex X :=
   match compare_regex r s with
   | Eq => s
   | Lt => or r s
@@ -370,7 +379,7 @@ Definition smart_or (r s: regex) : regex :=
   end.
 
 (* simple is a simpler version of simplified to learn how to prove simplified in future *)
-Fixpoint simple (r: regex) : Prop :=
+Fixpoint simple {X: Set} {tc: comparable X} (r: regex X) : Prop :=
   match r with
   | nothing => True
   | empty => True
@@ -383,7 +392,7 @@ Fixpoint simple (r: regex) : Prop :=
   | zero_or_more s => simple s
   end.
 
-Lemma smart_or_is_simple: forall (r s: regex) (simple_r: simple r) (simple_s: simple s),
+Lemma smart_or_is_simple: forall {X: Set} {tc: comparable X} (r s: regex X) (simple_r: simple r) (simple_s: simple s),
   simple (smart_or r s).
 intros.
 induction r, s; simpl; try easy.
@@ -395,7 +404,7 @@ induction r, s; simpl; try easy.
     simpl in Heqc.
     rewrite <- Heqc.
     firstorder.
-    Locate "<>".
+    (* Locate "<>". *)
     unfold Logic.not.
     discriminate.
   + simpl.
@@ -549,13 +558,13 @@ Qed.
    This way we don't have to apply simplification after derivation.
    We hope this will also make it easier to prove things.
 *)
-Fixpoint sderive (r: regex) (x: X) : regex :=
+Fixpoint sderive {X: Set} {tc: comparable X} (r: regex X) (x: X) : regex X :=
   match r with
-  | nothing => nothing
-  | empty => nothing
+  | nothing => nothing _
+  | empty => nothing _
   | char y => if is_eq x y
-    then empty
-    else nothing
+    then empty _
+    else nothing _
   | or s t => smart_or (derive s x) (derive t x)
   | and s t => and (derive s x) (derive t x)
   | concat s t =>
@@ -566,7 +575,7 @@ Fixpoint sderive (r: regex) (x: X) : regex :=
   | zero_or_more s => concat (derive s x) (zero_or_more s)
   end.
 
-Definition smatches (r: regex) (xs: list X) : bool :=
+Definition smatches {X: Set} {tc: comparable X} (r: regex X) (xs: list X) : bool :=
   nullable (fold_left sderive xs r)
 .
 
@@ -582,7 +591,7 @@ Definition smatches (r: regex) (xs: list X) : bool :=
 *)
 
 (* r&r = r *)
-Theorem and_idemp : forall (xs: list X) (r1 r2: regex) (p: compare_regex r1 r2 = Eq),
+Theorem and_idemp : forall {X: Set} {tc: comparable X} (xs: list X) (r1 r2: regex X) (p: compare_regex r1 r2 = Eq),
   matches (and r1 r2) xs = matches r1 xs.
 Proof.
 unfold matches.
@@ -599,7 +608,7 @@ induction xs.
 Qed.
 
 (* r&s = s&r *)
-Theorem and_comm : forall (xs: list X) (r1 r2: regex),
+Theorem and_comm : forall {X: Set} {tc: comparable X} (xs: list X) (r1 r2: regex X),
   matches (and r1 r2) xs = matches (and r2 r1) xs.
 Proof.
 unfold matches.
@@ -612,7 +621,7 @@ induction xs.
 Qed.
 
 (* (r&s)&t = r&(s&t) *)
-Theorem and_assoc : forall (xs: list X) (r s t: regex),
+Theorem and_assoc : forall {X: Set} {tc: comparable X} (xs: list X) (r s t: regex X),
     matches (and (and r s) t) xs = matches (and r (and s t)) xs.
 Proof.
 unfold matches.
@@ -625,8 +634,8 @@ induction xs.
 Qed.
 
 (* nothing&r = nothing *)
-Theorem and_nothing : forall (xs: list X) (r: regex),
-  matches (and nothing r) xs = matches nothing xs.
+Theorem and_nothing : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
+  matches (and (nothing _) r) xs = matches (nothing _) xs.
 Proof.
 unfold matches.
 induction xs.
@@ -638,8 +647,8 @@ induction xs.
 Qed.
 
 (* not(nothing)&r = r *)
-Theorem and_not_nothing : forall (xs: list X) (r: regex),
-    matches (and (not nothing) r) xs = matches r xs.
+Theorem and_not_nothing : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
+    matches (and (not (nothing _)) r) xs = matches r xs.
 Proof.
 unfold matches.
 induction xs.
@@ -652,13 +661,13 @@ Qed.
 
 (* TODO *)
 (* (r.s).t = r.(s.t) *)
-Theorem concat_assoc: forall (xs: list X) (r s t: regex),
+Theorem concat_assoc: forall {X: Set} {tc: comparable X} (xs: list X) (r s t: regex X),
   matches (concat (concat r s) t) xs = matches (concat r (concat s t)) xs.
 Admitted.
 
 (* nothing.r = nothing *)
-Theorem concat_nothing : forall (xs: list X) (r: regex),
-  matches (concat nothing r) xs = matches nothing xs.
+Theorem concat_nothing : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
+  matches (concat (nothing _) r) xs = matches (nothing _) xs.
 Proof.
 unfold matches.
 induction xs.
@@ -668,7 +677,7 @@ induction xs.
   exact IHxs.
 Qed.
 
-Lemma fold_at_nothing : forall (xs : list X), (fold_left derive xs nothing = nothing).
+Lemma fold_at_nothing : forall {X: Set} {tc: comparable X} (xs : list X), (fold_left derive xs (nothing _) = (nothing _)).
 Proof.
 simpl.
 intros.
@@ -679,7 +688,7 @@ induction xs.
   apply IHxs.
 Qed.
 
-Lemma nullable_fold : forall (xs : list X) (r s: regex), (nullable (fold_left derive xs (or r s))) = (orb (nullable (fold_left derive xs r)) (nullable (fold_left derive xs s))).
+Lemma nullable_fold : forall {X: Set} {tc: comparable X} (xs : list X) (r s: regex X), (nullable (fold_left derive xs (or r s))) = (orb (nullable (fold_left derive xs r)) (nullable (fold_left derive xs s))).
 Proof.
 induction xs.
 - intros.
@@ -691,8 +700,8 @@ induction xs.
 Qed.
 
 (* r.nothing = nothing *)
-Theorem concat_nothing2 : forall (xs: list X) (r: regex),
-  matches (concat r nothing) xs = matches nothing xs.
+Theorem concat_nothing2 : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
+  matches (concat r (nothing _)) xs = matches (nothing _) xs.
 Proof.
 unfold matches.
 induction xs.
@@ -704,7 +713,7 @@ induction xs.
   remember (nullable r).
   destruct b.
   + rewrite nullable_fold.
-    case (nullable(fold_left derive xs nothing)).
+    case (nullable(fold_left derive xs (nothing _))).
     * firstorder.
     * rewrite IHxs.
       rewrite fold_at_nothing.
@@ -715,18 +724,18 @@ Qed.
 
 (* TODO *)
 (* empty.r = r *)
-Theorem concat_empty : forall (xs: list X) (r: regex),
-  matches (concat empty r) xs = matches r xs.
+Theorem concat_empty : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
+  matches (concat (empty _) r) xs = matches r xs.
 Admitted.
 
 (* TODO *)
 (* r.empty = r *)
-Theorem concat_empty2: forall (xs: list X) (r: regex),
-  matches (concat r empty) xs = matches r xs.
+Theorem concat_empty2: forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
+  matches (concat r (empty _)) xs = matches r xs.
 Admitted.
 
 (* r|r = r *)
-Theorem or_idemp : forall (xs: list X) (r1 r2: regex) (p: compare_regex r1 r2 = Eq),
+Theorem or_idemp : forall {X: Set} {tc: comparable X} (xs: list X) (r1 r2: regex X) (p: compare_regex r1 r2 = Eq),
   matches (or r1 r2) xs = matches r1 xs.
 Proof.
 unfold matches.
@@ -743,7 +752,7 @@ induction xs.
 Qed.
 
 (* r|s = s|r *)
-Theorem or_comm : forall (xs: list X) (r s: regex),
+Theorem or_comm : forall {X: Set} {tc: comparable X} (xs: list X) (r s: regex X),
   matches (or r s) xs = matches (or s r) xs.
 Proof.
 unfold matches.
@@ -756,7 +765,7 @@ induction xs.
 Qed.
 
 (* (r|s)|t = r|(s|t) *)
-Theorem or_assoc : forall (xs: list X) (r s t: regex),
+Theorem or_assoc : forall {X: Set} {tc: comparable X} (xs: list X) (r s t: regex X),
   matches (or r (or s t)) xs = matches (or (or r s) t) xs.
 Proof.
 unfold matches.
@@ -770,13 +779,13 @@ Qed.
 
 (* TODO *)
 (* not(nothing)|r = not(nothing) *)
-Theorem or_not_nothing : forall (xs: list X) (r: regex),
-  matches (or (not nothing) r) xs = matches (not nothing) xs.
+Theorem or_not_nothing : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
+  matches (or (not (nothing _)) r) xs = matches (not (nothing _)) xs.
 Admitted.
 
 (* nothing|r = r *)
-Theorem or_id : forall (xs: list X) (r: regex),
-  matches (or r nothing) xs = matches r xs.
+Theorem or_id : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
+  matches (or r (nothing _)) xs = matches r xs.
 Proof.
 unfold matches.
 induction xs.
@@ -789,19 +798,19 @@ Qed.
 
 (* TODO *)
 (* zero_or_more(zero_or_more(r)) = zero_or_more(r) *)
-Theorem zero_or_more_zero_or_more : forall (xs: list X) (r: regex),
+Theorem zero_or_more_zero_or_more : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
   matches (zero_or_more (zero_or_more r)) xs = matches (zero_or_more r) xs.
 Admitted.
 
 (* TODO *)
 (* (empty)* = empty *)
-Theorem zero_or_more_empty : forall (xs: list X),
-  matches (zero_or_more empty) xs = matches empty xs.
+Theorem zero_or_more_empty : forall {X: Set} {tc: comparable X} (xs: list X),
+  matches (zero_or_more (empty _)) xs = matches (empty _) xs.
 Admitted.
 
 (* (nothing)* = empty *)
-Theorem nothing_zero_or_more : forall (xs: list X),
-  matches (zero_or_more nothing) xs = matches empty xs.
+Theorem nothing_zero_or_more : forall {X: Set} {tc: comparable X} (xs: list X),
+  matches (zero_or_more (nothing _)) xs = matches (empty _) xs.
 Proof.
 unfold matches.
 induction xs.
@@ -813,12 +822,12 @@ Qed.
 
 (* TODO *)
 (* not(not(r)) = r *)
-Theorem not_not : forall (xs: list X) (r: regex),
+Theorem not_not : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
   matches (not (not r)) xs = matches r xs.
 Admitted.
 
 (* mathing without simplification is the same as with simplification *)
-Theorem simplify_is_correct : forall (xs: list X) (r: regex),
+Theorem simplify_is_correct : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
   matches r xs = smatches r xs.
 Proof.
 unfold matches.
@@ -852,7 +861,7 @@ Qed.
    Two input characters are equivalent if for the same regex r
    they produce the same derivative.
 *)
-Definition eqv_char (a b: X) (r: regex) : Prop :=
+Definition eqv_char {X: Set} {tc: comparable X} (a b: X) (r: regex X) : Prop :=
   derive r a = derive r b.
 
 (* Lemma 4.1 proves that given the equivalent_character property
@@ -866,14 +875,14 @@ Definition eqv_char (a b: X) (r: regex) : Prop :=
    - not
    or those regular expressions.
 *)
-Lemma eqv_concat : forall (a b: X) (r s: regex)
+Lemma eqv_concat : forall {X: Set} {tc: comparable X} (a b: X) (r s: regex X)
   (eqvr: eqv_char a b r) (eqvs: eqv_char a b s),
 eqv_char a b (concat r s).
 Proof.
 (* TODO *)
 Admitted.
 
-Lemma eqv_or : forall (a b: X) (r s: regex)
+Lemma eqv_or : forall {X: Set} {tc: comparable X} (a b: X) (r s: regex X)
   (eqvr: eqv_char a b r) (eqvs: eqv_char a b s),
 eqv_char a b (or r s).
 Proof.
@@ -885,27 +894,25 @@ rewrite eqvs.
 reflexivity.
 Qed.
 
-Lemma eqv_and : forall (a b: X) (r s: regex)
+Lemma eqv_and : forall {X: Set} {tc: comparable X} (a b: X) (r s: regex X)
   (eqvr: eqv_char a b r) (eqvs: eqv_char a b s),
 eqv_char a b (and r s).
 Proof.
 (* TODO *)
 Admitted.
 
-Lemma eqv_zero_or_more : forall (a b: X) (r: regex)
+Lemma eqv_zero_or_more : forall {X: Set} {tc: comparable X} (a b: X) (r: regex X)
   (eqvr: eqv_char a b r),
 eqv_char a b (zero_or_more r).
 Proof.
 (* TODO *)
 Admitted.
 
-Lemma eqv_not : forall (a b: X) (r: regex)
+Lemma eqv_not : forall {X: Set} {tc: comparable X} (a b: X) (r: regex X)
   (eqvr: eqv_char a b r),
 eqv_char a b (not r).
 Proof.
 (* TODO *)
 Admitted.
-
-End Regexes.
 
 
