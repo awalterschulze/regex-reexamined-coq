@@ -3,6 +3,7 @@ build:
 	coqc regex.v
 	coqc nullable.v
 	coqc compare_regex.v
+	coqc simplified.v
 	coqc main.v
 
 clean:
