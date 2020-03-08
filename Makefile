@@ -2,8 +2,8 @@ build:
 	coqc comparable.v
 	coqc regex.v
 	coqc nullable.v
-	coqc derive.v
 	coqc compare_regex.v
+	coqc derive.v
 	coqc smart.v
 	coqc simplified.v
 	coqc simple.v
