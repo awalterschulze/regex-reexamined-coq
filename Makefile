@@ -1,6 +1,7 @@
 build:
 	coqc comparable.v
 	coqc regex.v
+	coqc nullable.v
 	coqc compare_regex.v
 	coqc main.v
 
