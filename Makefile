@@ -6,6 +6,7 @@ build:
 	coqc compare_regex.v
 	coqc smart.v
 	coqc simplified.v
+	coqc simple.v
 	coqc main.v
 
 clean:
