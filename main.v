@@ -1,12 +1,14 @@
-Require Import List.
-Require Import comparable.
-Require Import regex.
-Require Import compare_regex.
-Require Import nullable.
-Require Import derive.
-Require Import smart.
 Set Implicit Arguments.
 Set Asymmetric Patterns.
+
+Require Import List.
+
+Require Import comparable.
+Require Import compare_regex.
+Require Import derive.
+Require Import nullable.
+Require Import regex.
+Require Import smart.
 
 (*Using only or_comm, or_assoc and or_idemp 
   Brzozowski proved that a notion of RE similarity including only

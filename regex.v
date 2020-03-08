@@ -1,6 +1,7 @@
-Require Import comparable.
 Set Implicit Arguments.
 Set Asymmetric Patterns.
+
+Require Import comparable.
 
 Section Regex.
 

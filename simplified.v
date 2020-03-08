@@ -1,11 +1,10 @@
-
-Require Import comparable.
-Require Import regex.
-Require Import compare_regex.
-Require Import nullable.
-
 Set Implicit Arguments.
 Set Asymmetric Patterns.
+
+Require Import comparable.
+Require Import compare_regex.
+Require Import nullable.
+Require Import regex.
 
 (* simplified is a property that a regex's ors are somewhat simplified *)
 Fixpoint simplified {X: Set} {tc: comparable X} (r: regex X) : Prop :=

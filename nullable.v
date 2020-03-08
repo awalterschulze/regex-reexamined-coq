@@ -1,8 +1,10 @@
-Require Import List.
-Require Import comparable.
-Require Import regex.
 Set Implicit Arguments.
 Set Asymmetric Patterns.
+
+Require Import List.
+
+Require Import comparable.
+Require Import regex.
 
 (* nullable returns whether the regular expression matches the
    empty string, for example:

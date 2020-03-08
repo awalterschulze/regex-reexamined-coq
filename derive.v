@@ -1,10 +1,12 @@
-Require Import List.
-Require Import comparable.
-Require Import regex.
-Require Import nullable.
-Require Import compare_regex.
 Set Implicit Arguments.
 Set Asymmetric Patterns.
+
+Require Import List.
+
+Require Import comparable.
+Require Import compare_regex.
+Require Import nullable.
+Require Import regex.
 
 Definition is_eq {X: Set} {tc: comparable X} (x y: X) : bool :=
   match compare x y with

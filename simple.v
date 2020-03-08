@@ -1,12 +1,14 @@
-Require Import List.
-Require Import comparable.
-Require Import regex.
-Require Import compare_regex.
-Require Import nullable.
-Require Import derive.
-Require Import smart.
 Set Implicit Arguments.
 Set Asymmetric Patterns.
+
+Require Import List.
+
+Require Import comparable.
+Require Import compare_regex.
+Require Import derive.
+Require Import nullable.
+Require Import regex.
+Require Import smart.
 
 (* simple is a simpler version of simplified to learn how to prove simplified in future *)
 Fixpoint simple {X: Set} {tc: comparable X} (r: regex X) : Prop :=

@@ -1,11 +1,13 @@
-Require Import List.
-Require Import comparable.
-Require Import regex.
-Require Import compare_regex.
-Require Import nullable.
-Require Import derive.
 Set Implicit Arguments.
 Set Asymmetric Patterns.
+
+Require Import List.
+
+Require Import comparable.
+Require Import compare_regex.
+Require Import derive.
+Require Import nullable.
+Require Import regex.
 
 (* TODO add associativity *)
 Definition smart_or {X: Set} {tc: comparable X} (r s: regex X) : regex X :=

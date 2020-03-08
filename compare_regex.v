@@ -1,7 +1,8 @@
-Require Import comparable.
-Require Import regex.
 Set Implicit Arguments.
 Set Asymmetric Patterns.
+
+Require Import comparable.
+Require Import regex.
 
 Fixpoint compare_regex {X: Set} {tc: comparable X} (r s: regex X) : comparison :=
   match r with
