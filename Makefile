@@ -1,5 +1,6 @@
 build:
 	coqc comparable.v
+	coqc regex.v
 	coqc main.v
 
 clean:
