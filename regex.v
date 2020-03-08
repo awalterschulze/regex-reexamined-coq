@@ -1,5 +1,5 @@
 Require Import List.
-Require Import MyCompareClass.
+Require Import comparable.
 Set Implicit Arguments.
 Set Asymmetric Patterns.
 

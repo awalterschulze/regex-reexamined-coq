@@ -1,5 +1,5 @@
 build:
-	coqc MyCompareClass.v
+	coqc comparable.v
 	coqc regex.v
 
 clean:
