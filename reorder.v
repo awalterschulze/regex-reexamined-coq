@@ -101,15 +101,48 @@ induction xs.
   reflexivity.
 Qed.
 
-(* eval_list_sort_is_correct shows that
-   eval_list_sort is equivalent to eval_list
-*)
-Theorem eval_list_sort_is_correct
-    : forall (xs: list X)
-    , eval_list xs = eval_list_sort xs.
+Lemma eval_list_and_insert
+  : forall (x: X) (xs: list X)
+  , eval_list (x::xs) = eval_list (insert x xs).
 Proof.
-(* TODO: Help Wanted *)
-Admitted.
+  induction xs as [| y ys IH].
+  - unfold insert. reflexivity.
+  - unfold insert.
+    case (compare x y).
+    + reflexivity.
+    + reflexivity.
+    + fold insert.
+      assert (eval_list (x :: y :: ys) = Op y (eval_list (x::ys))) as lem.
+      simpl (eval_list (x :: _)).
+      Check proof_assoc.
+      rewrite <- (proof_assoc x y (eval_list ys)).
+      rewrite -> (proof_comm x y).
+      rewrite -> (proof_assoc y x (eval_list ys)).
+      reflexivity.
+      rewrite -> lem.
+      simpl (eval_list (y :: _)).
+      rewrite -> IH.
+      reflexivity.
+Qed.
+
+
+Theorem eval_list_sort_is_correct
+  : forall (xs: list X)
+  , eval_list xs = eval_list_sort xs.
+Proof.
+  induction xs.
+  - reflexivity.
+  - unfold eval_list_sort.
+    simpl (sort (a :: xs)).
+    rewrite <- eval_list_and_insert.
+    simpl (eval_list _).
+    replace (eval_list (sort xs)) with (eval_list_sort xs).
+    rewrite <- IHxs.
+    reflexivity.
+    unfold eval_list_sort.
+    reflexivity.
+Qed.
+
 
 (* tree is a generic tree with values *)
 Inductive tree (A: Set) :=
