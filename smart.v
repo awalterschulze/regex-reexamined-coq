@@ -9,7 +9,7 @@ Require Import derive.
 Require Import nullable.
 Require Import regex.
 
-(* TODO add associativity *)
+(* TODO: add associativity, waiting for reorder proofs *)
 Definition smart_or {X: Set} {tc: comparable X} (r s: regex X) : regex X :=
   match compare_regex r s with
   | Eq => s

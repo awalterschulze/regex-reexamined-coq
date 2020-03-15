@@ -43,7 +43,7 @@ Lemma eqv_concat : forall {X: Set} {tc: comparable X} (a b: X) (r s: regex X)
   (eqvr: eqv_char a b r) (eqvs: eqv_char a b s),
 eqv_char a b (concat r s).
 Proof.
-(* TODO *)
+(* TODO: Good First Issue *)
 Admitted.
 
 Lemma eqv_or : forall {X: Set} {tc: comparable X} (a b: X) (r s: regex X)
@@ -62,21 +62,21 @@ Lemma eqv_and : forall {X: Set} {tc: comparable X} (a b: X) (r s: regex X)
   (eqvr: eqv_char a b r) (eqvs: eqv_char a b s),
 eqv_char a b (and r s).
 Proof.
-(* TODO *)
+(* TODO: Good First Issue *)
 Admitted.
 
 Lemma eqv_zero_or_more : forall {X: Set} {tc: comparable X} (a b: X) (r: regex X)
   (eqvr: eqv_char a b r),
 eqv_char a b (zero_or_more r).
 Proof.
-(* TODO *)
+(* TODO: Good First Issue *)
 Admitted.
 
 Lemma eqv_not : forall {X: Set} {tc: comparable X} (a b: X) (r: regex X)
   (eqvr: eqv_char a b r),
 eqv_char a b (not r).
 Proof.
-(* TODO *)
+(* TODO: Good First Issue *)
 Admitted.
 
 

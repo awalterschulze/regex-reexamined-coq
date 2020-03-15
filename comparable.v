@@ -137,5 +137,5 @@ Theorem compare_gt_lt_symm
            (x1 x2: X)
            (p: compare x1 x2 = Gt)
   , compare x2 x1 = Lt.
-(* TODO *)
+(* TODO: Good First Issue *)
 Admitted.
