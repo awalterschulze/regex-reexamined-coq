@@ -115,10 +115,10 @@ induction xs.
   apply IHxs.
 Qed.
 
-(* TODO *)
 (* (r.s).t = r.(s.t) *)
 Theorem concat_assoc: forall {X: Set} {tc: comparable X} (xs: list X) (r s t: regex X),
   matches (concat (concat r s) t) xs = matches (concat r (concat s t)) xs.
+(* TODO: Good First Issue *)
 Admitted.
 
 (* nothing.r = nothing *)
@@ -178,16 +178,16 @@ induction xs.
   + apply IHxs.
 Qed.
 
-(* TODO *)
 (* empty.r = r *)
 Theorem concat_empty : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
   matches (concat (empty _) r) xs = matches r xs.
+(* TODO: Good First Issue *)
 Admitted.
 
-(* TODO *)
 (* r.empty = r *)
 Theorem concat_empty2: forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
   matches (concat r (empty _)) xs = matches r xs.
+(* TODO: Good First Issue *)
 Admitted.
 
 (* r|r = r *)
@@ -233,10 +233,10 @@ induction xs.
   apply IHxs.
 Qed.
 
-(* TODO *)
 (* not(nothing)|r = not(nothing) *)
 Theorem or_not_nothing : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
   matches (or (not (nothing _)) r) xs = matches (not (nothing _)) xs.
+(* TODO: Good First Issue *)
 Admitted.
 
 (* nothing|r = r *)
@@ -252,16 +252,16 @@ induction xs.
   apply IHxs.
 Qed.
 
-(* TODO *)
 (* zero_or_more(zero_or_more(r)) = zero_or_more(r) *)
 Theorem zero_or_more_zero_or_more : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
   matches (zero_or_more (zero_or_more r)) xs = matches (zero_or_more r) xs.
+(* TODO: Good First Issue *)
 Admitted.
 
-(* TODO *)
 (* (empty)* = empty *)
 Theorem zero_or_more_empty : forall {X: Set} {tc: comparable X} (xs: list X),
   matches (zero_or_more (empty _)) xs = matches (empty _) xs.
+(* TODO: Good First Issue *)
 Admitted.
 
 (* (nothing)* = empty *)
@@ -276,9 +276,9 @@ induction xs.
   apply concat_nothing.
 Qed.
 
-(* TODO *)
 (* not(not(r)) = r *)
 Theorem not_not : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
   matches (not (not r)) xs = matches r xs.
+(* TODO: Good First Issue *)
 Admitted.
 
