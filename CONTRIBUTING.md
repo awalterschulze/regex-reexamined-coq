@@ -6,6 +6,7 @@
 2. Make sure the github action that automatically checks your proofs passes.
 3. Wait for at least one approval from a reviewer
 4. Merge (or poke for a merge, depending on your permissions)
+5. Add yourself to the AUTHORS file
 
 ## FAQ
 
