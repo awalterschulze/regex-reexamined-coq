@@ -2,6 +2,7 @@ Set Implicit Arguments.
 Set Asymmetric Patterns.
 
 Require Import comparable.
+Require Import compare_nat.
 Require Import regex.
 
 Fixpoint compare_regex {X: Set} {tc: comparable X} (r s: regex X) : comparison :=
@@ -76,6 +77,77 @@ Fixpoint compare_regex {X: Set} {tc: comparable X} (r s: regex X) : comparison :
     end
   end.
 
+Lemma regex_proof_compare_eq_is_equal
+    : forall {X: Set}
+             {tc: comparable X}
+             (x y: regex X) 
+             (p: compare_regex x y = Eq)
+    , x = y.
+Proof.
+(* TODO *)
+Admitted.
+
+Lemma regex_proof_compare_eq_reflex
+    : forall {X: Set}
+             {tc: comparable X}
+             (x: regex X)
+    , compare_regex x x = Eq.
+Proof.
+(* TODO *)
+Admitted.
+
+Lemma regex_proof_compare_eq_trans
+    : forall {X: Set}
+             {tc: comparable X}
+             (x y z: regex X)
+             (p: compare_regex x y = Eq)
+             (q: compare_regex y z = Eq)
+    , compare_regex x z = Eq.
+Proof.
+(* TODO *)
+Admitted.
+
+Lemma regex_proof_compare_lt_assoc
+    : forall {X: Set}
+             {tc: comparable X}
+             (x y z: regex X)
+             (p: compare_regex x y = Lt)
+             (q: compare_regex y z = Lt)
+    , compare_regex x z = Lt.
+Proof.
+(* TODO *)
+Admitted.
+
+Lemma regex_proof_compare_gt_assoc
+    : forall {X: Set}
+             {tc: comparable X}
+             (x y z: regex X)
+             (p: compare_regex x y = Gt)
+             (q: compare_regex y z = Gt)
+    , compare_regex x z = Gt.
+Proof.
+(* TODO *)
+Admitted.
+
+Instance comparable_regex {X: Set} {tc: comparable X} : comparable (regex X) :=
+  { compare := compare_regex
+  ; proof_compare_eq_is_equal := regex_proof_compare_eq_is_equal
+  ; proof_compare_eq_reflex := regex_proof_compare_eq_reflex
+  ; proof_compare_eq_trans := regex_proof_compare_eq_trans
+  ; proof_compare_lt_assoc := regex_proof_compare_lt_assoc
+  ; proof_compare_gt_assoc := regex_proof_compare_gt_assoc
+  }.
+
+(* test_compare_list simply tests whether nat can be used
+   with a function that expects a comparable instance.
+   compare_list is defined in comparable, 
+   specifically for this use case.
+*)
+Definition list_a : list (regex nat) := ((empty _) :: (nothing _) :: nil).
+Definition list_b : list (regex nat) := ((empty _) :: (char 1) :: nil).
+Definition test_compare_list : Prop :=
+  comparable_list list_a list_b = Lt.
+  
 Lemma test_compare_regex_char : forall {X: Set} {tc: comparable X} (x1 x2: X) (p: compare x1 x2 = Lt),
   compare_regex (char x1) (char x2) = Lt.
 Proof. intros. simpl. now (rewrite p). Qed.

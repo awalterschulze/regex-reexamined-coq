@@ -1,3 +1,8 @@
+Set Implicit Arguments.
+Set Asymmetric Patterns.
+
+Require Import List.
+
 Class comparable (X : Set) :=
   { compare : X -> X -> comparison
 
@@ -139,3 +144,19 @@ Theorem compare_gt_lt_symm
   , compare x2 x1 = Lt.
 (* TODO: Good First Issue *)
 Admitted.
+
+Fixpoint comparable_list {X: Set} {tc: comparable X} (xs: list X) (ys: list X) : comparison :=
+  match xs with
+  | nil => match ys with
+      | nil => Eq
+      | _ => Lt
+      end
+  | x :: xs => match ys with
+      | nil => Gt
+      | y :: ys => match compare x y with
+          | Eq => comparable_list xs ys
+          | Lt => Lt
+          | Gt => Gt
+          end
+      end
+  end.
