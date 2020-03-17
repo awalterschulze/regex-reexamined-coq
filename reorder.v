@@ -101,15 +101,48 @@ induction xs.
   reflexivity.
 Qed.
 
-(* eval_list_sort_is_correct shows that
-   eval_list_sort is equivalent to eval_list
-*)
-Theorem eval_list_sort_is_correct
-    : forall (xs: list X)
-    , eval_list xs = eval_list_sort xs.
+Lemma eval_list_and_insert
+  : forall (x: X) (xs: list X)
+  , eval_list (x::xs) = eval_list (insert x xs).
 Proof.
-(* TODO: Help Wanted *)
-Admitted.
+  induction xs as [| y ys IH].
+  - unfold insert. reflexivity.
+  - unfold insert.
+    case (compare x y).
+    + reflexivity.
+    + reflexivity.
+    + fold insert.
+      assert (eval_list (x :: y :: ys) = Op y (eval_list (x::ys))) as lem.
+      simpl (eval_list (x :: _)).
+      Check proof_assoc.
+      rewrite <- (proof_assoc x y (eval_list ys)).
+      rewrite -> (proof_comm x y).
+      rewrite -> (proof_assoc y x (eval_list ys)).
+      reflexivity.
+      rewrite -> lem.
+      simpl (eval_list (y :: _)).
+      rewrite -> IH.
+      reflexivity.
+Qed.
+
+
+Theorem eval_list_sort_is_correct
+  : forall (xs: list X)
+  , eval_list xs = eval_list_sort xs.
+Proof.
+  induction xs.
+  - reflexivity.
+  - unfold eval_list_sort.
+    simpl (sort (a :: xs)).
+    rewrite <- eval_list_and_insert.
+    simpl (eval_list _).
+    replace (eval_list (sort xs)) with (eval_list_sort xs).
+    rewrite <- IHxs.
+    reflexivity.
+    unfold eval_list_sort.
+    reflexivity.
+Qed.
+
 
 (* tree is a generic tree with values *)
 Inductive tree (A: Set) :=
@@ -137,6 +170,7 @@ Fixpoint to_list (tx: tree X) : list X :=
     | bin l r => to_list l ++ to_list r
     end.
 
+
 (* to_tree converts a list to a tree.
    The empty list results in a tree with an identity element.
 *)
@@ -148,8 +182,78 @@ Fixpoint to_tree (xs: list X) : tree X :=
     end.
 
 (* eval_tree_sort first sorts a tree before evaluating it *)
-Fixpoint eval_tree_sort (tx: tree X) : X :=
+Definition eval_tree_sort (tx: tree X) : X :=
     eval_tree (to_tree (sort (to_list tx))).
+
+
+
+Lemma eval_list_concatenation
+  : forall (xs ys : list X)
+  , eval_list (xs ++ ys) = Op (eval_list xs) (eval_list ys).
+Proof.
+  induction xs.
+  - intros ys.
+    simpl.
+    rewrite proof_comm.
+    rewrite proof_id.
+    reflexivity.
+  - intros ys.
+    simpl eval_list at 2.
+    simpl eval_list at 1.
+    rewrite (IHxs ys).
+    rewrite proof_assoc.
+    reflexivity.
+Qed.
+
+
+(* eval_tree factorizes through eval_list *)
+Proposition eval_tree_factorizes_through_eval_list
+  : forall (xs: tree X)
+  , eval_tree xs = eval_list (to_list xs).
+Proof.
+  induction xs.
+  - unfold to_list.
+    unfold eval_list.
+    unfold eval_tree.
+    rewrite proof_id.
+    reflexivity.
+  - simpl (eval_tree (bin _ _)).
+    simpl (to_list _).
+    simpl (eval_list _).
+    rewrite eval_list_concatenation.
+    rewrite IHxs1.
+    rewrite IHxs2.
+    reflexivity.
+Qed.
+
+Lemma to_list_to_tree
+  : forall (xs : list X)
+  , eval_list (to_list (to_tree xs)) = eval_list xs.
+Proof.
+  induction xs.
+  - unfold to_tree.
+    unfold to_list.
+    unfold eval_list.
+    rewrite proof_id.
+    reflexivity.
+  - induction xs.
+    + unfold to_tree.
+      unfold to_list.
+      simpl.
+      repeat (rewrite proof_id); reflexivity.
+    + induction xs.
+      -- unfold to_tree, to_list, app; reflexivity.
+         (* the below is not so nice, but I can't get Coq to find the replacements itself *)
+      -- replace (to_list (to_tree (a :: a0 :: a1 :: xs)))
+           with (a :: (to_list (to_tree (a0 :: a1 :: xs)))).
+         replace (eval_list (a :: a0 :: a1 :: xs))
+                 with (Op a (eval_list (a0 :: a1 :: xs))).
+         unfold eval_list at 1.
+         fold eval_list.
+         rewrite IHxs; reflexivity.
+         unfold eval_list; reflexivity.
+         unfold to_tree, to_list; reflexivity.
+Qed.
 
 (* eval_tree_swap_is_correct shows that
    eval_tree_swap is equivalent to eval_tree
@@ -176,7 +280,15 @@ Theorem eval_tree_sort_is_correct
     : forall (xs: tree X)
     , eval_tree xs = eval_tree_sort xs.
 Proof.
-(* TODO: Help Wanted *)
-Admitted.
+  intros xs.
+  unfold eval_tree_sort.
+  repeat rewrite eval_tree_factorizes_through_eval_list.
+  rewrite to_list_to_tree.
+  (* the following replace also seems like it shouldn't be necessary *)
+  replace (eval_list (sort (to_list xs)))
+    with (eval_list_sort (to_list xs)).
+  apply eval_list_sort_is_correct.
+  unfold eval_list_sort; reflexivity.
+Qed.
 
 End Reorder.
