@@ -101,6 +101,7 @@ induction xs.
   reflexivity.
 Qed.
 
+(* eval_list_and_insert is an incremental lemma for eval_list_sort_is_correct *)
 Lemma eval_list_and_insert
   : forall (x: X) (xs: list X)
   , eval_list (x::xs) = eval_list (insert x xs).
@@ -125,7 +126,9 @@ Proof.
       reflexivity.
 Qed.
 
-
+(* eval_list_sort_is_correct shows that
+   eval_list_sort is equivalent to eval_list
+*)
 Theorem eval_list_sort_is_correct
   : forall (xs: list X)
   , eval_list xs = eval_list_sort xs.
@@ -143,6 +146,84 @@ Proof.
     reflexivity.
 Qed.
 
+(* eval_list_and_insert' is an alternative proof for eval_list_and_insert,
+   which an incremental lemma for eval_list_sort_is_correct' *)
+Lemma eval_list_and_insert'
+  : forall (x: X) (xs: list X)
+  , eval_list (x::xs) = eval_list (insert x xs).
+Proof.
+induction xs.
+(* inserting into a single element into an empty list is always the same *)
+- reflexivity.
+- (* unfold the insert function, to get to the compare function *)
+  simpl.
+  (* where an element will be inserted depends on the compare function,
+     so lets do induction on that compare
+  *)
+  induction (compare x a).
+  (* when the compare is LT
+     then it is the same as prepending the element.
+  *)
+  + reflexivity.
+  (* when the compare is EQ
+     then it is the same as prepending the element.
+  *)
+  + reflexivity.
+  (* when the compare is GT
+     this is the case where the order changes.
+  *)
+  + simpl.
+  (* rewriting with the induction hypothesis, removes insert *)
+    rewrite <- IHxs.
+    simpl.
+  (* now we are left with:
+     `Op x (Op a (eval_list xs)) = Op a (Op x (eval_list xs))`
+     Lets group `(Op x a)` and `(Op a x)` together using associativity.
+  *)
+    rewrite <- proof_assoc.
+    rewrite <- proof_assoc.
+  (* Now we can swap `Op x a` to `Op a x` for one case using commutativity. *)
+    rewrite proof_comm with (x := x) (y := a).
+  (* And we get:
+     `Op (Op a x) (eval_list xs) = Op (Op a x) (eval_list xs)`
+  *)
+    reflexivity.
+Qed.
+
+(* eval_list_sort_is_correct' is an alternative proof for eval_list_sort_is_correct,
+   which shows that eval_list_sort is equivalent to eval_list
+*)
+Theorem eval_list_sort_is_correct'
+  : forall (xs: list X)
+  , eval_list xs = eval_list_sort xs.
+Proof.
+induction xs.
+(* evaluating an empty list is always the same *)
+- reflexivity.
+(* We want to get to a pointer where we can rewrite using our incremental helper: 
+   `eval_list (insert x xs)` into `eval_list (x::xs)`,
+   but we have `eval_list (a :: xs) = eval_list_sort (a :: xs)`
+*)
+- unfold eval_list_sort; simpl sort.
+  (* unfolding and evaluating sort a bit gives us:
+     `eval_list (a :: xs) = eval_list (insert a (sort xs))` 
+     We can now rewrite using our incremental helper,
+     where: `xs` is `sort xs`*)
+  rewrite <- eval_list_and_insert'.
+  (* Now we get: `eval_list (a :: xs) = eval_list (a :: sort xs)`*)
+  simpl.
+  (* Now we can use our induction hypothesis:
+     `eval_list xs = eval_list_sort xs`
+  *)
+  rewrite IHxs.
+  (* This gives us:
+     `Op a (eval_list_sort xs) = Op a (eval_list (sort xs))`
+     And from the definition we know:
+     `eval_list_sort xs = eval_list (sort xs)`.
+  *)
+  unfold eval_list_sort.
+  reflexivity.
+Qed.
 
 (* tree is a generic tree with values *)
 Inductive tree (A: Set) :=
@@ -170,7 +251,6 @@ Fixpoint to_list (tx: tree X) : list X :=
     | bin l r => to_list l ++ to_list r
     end.
 
-
 (* to_tree converts a list to a tree.
    The empty list results in a tree with an identity element.
 *)
@@ -185,8 +265,10 @@ Fixpoint to_tree (xs: list X) : tree X :=
 Definition eval_tree_sort (tx: tree X) : X :=
     eval_tree (to_tree (sort (to_list tx))).
 
-
-
+(* eval_list_concatenation is a helper lemma for
+   eval_tree_factorizes_through_eval_list, which is a helper lemma for
+   eval_tree_sort_is_correct
+*)
 Lemma eval_list_concatenation
   : forall (xs ys : list X)
   , eval_list (xs ++ ys) = Op (eval_list xs) (eval_list ys).
@@ -205,9 +287,10 @@ Proof.
     reflexivity.
 Qed.
 
-
-(* eval_tree factorizes through eval_list *)
-Proposition eval_tree_factorizes_through_eval_list
+(* eval_tree_factorizes_through_eval_list is a helper lemma for
+   eval_tree_sort_is_correct
+*)
+Lemma eval_tree_factorizes_through_eval_list
   : forall (xs: tree X)
   , eval_tree xs = eval_list (to_list xs).
 Proof.
@@ -226,6 +309,7 @@ Proof.
     reflexivity.
 Qed.
 
+(* to_list_to_tree is a helper lemma for eval_tree_sort_is_correct *)
 Lemma to_list_to_tree
   : forall (xs : list X)
   , eval_list (to_list (to_tree xs)) = eval_list xs.
@@ -290,5 +374,95 @@ Proof.
   apply eval_list_sort_is_correct.
   unfold eval_list_sort; reflexivity.
 Qed.
+
+(* eval_list_concatenation' is a helper lemma for
+   eval_tree_factorizes_through_eval_list', which is a helper lemma for
+   eval_tree_sort_is_correct'
+*)
+Lemma eval_list_concatenation'
+  : forall (xs ys : list X)
+  , eval_list (xs ++ ys) = Op (eval_list xs) (eval_list ys).
+Proof.
+induction xs, ys.
+- simpl.
+  rewrite proof_id.
+  reflexivity.
+- simpl.
+  rewrite proof_comm with (x := Identity).
+  rewrite proof_id.
+  reflexivity.
+- simpl.
+  rewrite IHxs.
+  simpl.
+  rewrite proof_assoc.
+  reflexivity.
+- simpl.
+  rewrite IHxs.
+  simpl.
+  rewrite proof_assoc.
+  reflexivity.
+Qed.
+
+(* eval_tree_factorizes_through_eval_list' is a helper lemma for
+   eval_tree_sort_is_correct'
+*)
+Lemma eval_tree_factorizes_through_eval_list'
+  : forall (xs: tree X)
+  , eval_tree xs = eval_list (to_list xs).
+Proof.
+induction xs.
+- simpl.
+  rewrite proof_id.
+  reflexivity.
+- simpl.
+  rewrite eval_list_concatenation'.
+  rewrite IHxs1.
+  rewrite IHxs2.
+  reflexivity.
+Qed.
+
+Lemma to_tree_step
+  : forall (xs : list X) (a: X)
+  , to_tree (a :: xs) = bin (value a) (to_tree xs).
+Proof.
+  simpl.
+Qed.
+
+(* to_list_to_tree' is a helper lemma for eval_tree_sort_is_correct' *)
+Lemma to_list_to_tree'
+  : forall (xs : list X)
+  , eval_list (to_list (to_tree xs)) = eval_list xs.
+Proof.
+induction xs.
+- simpl.
+  rewrite proof_id.
+  reflexivity.
+- simpl.
+  induction xs.
+  + simpl; rewrite proof_id; reflexivity.
+  + rewrite <- IHxs.
+    induction xs.
+    * simpl. repeat rewrite proof_id. reflexivity.
+    *  
+induction xs.
+  + simpl; rewrite proof_id; reflexivity.
+  + simpl.
+     
+    
+  
+  
+
+  
+  
+Admitted.
+
+(* eval_tree_sort_is_correct' shows that
+   eval_tree_sort is equivalent to eval_tree
+*)
+Theorem eval_tree_sort_is_correct'
+    : forall (xs: tree X)
+    , eval_tree xs = eval_tree_sort xs.
+Proof.
+Admitted.
 
 End Reorder.
