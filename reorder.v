@@ -177,7 +177,7 @@ Fixpoint to_list (tx: tree X) : list X :=
 Fixpoint to_tree (xs: list X) : tree X :=
     match xs with
     | nil => value Identity
-    | (x'::x''::nil) => bin (value x') (value x'')
+    | (x::nil) => value x
     | (x'::xs') => bin (value x') (to_tree xs')
     end.
 
