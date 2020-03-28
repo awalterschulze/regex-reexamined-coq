@@ -5,6 +5,19 @@ Require Import List.
 
 Require Import comparable.
 
+(* sorted is a property that says whether a list is sorted *)
+Fixpoint sorted {X: Set} {tc: comparable X} (xs: list X) : Prop :=
+  match xs with
+  | nil => True
+  | (x'::xs') => match xs' with
+    | nil => True
+    | (x''::xs'') => match compare x' x'' with
+      | Gt => False
+      | _ => sorted xs'
+      end
+    end
+  end.
+
 (* insert is a helper function for sort *)
 Fixpoint insert {X: Set} {tc: comparable X} (x: X) (xs: list X) : list X :=
   match xs with
@@ -16,6 +29,13 @@ Fixpoint insert {X: Set} {tc: comparable X} (x: X) (xs: list X) : list X :=
     end
   end.
 
+(* insert_sorts is a helper lemma for sort_sorts *)
+Lemma insert_sorts: forall {X: Set} {tc: comparable X} (x: X) (xs: list X) {s: sorted xs},
+  sorted (insert x xs).
+Proof.
+(* TODO: Good First Issue *)
+Admitted.
+
 (* sort is a helper function for eval_list_sort *)
 Fixpoint sort {X: Set} {tc: comparable X} (xs: list X) : list X :=
   match xs with
@@ -23,14 +43,10 @@ Fixpoint sort {X: Set} {tc: comparable X} (xs: list X) : list X :=
   | (x'::xs') => insert x' (sort xs')
   end.
 
-Fixpoint is_sorted {X: Set} {tc: comparable X} (xs: list X) : Prop :=
-  match xs with
-  | nil => True
-  | (x'::xs') => match xs' with
-    | nil => True
-    | (x''::xs'') => match compare x' x'' with
-      | Gt => False
-      | _ => is_sorted xs'
-      end
-    end
-  end.
+Theorem sort_sorts: forall {X: Set} {tc: comparable X} (xs: list X),
+  sorted (sort xs).
+Proof.
+induction xs.
+- simpl. trivial.
+- simpl. apply insert_sorts. assumption.
+Qed.
