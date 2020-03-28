@@ -6,6 +6,7 @@ build:
 	coqc nullable.v
 	coqc compare_regex.v
 	coqc derive.v
+	coqc smart_or.v
 	coqc smart.v
 	coqc simplified.v
 	coqc simple.v

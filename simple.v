@@ -9,6 +9,7 @@ Require Import derive.
 Require Import nullable.
 Require Import regex.
 Require Import smart.
+Require Import smart_or.
 
 (* simple is a simpler version of simplified to learn how to prove simplified in future *)
 Fixpoint simple {X: Set} {tc: comparable X} (r: regex X) : Prop :=
