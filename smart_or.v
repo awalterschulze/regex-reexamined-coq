@@ -27,20 +27,18 @@ These smart constructors assume that the regular expressions provided as input h
 *)
 
 (* TODO: Help Wanted
-Define a property `is_smart_or` that expresses the type the `smart_or` function returns.
-`is_smart_or {X: Set} {tc: comparable X} (r: regex X) : Prop`
+Define a property `is_merge_or` that expresses the type the `merge_or` function returns.
+`is_merge_or {X: Set} {tc: comparable X} (r: regex X) : Prop`
 It should express that the tree is sorted and duplicates have been removed.
 *)
 
 (* TODO: Help Wanted
-Use the previous defined property `is_smart_or` to prove:
+Use the previous defined property `is_merge_or` to prove:
 ```
-smart_or_is_correct: forall {X: Set} {tc: comparable X} 
-  (r s: regex X) (is_smart_or r) (is_smart_or s),
-  is_smart_or (smart_or r s)
+merge_or_is_correct: forall {X: Set} {tc: comparable X} 
+  (r s: regex X) (is_merge_or r) (is_merge_or s),
+  is_merge_or (merge_or r s)
 ```
-
-It is important that `smart_or` is fixed to call `merge_or` first.
 *)
 
 (* TODO: Help Wanted
