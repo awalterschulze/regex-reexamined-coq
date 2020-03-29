@@ -2,6 +2,7 @@ Set Implicit Arguments.
 Set Asymmetric Patterns.
 
 Require Import List.
+Require Import Omega.
 
 (* import `measure` to make sure that `merge_or`'s arguments are decreasing in size. *)
 Require Coq.Program.Wf.
@@ -53,9 +54,6 @@ Definition smart_or {X: Set} {tc: comparable X} (r s: regex X) : regex X :=
   | Gt => or s r
   end.
 
-Definition insert_sort_list {X: Set} {tc: comparable X} (rs ss: list (regex X)): list (regex X) :=
-  fold_left insert_sort rs ss.
-
 (*
 merge_or merges two regexes.
 It applies a merge sort on the root ors, while removing duplicates.
@@ -76,7 +74,9 @@ before moving onto proving or defining something else.
 *)
 Section merge_or.
 
-Program Fixpoint merge_or {X: Set} {tc: comparable X} (r s: regex X) {measure ((size r)+(size r))} : regex X :=
+Set Transparent Obligations.
+
+Program Fixpoint merge_or {X: Set} {tc: comparable X} (r s: regex X) {measure ((size r)+(size s))} : regex X :=
   match r with
   | or r_1 r_next =>
     match s with
@@ -110,7 +110,42 @@ Program Fixpoint merge_or {X: Set} {tc: comparable X} (r s: regex X) {measure ((
     end
   end.
 
-Admit Obligations.
+(*
+Program has no generated obligations for several branches that need to be proved.
+They all look quite similar, for example:
+`size r_next + size (or s_1 s_next) < size (or r_1 r_next) + size (or s_1 s_next)`
+which when simplified, look like:
+`size r_next + S (size s_1 + size s_next) < S (size r_1 + size r_next + S (size s_1 + size s_next))`
+which is the same as:
+`x + S (y + z) < S (w + x + S (y + z))`
+This is true, but probably a large proof to do manually,
+so we use tactic omega to prove it for us.
+*)
+
+Next Obligation.
+simpl.
+omega.
+Qed.
+
+Next Obligation.
+simpl.
+omega.
+Qed.
+
+Next Obligation.
+simpl.
+omega.
+Qed.
+
+Next Obligation.
+simpl.
+omega.
+Qed.
+
+Next Obligation.
+simpl.
+omega.
+Qed.
 
 End merge_or.
 
@@ -119,6 +154,8 @@ Is there a way to define merge_or without using `Program` and/or `measure`?
 Remember you are not allowed to use the rule:
 `r + nothing = r`
 as we do below in an alternative `smart_or`'
+If there is a way define the new version of `merge_or'`
+Else add a comment to explain why these more powerful tools are needed.
 *)
 
 (* to_list_or is a helper function for smart_or'
@@ -158,6 +195,9 @@ Fixpoint to_tree_or {X: Set} (xs: list (regex X)) : regex X :=
   | (x'::xs') => or x' (to_tree_or xs')
   end.
 
+(* to_list_or__to_tree_or__is_id shows that:
+`to_tree_or . to_list_or = id`
+*)
 Theorem to_list_or__to_tree_or__is_id: forall {X: Set} {tc: comparable X} (r: regex X) (xs: list X),
   matches r xs = matches (to_tree_or (to_list_or r)) xs.
 Proof.
@@ -178,5 +218,5 @@ Qed.
   r + nothing = r
 *)
 Definition smart_or' {X: Set} {tc: comparable X} (r s: regex X) : regex X :=
-  to_tree_or (remove_duplicates_from_sorted (insert_sort_list (to_list_or r) (to_list_or s))).
+  to_tree_or (remove_duplicates_from_sorted (fold_left insert_sort (to_list_or r) (to_list_or s))).
 
