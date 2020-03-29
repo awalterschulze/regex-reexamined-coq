@@ -497,4 +497,28 @@ unfold eval_list_sort.
 reflexivity.
 Qed.
 
+
+(* to_tree_id converts a list to a tree.
+   The final element in the tree is always the Identity element.
+*)
+Fixpoint to_tree_id (xs: list X) : tree X :=
+  match xs with
+  | nil => value Identity
+  | (x'::xs') => bin (value x') (to_tree xs')
+  end.
+
+(* eval_tree_sort_id first sorts a tree before evaluating it *)
+Definition eval_tree_sort_id (tx: tree X) : X :=
+    eval_tree (to_tree_id (sort (to_list tx))).
+
+(* eval_tree_sort_id_is_correct shows that
+   eval_tree_sort is equivalent to eval_tree
+*)
+Theorem eval_tree_sort_id_is_correct
+    : forall (xs: tree X)
+    , eval_tree xs = eval_tree_sort_id xs.
+Proof.
+(* TODO: Good First Issue *)
+Admitted.
+
 End Reorder.
