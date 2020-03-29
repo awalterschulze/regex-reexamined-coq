@@ -6,23 +6,23 @@ Require Import List.
 Require Import comparable.
 
 (* TODO: Help Wanted
-Use /\ and \/ to define a more compact property
+Use /\ and \/ to define a more compact version of the is_sorted property
 *)
-(* sorted is a property that says whether a list is sorted *)
-Fixpoint sorted {X: Set} {tc: comparable X} (xs: list X) : Prop :=
+(* is_sorted is a property that says whether a list is sorted *)
+Fixpoint is_sorted {X: Set} {tc: comparable X} (xs: list X) : Prop :=
   match xs with
   | nil => True
   | (x'::xs') => match xs' with
     | nil => True
     | (x''::xs'') => match compare x' x'' with
       | Gt => False
-      | _ => sorted xs'
+      | _ => is_sorted xs'
       end
     end
   end.
 
-Theorem sort_incremental: forall {X: Set} {tc: comparable X} (xs: list X)  (x: X) {s : sorted (x :: xs)},
-  sorted xs.
+Theorem sort_incremental: forall {X: Set} {tc: comparable X} (xs: list X)  (x: X) {s : is_sorted (x :: xs)},
+  is_sorted xs.
 Proof.
 (* TODO: Good First Issue *)
 Admitted.
@@ -39,8 +39,8 @@ Fixpoint insert_sort {X: Set} {tc: comparable X} (xs: list X) (x: X) : list X :=
   end.
 
 (* insert_sort_sorts is a helper lemma for sort_sorts *)
-Lemma insert_sort_sorts: forall {X: Set} {tc: comparable X} (xs: list X) (x: X) {s: sorted xs},
-  sorted (insert_sort xs x).
+Lemma insert_sort_sorts: forall {X: Set} {tc: comparable X} (xs: list X) (x: X) {s: is_sorted xs},
+  is_sorted (insert_sort xs x).
 Proof.
 (* TODO: Good First Issue *)
 Admitted.
@@ -53,7 +53,7 @@ Fixpoint sort {X: Set} {tc: comparable X} (xs: list X) : list X :=
   end.
 
 Theorem sort_sorts: forall {X: Set} {tc: comparable X} (xs: list X),
-  sorted (sort xs).
+  is_sorted (sort xs).
 Proof.
 induction xs.
 - simpl. trivial.

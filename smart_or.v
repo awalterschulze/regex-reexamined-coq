@@ -109,7 +109,7 @@ Program Fixpoint merge_or {X: Set} {tc: comparable X} (r s: regex X) {measure ((
   end.
 
 (*
-Program has no generated obligations for several branches that need to be proved.
+Program has now generated obligations for several branches that need to be proved.
 They all look quite similar, for example:
 `size r_next + size (or s_1 s_next) < size (or r_1 r_next) + size (or s_1 s_next)`
 which when simplified, look like:
@@ -178,12 +178,6 @@ Fixpoint to_list_or {X: Set} {tc: comparable X} (r: regex X) : list (regex X) :=
   | _ => r :: nil
   end.
 
-(* TODO: Help Wanted
-Define the property described in the comments of to_list_or
-Also find the appropriate/official name for this property.
-I am pretty sure this already has a name, but I can't find or remember it.
-*)
-
 (* to_tree_or creates a regex from a list of regexes by combining them with an `or` operator.
    At the end of the list a `nothing` expression is insert as this is the identity expression for `or.`
 *)
@@ -192,6 +186,19 @@ Fixpoint to_tree_or {X: Set} (xs: list (regex X)) : regex X :=
   | nil => nothing _
   | (x'::xs') => or x' (to_tree_or xs')
   end.
+
+(* TODO: Help Wanted
+Define the property described in the comments of to_tree_or
+Also find the appropriate/official name for this property.
+I am pretty sure this tree of this form have a name:
+  x
+ / \
+a   x
+   / \
+  b   x
+     / \
+    c   id
+*)
 
 (* to_list_or__to_tree_or__is_id shows that:
 `to_tree_or . to_list_or = id`

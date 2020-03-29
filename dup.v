@@ -22,8 +22,8 @@ Fixpoint remove_duplicates_from_sorted {X: Set} {tc: comparable X} (xs: list X):
 
 (* remove_duplicates_from_sorted_is_sorted shows that a sorted list with its duplicates removed is still sorted *)
 Theorem remove_duplicates_from_sorted_is_sorted:
-  forall {X: Set} {tc: comparable X} (xs: list X) {s: sorted xs},
-  sorted (remove_duplicates_from_sorted xs).
+  forall {X: Set} {tc: comparable X} (xs: list X) {s: is_sorted xs},
+  is_sorted (remove_duplicates_from_sorted xs).
 Proof.
 (* TODO: Good First Issue *)
 Admitted.
