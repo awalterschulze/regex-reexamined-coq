@@ -115,6 +115,12 @@ induction xs.
   apply IHxs.
 Qed.
 
+Theorem and_is_logical_and: forall {X: Set} {tc: comparable X} (xs: list X) (r s: regex X),
+  matches (and r s) xs = (andb (matches r xs) (matches s xs)).
+Proof.
+(* TODO: Good First Issue *)
+Admitted.
+
 (* (r.s).t = r.(s.t) *)
 Theorem concat_assoc: forall {X: Set} {tc: comparable X} (xs: list X) (r s t: regex X),
   matches (concat (concat r s) t) xs = matches (concat r (concat s t)) xs.
@@ -252,6 +258,12 @@ induction xs.
   apply IHxs.
 Qed.
 
+Theorem or_is_logical_or: forall {X: Set} {tc: comparable X} (xs: list X) (r s: regex X),
+  matches (or r s) xs = (orb (matches r xs) (matches s xs)).
+Proof.
+(* TODO: Good First Issue *)
+Admitted.
+
 (* zero_or_more(zero_or_more(r)) = zero_or_more(r) *)
 Theorem zero_or_more_zero_or_more : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
   matches (zero_or_more (zero_or_more r)) xs = matches (zero_or_more r) xs.
@@ -279,6 +291,25 @@ Qed.
 (* not(not(r)) = r *)
 Theorem not_not : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
   matches (not (not r)) xs = matches r xs.
+Proof.
 (* TODO: Good First Issue *)
 Admitted.
 
+Theorem nothing_is_terminating : forall {X: Set} {tc: comparable X} (xs: list X),
+  matches (nothing _) xs = false.
+Proof.
+(* TODO: Good First Issue *)
+Admitted.
+
+Theorem not_nothing_is_terminating : forall {X: Set} {tc: comparable X} (xs: list X),
+  matches (not (nothing _)) xs = true.
+Proof.
+(* TODO: Good First Issue *)
+Admitted.
+
+(* not(not(r)) = r *)
+Theorem not_is_logical_not : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
+  matches (not r) xs = negb (matches r xs).
+Proof.
+(* TODO: Good First Issue *)
+Admitted.
