@@ -155,8 +155,17 @@ It can do this because of the following properties:
   associativity: (r + s) + t = r + (s + t)
 It does this to normalize the regular expression.
 It assumes the two regexes that is provided as input is already sorted with duplicates removed.
+
+merge_or's descreasing argument is r, 
+so whenever it is not decreasing, when we call merge_or r smaller_s,
+then Coq cannot be sure that the recursion will terminate.
+For this we introduce an embedded fixpoint and do nested recursion.
+The fix closure `merge_or_r` takes only s as its argument, so this will be the argument that needs to decrease.
+The non descreasing `r` is still in the enviroment of the function, because this is a closure.
+For another example, see the merge function in:
+https://coq.inria.fr/library/Coq.Sorting.Mergesort.html 
 *)
-Fixpoint merge_or {X: Set} {tc: comparable X} (r s: regex X) : regex X :=
+Fixpoint merge_or {X: Set} {tc: comparable X} (r s': regex X) : regex X :=
   let fix merge_or_r s :=
     match r with
     | or r_1 r_next =>
@@ -190,7 +199,7 @@ Fixpoint merge_or {X: Set} {tc: comparable X} (r s: regex X) : regex X :=
         end
       end
     end
-  in merge_or_r s.
+  in merge_or_r s'.
 
 (* to_list_or is a helper function for smart_or'
 It turns a regex into a list of ors, for example:
