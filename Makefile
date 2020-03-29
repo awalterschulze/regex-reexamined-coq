@@ -5,6 +5,7 @@ build:
 	coqc compare_nat.v
 	coqc reorder.v
 	coqc regex.v
+	coqc size.v
 	coqc nullable.v
 	coqc compare_regex.v
 	coqc derive.v

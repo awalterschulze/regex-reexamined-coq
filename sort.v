@@ -21,26 +21,26 @@ Fixpoint sorted {X: Set} {tc: comparable X} (xs: list X) : Prop :=
     end
   end.
 
-Theorem sort_incremental: forall {X: Set} {tc: comparable X} (x: X) (xs: list X) {s : sorted (x :: xs)},
+Theorem sort_incremental: forall {X: Set} {tc: comparable X} (xs: list X)  (x: X) {s : sorted (x :: xs)},
   sorted xs.
 Proof.
 (* TODO: Good First Issue *)
 Admitted.
 
-(* insert is a helper function for sort *)
-Fixpoint insert {X: Set} {tc: comparable X} (x: X) (xs: list X) : list X :=
+(* insert_sort is a helper function for sort *)
+Fixpoint insert_sort {X: Set} {tc: comparable X} (xs: list X) (x: X) : list X :=
   match xs with
   | nil => x :: nil
   | (x'::xs') => match compare x x' with
     | Eq => x::x'::xs'
     | Lt => x::x'::xs'
-    | Gt => x'::(insert x xs')
+    | Gt => x'::(insert_sort xs' x)
     end
   end.
 
-(* insert_sorts is a helper lemma for sort_sorts *)
-Lemma insert_sorts: forall {X: Set} {tc: comparable X} (x: X) (xs: list X) {s: sorted xs},
-  sorted (insert x xs).
+(* insert_sort_sorts is a helper lemma for sort_sorts *)
+Lemma insert_sort_sorts: forall {X: Set} {tc: comparable X} (xs: list X) (x: X) {s: sorted xs},
+  sorted (insert_sort xs x).
 Proof.
 (* TODO: Good First Issue *)
 Admitted.
@@ -49,7 +49,7 @@ Admitted.
 Fixpoint sort {X: Set} {tc: comparable X} (xs: list X) : list X :=
   match xs with
   | nil => nil
-  | (x'::xs') => insert x' (sort xs')
+  | (x'::xs') => insert_sort (sort xs') x'
   end.
 
 Theorem sort_sorts: forall {X: Set} {tc: comparable X} (xs: list X),
@@ -57,5 +57,5 @@ Theorem sort_sorts: forall {X: Set} {tc: comparable X} (xs: list X),
 Proof.
 induction xs.
 - simpl. trivial.
-- simpl. apply insert_sorts. assumption.
+- simpl. apply insert_sort_sorts. assumption.
 Qed.
