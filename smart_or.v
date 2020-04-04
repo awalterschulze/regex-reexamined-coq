@@ -1,6 +1,7 @@
 Set Implicit Arguments.
 Set Asymmetric Patterns.
 
+Require Import Bool.
 Require Import List.
 Require Import Omega.
 
@@ -164,8 +165,16 @@ merge_or_r's decreasing argument is always `s`, while `r` is not decreasing and 
 
 For another example for a closure fixpoint inside a fixpoint, see the merge function in:
 https://coq.inria.fr/library/Coq.Sorting.Mergesort.html 
+
+r = or
+   /  \
+  and   or
+  /\   /  \
+ or   y   or
+       /  \
+      z   ...
 *)
-Fixpoint merge_or {X: Set} {tc: comparable X} (r s': regex X) : regex X :=
+Fixpoint merge_or {X: Set} {tc: comparable X} (r s: regex X) : regex X :=
   let fix merge_or_r s :=
     match r with
     | or r_1 r_next =>
@@ -199,7 +208,541 @@ Fixpoint merge_or {X: Set} {tc: comparable X} (r s': regex X) : regex X :=
         end
       end
     end
-  in merge_or_r s'.
+  in merge_or_r s.
+
+Fixpoint merged_or {X: Set} {tc: comparable X} (r: regex X) : Prop :=
+  match r with
+  | or s t =>
+    match s with
+    | or _ _ => False
+    | _ => match t with
+      | or t_1 _ =>
+        match compare s t_1 with
+        | Lt => merged_or t
+        | _ => False
+        end
+      | _ => match compare s t with
+        | Lt => True
+        | _ => False
+        end
+      end
+    end
+  | _ => True
+  end.
+
+Ltac or_cases :=
+  match goal with
+    | [ |- ?A || (?A || ?B) = _ ] => rewrite orb_assoc; rewrite orb_diag
+    | [ |- ?A || ?B = ?B || ?A ] => rewrite orb_comm
+    | [ |- ?A || ?B || ?C = ?A || (?B || ?C) ] => rewrite orb_assoc
+    | [ |- ?A || (?B || ?C) = ?B || (?A || ?C) ] =>
+      rewrite orb_comm;
+      rewrite <- orb_assoc;
+      rewrite orb_comm with (b1 := (A))
+    | [ |- ?A || ?B || ?A = ?A || ?B ] =>
+      rewrite orb_comm;
+      rewrite orb_assoc;
+      rewrite orb_diag
+    | [ |- ?A || ?B || (?A || ?C) = ?A || (?B || ?C) ] =>
+      rewrite orb_assoc;
+      rewrite orb_comm;
+      rewrite orb_assoc;
+      rewrite orb_comm with (b1 := A);
+      rewrite orb_assoc;
+      rewrite <- orb_assoc;
+      rewrite orb_diag
+    | [ |- ?C || ?B || ?A = ?A || (?B || ?C) ] =>
+      rewrite orb_comm;
+      rewrite orb_comm with (b1 := B)
+    | [ |- _ = ?A || ?D || (?B  || (?C  || ?D )) ] =>
+      rewrite orb_comm with (b1 := A) (b2 := D);
+      repeat rewrite <- orb_assoc;
+      rewrite orb_comm with (b1 := D);
+      repeat rewrite <- orb_assoc;
+      rewrite orb_diag;
+      repeat rewrite orb_assoc
+  end.
+
+Ltac o := repeat
+  (  rewrite or_is_logical_or
+  || rewrite nothing_is_terminating
+  || rewrite orb_diag
+  || rewrite orb_false_r
+  || rewrite orb_false_l
+  || or_cases
+).
+
+Theorem test_tactic_or_cases_commutativity: forall (a b: bool),
+  a || b = b || a.
+Proof.
+intros.
+o.
+reflexivity.
+Qed.
+
+Theorem test_tactic_or_cases_idempotency_1: forall (a b: bool),
+  a || (a || b) = a || b.
+Proof.
+intros.
+o.
+reflexivity.
+Qed.
+
+Theorem test_tactic_or_cases_idempotency_2: forall (a b: bool),
+  a || b || a = a || b.
+Proof.
+intros.
+o.
+reflexivity.
+Qed.
+
+Theorem test_tactic_or_cases_associativity_1: forall (a b c: bool),
+  a || b || c = a || (b || c).
+Proof.
+intros.
+o.
+reflexivity.
+Qed.
+
+Theorem test_tactic_or_cases_associativity_2: forall (a b c: bool),
+  a || (b || c) = b || (a || c).
+Proof.
+intros.
+o.
+reflexivity.
+Qed.
+
+Theorem test_tactic_or_cases_3: forall (a b c: bool),
+  a || b || (a || c) = a || (b || c).
+Proof.
+intros.
+o.
+reflexivity.
+Qed.
+
+Theorem test_tactic_or_cases_4: forall (a b c d: bool),
+  a  || b  || (c || d ) =
+  a  || d || (b || (c || d )).
+Proof.
+intros.
+o.
+reflexivity.
+Qed.
+
+Ltac t := simpl; o; trivial.
+
+Theorem merge_or_nothing_is_identity: forall
+  {X: Set}
+  {tc: comparable X}
+  (r: regex X)
+  (xs: list X),
+  matches r xs = matches (merge_or (nothing _) r) xs.
+Proof.
+intros.
+induction r; try (t; fail).
+- induction r1; t.
+Qed.
+
+Theorem merge_or_empty: forall
+  {X: Set}
+  {tc: comparable X}
+  (r: regex X)
+  (xs: list X),
+  matches (or (empty _) r) xs = matches (merge_or (empty _) r) xs.
+Proof.
+intros.
+induction r; try (t; fail).
+- induction r1; try (t; fail).
+  + assert (merge_or (empty X) (or (nothing X) r2) =
+            or (nothing X) (merge_or (empty X) r2)).
+    * t.
+    * rewrite H.  
+      o.
+      rewrite <- or_is_logical_or.
+      rewrite IHr2.
+      reflexivity.
+Qed.
+
+Theorem merge_or_char: forall
+  {X: Set}
+  {tc: comparable X}
+  (r: regex X)
+  (xs: list X)
+  (x: X),
+  matches (or (char x) r) xs = matches (merge_or (char x) r) xs.
+Proof.
+intros.
+induction r; try (t; fail).
+- t. remember (compare x x0).
+  induction c.
+  + symmetry in Heqc.
+    apply proof_compare_eq_is_equal in Heqc.
+    rewrite Heqc.
+    o.
+    reflexivity.
+  + t.
+  + t.
+- induction r1; try (t; fail).
+  + assert ((merge_or (char x) (or (nothing X) r2)) =
+            (or (nothing X) (merge_or (char x) r2))
+           ).
+    * t.
+    * rewrite H.
+      o.
+      rewrite <- or_is_logical_or.
+      rewrite IHr2.
+      reflexivity.
+  + assert ((merge_or (char x) (or (empty X) r2)) =
+            (or (empty X) (merge_or (char x) r2))
+            ).
+    * t.
+    * rewrite H.
+      o.
+      rewrite <- IHr2.
+      rewrite or_is_logical_or.
+      o.
+      reflexivity.
+  + assert ((merge_or (char x) (or (char x0) r2)) =
+            match compare x x0 with
+            | Eq => or (char x0) r2
+            | Lt => or (char x) (or (char x0) r2)
+            | Gt => or (char x0) (merge_or (char x) r2)
+            end).
+            * t.
+            * rewrite H.
+              remember (compare x x0).
+              induction c.
+              -- symmetry in Heqc.
+                 apply proof_compare_eq_is_equal in Heqc.
+                 rewrite Heqc.
+                 o.
+                 reflexivity.
+              -- reflexivity.
+              -- o.
+                 rewrite <- IHr2.
+                 o.
+                 reflexivity.
+Qed.
+
+Theorem merged_or_is_recursive: forall
+  {X: Set}
+  {tc: comparable X}
+  (r s: regex X),
+merged_or (or r s) -> merged_or r /\ merged_or s.
+Admitted.
+
+Theorem merge_or_is_or: forall
+  {X: Set}
+  {tc: comparable X}
+  (xs: list X)
+  (r: regex X)
+  {mr: merged_or r}
+  (s: regex X)
+  {ms: merged_or s},
+(* TODO r and s both were constructed with merge_or *)
+  matches (or r s) xs = matches (merge_or r s) xs.
+Proof.
+induction r.
+- intros.
+  induction s; try (t; fail).
+  + rewrite or_is_logical_or.
+    rewrite nothing_is_terminating.
+    rewrite orb_false_l.
+    rewrite merge_or_nothing_is_identity.
+    reflexivity.
+- intros.
+  induction s; try (t; fail).
+  + rewrite merge_or_empty.
+    reflexivity.
+- intros.
+  induction s; try (t; fail).
+  + t.
+    remember (compare x x0).
+    induction c.
+    * symmetry in Heqc.
+      apply proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      o.
+      reflexivity.
+    * t.
+    * t.
+  + rewrite merge_or_char. reflexivity.
+- intros mr.
+  apply merged_or_is_recursive in mr as mrr.
+  destruct mrr as [mr1 mr2].
+  apply IHr1 in mr1 as Hr1.
+  apply IHr2 in mr2 as Hr2.
+  intros.
+  induction s; apply IHr1 in ms as Hs1; apply IHr2 in ms as Hs2; try assumption.
+  + t.
+    remember (compare_regex r1 _).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      o.
+      reflexivity.
+    * o.
+      rewrite <- Hs2.
+      o.
+      reflexivity.
+    * o.
+      reflexivity. 
+  + t.
+    remember (compare_regex r1 _).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      o.
+      reflexivity.
+    * o.
+      rewrite <- Hs2.
+      o.
+      reflexivity.
+    * o.
+      reflexivity.
+  + t.
+    remember (compare_regex r1 _).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      o.
+      reflexivity.
+    * o.
+      rewrite <- Hs2.
+      o.
+      reflexivity.
+    * o.
+      reflexivity. 
+  + apply merged_or_is_recursive in ms as mss.
+    destruct mss as [ms1 ms2].
+    apply IHs1 in ms1 as Hss1.
+    apply IHs2 in ms2 as Hss2.
+    (* Hss1: matches (or (or r1 r2) s1) xs = matches (merge_or (or r1 r2) s1) xs *)
+    (* Hss2: matches (or (or r1 r2) s2) xs = matches (merge_or (or r1 r2) s2) xs*)
+    (* IHr1: forall s, matches (or r1 s) xs = matches (merge_or r1 s) xs *)
+    (* IHr2: forall s, matches (or r2 s) xs = matches (merge_or r2 s) xs *)
+    assert (merge_or (or r1 r2) (or s1 s2) =
+      match compare_regex r1 s1 with
+      | Eq => or r1 (merge_or r2 s2)
+      | Lt => or r1 (merge_or r2 (or s1 s2))
+      | Gt => or s1 (merge_or (or r1 r2) s2)
+      end
+    ) as step1. t. rewrite step1.
+    remember (compare_regex r1 s1).
+    induction c.
+    * o.
+      rewrite <- IHr2; try assumption.
+      o.
+      symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      o.
+      reflexivity.
+    * o.
+      rewrite <- IHr2; try assumption.
+      o.
+      repeat rewrite orb_assoc.
+      reflexivity.
+    * o.
+      rewrite <- Hss2.
+      o.
+      reflexivity.
+  + t.
+    remember (compare_regex r1 (and s1 s2)).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      o.
+      reflexivity.
+    * o. 
+      rewrite <- Hs2.
+      o.
+      reflexivity.
+    * t.
+  + t. 
+    remember (compare_regex r1 (concat s1 s2)).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      o.
+      reflexivity.
+    * o. 
+      rewrite <- Hs2.
+      o.
+      reflexivity.
+    * t.
+  + t.
+    remember (compare_regex r1 (not s)).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      o.
+      reflexivity.
+    * o. 
+      rewrite <- Hs2.
+      o.
+      reflexivity.
+    * t.
+  + t.
+    remember (compare_regex r1 (zero_or_more s)).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      o.
+      reflexivity.
+    * o. 
+      rewrite <- Hs2.
+      o.
+      reflexivity.
+    * t.
+  + assumption.
+  + assumption.
+- intros.
+  induction s; try (t; fail).
+  + assert (merge_or (and r1 r2) (or s1 s2) =
+      match compare (and r1 r2) s1 with
+      | Lt => or (and r1 r2) (or s1 s2)
+      | Eq => (or s1 s2)
+      | Gt => or s1 (merge_or (and r1 r2) s2)
+      end
+    ) as step1. t. rewrite step1.
+    remember (compare (and r1 r2) s1).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      o.
+      reflexivity.
+    * reflexivity.
+    * o.
+      rewrite <- IHs2.
+      o.
+      reflexivity.
+      apply merged_or_is_recursive in ms.
+      destruct ms.
+      assumption.
+  + t.
+    remember (compare_regex r1 s1) as c1.
+    remember (compare_regex r2 s2) as c2.
+    induction c1; try t.
+    * induction c2; try t.
+      -- symmetry in Heqc1.
+         symmetry in Heqc2.
+         apply regex_proof_compare_eq_is_equal in Heqc1.
+         apply regex_proof_compare_eq_is_equal in Heqc2.
+         rewrite Heqc1.
+         rewrite Heqc2.
+         o.
+         reflexivity.
+- intros.
+  induction s; try (t; fail).
+  + assert (merge_or (concat r1 r2) (or s1 s2) =
+      match compare (concat r1 r2) s1 with
+      | Lt => or (concat r1 r2) (or s1 s2)
+      | Eq => (or s1 s2)
+      | Gt => or s1 (merge_or (concat r1 r2) s2)
+      end
+    ) as step1. t. rewrite step1.
+    remember (compare (concat r1 r2) s1).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      o.
+      reflexivity.
+    * reflexivity.
+    * o.
+      rewrite <- IHs2.
+      o.
+      reflexivity.
+      apply merged_or_is_recursive in ms.
+      destruct ms.
+      assumption.
+  + t.
+    remember (compare_regex r1 s1) as c1.
+    remember (compare_regex r2 s2) as c2.
+    induction c1; try t.
+    * induction c2; try t.
+      -- symmetry in Heqc1.
+         symmetry in Heqc2.
+         apply regex_proof_compare_eq_is_equal in Heqc1.
+         apply regex_proof_compare_eq_is_equal in Heqc2.
+         rewrite Heqc1.
+         rewrite Heqc2.
+         o.
+         reflexivity.
+- intros.
+  induction s; try (t; fail).
+  + assert (merge_or (not r) (or s1 s2) =
+      match compare (not r) s1 with
+      | Lt => or (not r) (or s1 s2)
+      | Eq => (or s1 s2)
+      | Gt => or s1 (merge_or (not r) s2)
+      end
+    ) as step1. t. rewrite step1.
+    remember (compare (not r) s1).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      o.
+      reflexivity.
+    * reflexivity.
+    * o.
+      rewrite <- IHs2.
+      o.
+      reflexivity.
+      apply merged_or_is_recursive in ms.
+      destruct ms.
+      assumption.
+  + t.
+    remember (compare_regex r s) as c.
+    induction c; try t.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      o.
+      reflexivity.
+- intros.
+  induction s; try (t; fail).
+  + assert (merge_or (zero_or_more r) (or s1 s2) =
+      match compare (zero_or_more r) s1 with
+      | Lt => or (zero_or_more r) (or s1 s2)
+      | Eq => (or s1 s2)
+      | Gt => or s1 (merge_or (zero_or_more r) s2)
+      end
+    ) as step1. t. rewrite step1.
+    remember (compare (zero_or_more r) s1).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      o.
+      reflexivity.
+    * reflexivity.
+    * o.
+      rewrite <- IHs2.
+      o.
+      reflexivity.
+      apply merged_or_is_recursive in ms.
+      destruct ms.
+      assumption.
+  + t.
+    remember (compare_regex r s) as c.
+    induction c; try t.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      o.
+      reflexivity. 
+Qed.
 
 (* to_list_or is a helper function for smart_or'
 It turns a regex into a list of ors, for example:
