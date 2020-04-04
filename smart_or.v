@@ -156,13 +156,13 @@ It can do this because of the following properties:
 It does this to normalize the regular expression.
 It assumes the two regexes that is provided as input is already sorted with duplicates removed.
 
-merge_or's descreasing argument is r, 
-so whenever it is not decreasing, when we call merge_or r smaller_s,
-then Coq cannot be sure that the recursion will terminate.
-For this we introduce an embedded fixpoint and do nested recursion.
-The fix closure `merge_or_r` takes only s as its argument, so this will be the argument that needs to decrease.
-The non descreasing `r` is still in the enviroment of the function, because this is a closure.
-For another example, see the merge function in:
+For a Fixpoint function Coq always needs to know which argument is decreasing.
+For merge_or either `r` or `s` is decreasing, which is confusing to the termination checker, we need to be consistent.
+We introduce a closure fixpoint `merge_or_r` inside of our fixpoint `merge_or`.
+merge_or's descreasing argument is always `r` and
+merge_or_r's decreasing argument is always `s`, while `r` is not decreasing and is the original `r`, hence `_or_r`.
+
+For another example for a closure fixpoint inside a fixpoint, see the merge function in:
 https://coq.inria.fr/library/Coq.Sorting.Mergesort.html 
 *)
 Fixpoint merge_or {X: Set} {tc: comparable X} (r s': regex X) : regex X :=
