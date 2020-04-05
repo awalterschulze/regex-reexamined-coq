@@ -244,10 +244,7 @@ Theorem merge_or_is_or: forall
   {tc: comparable X}
   (xs: list X)
   (r: regex X)
-  {mr: merged_or r}
-  (s: regex X)
-  {ms: merged_or s},
-(* TODO r and s both were constructed with merge_or *)
+  (s: regex X),
   matches (or r s) xs = matches (merge_or r s) xs.
 Proof.
 induction r.
@@ -256,7 +253,7 @@ induction r.
   + rewrite or_is_logical_or.
     rewrite nothing_is_terminating.
     rewrite orb_false_l.
-    rewrite merge_or_nothing_is_identity.
+    rewrite merge_or_id.
     reflexivity.
 - intros.
   induction s; try (t; fail).
@@ -275,13 +272,7 @@ induction r.
     * t.
     * t.
   + rewrite merge_or_char. reflexivity.
-- intros mr.
-  apply merged_or_is_recursive in mr as mrr.
-  destruct mrr as [mr1 mr2].
-  apply IHr1 in mr1 as Hr1.
-  apply IHr2 in mr2 as Hr2.
-  intros.
-  induction s; apply IHr1 in ms as Hs1; apply IHr2 in ms as Hs2; try assumption.
+- induction s.
   + t.
     remember (compare_regex r1 _).
     induction c.
@@ -291,7 +282,7 @@ induction r.
       o.
       reflexivity.
     * o.
-      rewrite <- Hs2.
+      rewrite <- IHr2.
       o.
       reflexivity.
     * o.
@@ -305,7 +296,7 @@ induction r.
       o.
       reflexivity.
     * o.
-      rewrite <- Hs2.
+      rewrite <- IHr2.
       o.
       reflexivity.
     * o.
@@ -319,17 +310,13 @@ induction r.
       o.
       reflexivity.
     * o.
-      rewrite <- Hs2.
+      rewrite <- IHr2.
       o.
       reflexivity.
     * o.
       reflexivity. 
-  + apply merged_or_is_recursive in ms as mss.
-    destruct mss as [ms1 ms2].
-    apply IHs1 in ms1 as Hss1.
-    apply IHs2 in ms2 as Hss2.
-    (* Hss1: matches (or (or r1 r2) s1) xs = matches (merge_or (or r1 r2) s1) xs *)
-    (* Hss2: matches (or (or r1 r2) s2) xs = matches (merge_or (or r1 r2) s2) xs*)
+  + (* IHs1: matches (or (or r1 r2) s1) xs = matches (merge_or (or r1 r2) s1) xs *)
+    (* IHs2: matches (or (or r1 r2) s2) xs = matches (merge_or (or r1 r2) s2) xs*)
     (* IHr1: forall s, matches (or r1 s) xs = matches (merge_or r1 s) xs *)
     (* IHr2: forall s, matches (or r2 s) xs = matches (merge_or r2 s) xs *)
     assert (merge_or (or r1 r2) (or s1 s2) =
@@ -355,7 +342,7 @@ induction r.
       repeat rewrite orb_assoc.
       reflexivity.
     * o.
-      rewrite <- Hss2.
+      rewrite <- IHs2.
       o.
       reflexivity.
   + t.
@@ -367,7 +354,7 @@ induction r.
       o.
       reflexivity.
     * o. 
-      rewrite <- Hs2.
+      rewrite <- IHr2.
       o.
       reflexivity.
     * t.
@@ -380,7 +367,7 @@ induction r.
       o.
       reflexivity.
     * o. 
-      rewrite <- Hs2.
+      rewrite <- IHr2.
       o.
       reflexivity.
     * t.
@@ -393,7 +380,7 @@ induction r.
       o.
       reflexivity.
     * o. 
-      rewrite <- Hs2.
+      rewrite <- IHr2.
       o.
       reflexivity.
     * t.
@@ -406,12 +393,10 @@ induction r.
       o.
       reflexivity.
     * o. 
-      rewrite <- Hs2.
+      rewrite <- IHr2.
       o.
       reflexivity.
     * t.
-  + assumption.
-  + assumption.
 - intros.
   induction s; try (t; fail).
   + assert (merge_or (and r1 r2) (or s1 s2) =
@@ -433,9 +418,6 @@ induction r.
       rewrite <- IHs2.
       o.
       reflexivity.
-      apply merged_or_is_recursive in ms.
-      destruct ms.
-      assumption.
   + t.
     remember (compare_regex r1 s1) as c1.
     remember (compare_regex r2 s2) as c2.
@@ -470,9 +452,6 @@ induction r.
       rewrite <- IHs2.
       o.
       reflexivity.
-      apply merged_or_is_recursive in ms.
-      destruct ms.
-      assumption.
   + t.
     remember (compare_regex r1 s1) as c1.
     remember (compare_regex r2 s2) as c2.
@@ -507,9 +486,6 @@ induction r.
       rewrite <- IHs2.
       o.
       reflexivity.
-      apply merged_or_is_recursive in ms.
-      destruct ms.
-      assumption.
   + t.
     remember (compare_regex r s) as c.
     induction c; try t.
@@ -539,9 +515,6 @@ induction r.
       rewrite <- IHs2.
       o.
       reflexivity.
-      apply merged_or_is_recursive in ms.
-      destruct ms.
-      assumption.
   + t.
     remember (compare_regex r s) as c.
     induction c; try t.
