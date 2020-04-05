@@ -1,6 +1,7 @@
 Set Implicit Arguments.
 Set Asymmetric Patterns.
 
+Require Import Bool.
 Require Import List.
 Require Import Omega.
 
@@ -10,6 +11,7 @@ Require Import comparable.
 Require Import compare_regex.
 Require Import dup.
 Require Import derive.
+Require Import derive_simple.
 Require Import nullable.
 Require Import regex.
 Require Import size.
@@ -50,6 +52,544 @@ Definition smart_or {X: Set} {tc: comparable X} (r s: regex X) : regex X :=
   | Lt => or r s
   | Gt => or s r
   end.
+
+(* merge_or merges two regexes.
+It applies a merge sort on the root ors, while removing duplicates.
+It can do this because of the following properties:
+  idempotency: r + r = r
+  commutativity: r + s = s + r
+  associativity: (r + s) + t = r + (s + t)
+It does this to normalize the regular expression.
+It assumes the two regexes that is provided as input is already sorted with duplicates removed.
+
+For a Fixpoint function Coq always needs to know which argument is decreasing.
+For merge_or either `r` or `s` is decreasing, which is confusing to the termination checker, we need to be consistent.
+We introduce a closure fixpoint `merge_or_r` inside of our fixpoint `merge_or`.
+merge_or's descreasing argument is always `r` and
+merge_or_r's decreasing argument is always `s`, while `r` is not decreasing and is the original `r`, hence `_or_r`.
+
+For another example for a closure fixpoint inside a fixpoint, see the merge function in:
+https://coq.inria.fr/library/Coq.Sorting.Mergesort.html 
+*)
+Fixpoint merge_or {X: Set} {tc: comparable X} (r s: regex X) : regex X :=
+  let fix merge_or_r s :=
+    match r with
+    | or r_1 r_next =>
+      match s with
+      | or s_1 s_next =>
+        match compare r_1 s_1 with
+        | Lt => or r_1 (merge_or r_next s)
+        | Eq => or r_1 (merge_or r_next s_next)
+        | Gt => or s_1 (merge_or_r s_next)
+        end
+      | _ =>
+        match compare r_1 s with
+        | Lt => or r_1 (merge_or r_next s)
+        | Eq => r
+        | Gt => or s r
+        end
+      end
+    | _ =>
+      match s with
+      | or s_1 s_next =>
+        match compare r s_1 with
+        | Lt => or r s
+        | Eq => s
+        | Gt => or s_1 (merge_or_r s_next)
+        end
+      | _ =>
+        match compare r s with
+        | Lt => or r s
+        | Eq => s
+        | Gt => or s r
+        end
+      end
+    end
+  in merge_or_r s.
+
+(* merged_or is a property that specifies whether a regex was merged with merge_or *)
+Fixpoint merged_or {X: Set} {tc: comparable X} (r: regex X) : Prop :=
+  match r with
+  | or s t =>
+    match s with
+    | or _ _ => False
+    | _ => match t with
+      | or t_1 _ =>
+        match compare s t_1 with
+        | Lt => merged_or t
+        | _ => False
+        end
+      | _ => match compare s t with
+        | Lt => True
+        | _ => False
+        end
+      end
+    end
+  | _ => True
+  end.
+
+Theorem merged_or_upholds: forall {X: Set} {tc: comparable X} (r s: regex X) (mr: merged_or r) (ms: merged_or s),
+  merged_or (merge_or r s).
+(* TODO: Help Wanted *)
+Admitted.
+
+Theorem merged_or_is_recursive: forall
+  {X: Set}
+  {tc: comparable X}
+  (r s: regex X),
+merged_or (or r s) -> merged_or r /\ merged_or s.
+(* TODO: Good First Issue *)
+Admitted.
+
+(* nothing|r = r *)
+Theorem merge_or_id: forall
+  {X: Set}
+  {tc: comparable X}
+  (r: regex X)
+  (xs: list X),
+  matches (merge_or (nothing _) r) xs = matches r xs.
+Proof.
+intros.
+induction r; try (simpl; or_simple; trivial; fail).
+- induction r1; try (simpl; or_simple; trivial; fail).
+Qed.
+
+(* merge_or_empty is a helper Lemma for merge_or_is_or *)
+Lemma merge_or_empty: forall
+  {X: Set}
+  {tc: comparable X}
+  (r: regex X)
+  (xs: list X),
+  matches (or (empty _) r) xs = matches (merge_or (empty _) r) xs.
+Proof.
+intros.
+induction r; try (simpl; or_simple; trivial; fail).
+- induction r1; try (simpl; or_simple; trivial; fail).
+  + assert (merge_or (empty X) (or (nothing X) r2) =
+            or (nothing X) (merge_or (empty X) r2)).
+    * simpl; or_simple; trivial.
+    * rewrite H.  
+      or_simple.
+      rewrite <- or_is_logical_or.
+      rewrite IHr2.
+      reflexivity.
+Qed.
+
+(* merge_or_char is a helper Lemma for merge_or_is_or *)
+Lemma merge_or_char: forall
+  {X: Set}
+  {tc: comparable X}
+  (r: regex X)
+  (xs: list X)
+  (x: X),
+  matches (or (char x) r) xs = matches (merge_or (char x) r) xs.
+Proof.
+intros.
+induction r; try (simpl; or_simple; trivial; fail).
+- simpl; or_simple; trivial. remember (compare x x0).
+  induction c.
+  + symmetry in Heqc.
+    apply proof_compare_eq_is_equal in Heqc.
+    rewrite Heqc.
+    or_simple.
+    reflexivity.
+  + simpl; or_simple; trivial.
+  + simpl; or_simple; trivial.
+- induction r1; try (simpl; or_simple; trivial; fail).
+  + assert ((merge_or (char x) (or (nothing X) r2)) =
+            (or (nothing X) (merge_or (char x) r2))
+           ).
+    * simpl; or_simple; trivial.
+    * rewrite H.
+      or_simple.
+      rewrite <- or_is_logical_or.
+      rewrite IHr2.
+      reflexivity.
+  + assert ((merge_or (char x) (or (empty X) r2)) =
+            (or (empty X) (merge_or (char x) r2))
+            ).
+    * simpl; or_simple; trivial.
+    * rewrite H.
+      or_simple.
+      rewrite <- IHr2.
+      or_simple.
+      reflexivity.
+  + assert ((merge_or (char x) (or (char x0) r2)) =
+            match compare x x0 with
+            | Eq => or (char x0) r2
+            | Lt => or (char x) (or (char x0) r2)
+            | Gt => or (char x0) (merge_or (char x) r2)
+            end).
+            * simpl; or_simple; trivial.
+            * rewrite H.
+              remember (compare x x0).
+              induction c.
+              -- symmetry in Heqc.
+                 apply proof_compare_eq_is_equal in Heqc.
+                 rewrite Heqc.
+                 or_simple.
+                 reflexivity.
+              -- reflexivity.
+              -- or_simple.
+                 rewrite <- IHr2.
+                 or_simple.
+                 reflexivity.
+Qed.
+
+Theorem merge_or_is_or: forall
+  {X: Set}
+  {tc: comparable X}
+  (xs: list X)
+  (r: regex X)
+  (s: regex X),
+  matches (or r s) xs = matches (merge_or r s) xs.
+Proof.
+induction r.
+- intros.
+  induction s; try (simpl; or_simple; trivial; fail).
+  + rewrite or_is_logical_or.
+    rewrite nothing_is_terminating.
+    rewrite orb_false_l.
+    rewrite merge_or_id.
+    reflexivity.
+- intros.
+  induction s; try (simpl; or_simple; trivial; fail).
+  + rewrite merge_or_empty.
+    reflexivity.
+- intros.
+  induction s; try (simpl; or_simple; trivial; fail).
+  + simpl; or_simple; trivial.
+    remember (compare x x0).
+    induction c.
+    * symmetry in Heqc.
+      apply proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      or_simple.
+      reflexivity.
+    * simpl; or_simple; trivial.
+    * simpl; or_simple; trivial.
+  + rewrite merge_or_char. reflexivity.
+- induction s.
+  + simpl; or_simple.
+    remember (compare_regex r1 _).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      or_simple.
+      reflexivity.
+    * or_simple.
+      rewrite <- IHr2.
+      or_simple.
+      reflexivity.
+    * or_simple.
+      reflexivity. 
+  + simpl; or_simple.
+    remember (compare_regex r1 _).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      or_simple.
+      reflexivity.
+    * or_simple.
+      rewrite <- IHr2.
+      or_simple.
+      reflexivity.
+    * or_simple.
+      reflexivity.
+  + simpl; or_simple.
+    remember (compare_regex r1 _).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      or_simple.
+      reflexivity.
+    * or_simple.
+      rewrite <- IHr2.
+      or_simple.
+      reflexivity.
+    * or_simple.
+      reflexivity. 
+  + (* IHs1: matches (or (or r1 r2) s1) xs = matches (merge_or (or r1 r2) s1) xs *)
+    (* IHs2: matches (or (or r1 r2) s2) xs = matches (merge_or (or r1 r2) s2) xs*)
+    (* IHr1: forall s, matches (or r1 s) xs = matches (merge_or r1 s) xs *)
+    (* IHr2: forall s, matches (or r2 s) xs = matches (merge_or r2 s) xs *)
+    assert (merge_or (or r1 r2) (or s1 s2) =
+      match compare_regex r1 s1 with
+      | Eq => or r1 (merge_or r2 s2)
+      | Lt => or r1 (merge_or r2 (or s1 s2))
+      | Gt => or s1 (merge_or (or r1 r2) s2)
+      end
+    ) as step1. simpl; or_simple; trivial. rewrite step1.
+    remember (compare_regex r1 s1).
+    induction c.
+    * or_simple.
+      rewrite <- IHr2; try assumption.
+      or_simple.
+      symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      or_simple.
+      reflexivity.
+    * or_simple.
+      rewrite <- IHr2; try assumption.
+      or_simple.
+      repeat rewrite orb_assoc.
+      reflexivity.
+    * or_simple.
+      rewrite <- IHs2.
+      or_simple.
+      reflexivity.
+  + simpl; or_simple.
+    remember (compare_regex r1 (and s1 s2)).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      or_simple.
+      reflexivity.
+    * or_simple. 
+      rewrite <- IHr2.
+      or_simple.
+      reflexivity.
+    * simpl; or_simple; trivial.
+  + simpl; or_simple. 
+    remember (compare_regex r1 (concat s1 s2)).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      or_simple.
+      reflexivity.
+    * or_simple. 
+      rewrite <- IHr2.
+      or_simple.
+      reflexivity.
+    * simpl; or_simple; trivial.
+  + simpl; or_simple.
+    remember (compare_regex r1 (not s)).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      or_simple.
+      reflexivity.
+    * or_simple. 
+      rewrite <- IHr2.
+      or_simple.
+      reflexivity.
+    * simpl; or_simple; trivial.
+  + simpl; or_simple.
+    remember (compare_regex r1 (zero_or_more s)).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      or_simple.
+      reflexivity.
+    * or_simple. 
+      rewrite <- IHr2.
+      or_simple.
+      reflexivity.
+    * simpl; or_simple; trivial.
+- intros.
+  induction s; try (simpl; or_simple; trivial; fail).
+  + assert (merge_or (and r1 r2) (or s1 s2) =
+      match compare (and r1 r2) s1 with
+      | Lt => or (and r1 r2) (or s1 s2)
+      | Eq => (or s1 s2)
+      | Gt => or s1 (merge_or (and r1 r2) s2)
+      end
+    ) as step1. simpl; or_simple; trivial. rewrite step1.
+    remember (compare (and r1 r2) s1).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      or_simple.
+      reflexivity.
+    * reflexivity.
+    * or_simple.
+      rewrite <- IHs2.
+      or_simple.
+      reflexivity.
+  + simpl; or_simple; trivial.
+    remember (compare_regex r1 s1) as c1.
+    remember (compare_regex r2 s2) as c2.
+    induction c1; try simpl; or_simple; trivial.
+    * induction c2; try simpl; or_simple; trivial.
+      -- symmetry in Heqc1.
+         symmetry in Heqc2.
+         apply regex_proof_compare_eq_is_equal in Heqc1.
+         apply regex_proof_compare_eq_is_equal in Heqc2.
+         rewrite Heqc1.
+         rewrite Heqc2.
+         or_simple.
+         reflexivity.
+- intros.
+  induction s; try (simpl; or_simple; trivial; fail).
+  + assert (merge_or (concat r1 r2) (or s1 s2) =
+      match compare (concat r1 r2) s1 with
+      | Lt => or (concat r1 r2) (or s1 s2)
+      | Eq => (or s1 s2)
+      | Gt => or s1 (merge_or (concat r1 r2) s2)
+      end
+    ) as step1. simpl; or_simple; trivial. rewrite step1.
+    remember (compare (concat r1 r2) s1).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      or_simple.
+      reflexivity.
+    * reflexivity.
+    * or_simple.
+      rewrite <- IHs2.
+      or_simple.
+      reflexivity.
+  + simpl; or_simple; trivial.
+    remember (compare_regex r1 s1) as c1.
+    remember (compare_regex r2 s2) as c2.
+    induction c1; try simpl; or_simple; trivial.
+    * induction c2; try simpl; or_simple; trivial.
+      -- symmetry in Heqc1.
+         symmetry in Heqc2.
+         apply regex_proof_compare_eq_is_equal in Heqc1.
+         apply regex_proof_compare_eq_is_equal in Heqc2.
+         rewrite Heqc1.
+         rewrite Heqc2.
+         or_simple.
+         reflexivity.
+- intros.
+  induction s; try (simpl; or_simple; trivial; fail).
+  + assert (merge_or (not r) (or s1 s2) =
+      match compare (not r) s1 with
+      | Lt => or (not r) (or s1 s2)
+      | Eq => (or s1 s2)
+      | Gt => or s1 (merge_or (not r) s2)
+      end
+    ) as step1. simpl; or_simple; trivial. rewrite step1.
+    remember (compare (not r) s1).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      or_simple.
+      reflexivity.
+    * reflexivity.
+    * or_simple.
+      rewrite <- IHs2.
+      or_simple.
+      reflexivity.
+  + simpl; or_simple; trivial.
+    remember (compare_regex r s) as c.
+    induction c; try simpl; or_simple; trivial.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      or_simple.
+      reflexivity.
+- intros.
+  induction s; try (simpl; or_simple; trivial; fail).
+  + assert (merge_or (zero_or_more r) (or s1 s2) =
+      match compare (zero_or_more r) s1 with
+      | Lt => or (zero_or_more r) (or s1 s2)
+      | Eq => (or s1 s2)
+      | Gt => or s1 (merge_or (zero_or_more r) s2)
+      end
+    ) as step1. simpl; or_simple; trivial. rewrite step1.
+    remember (compare (zero_or_more r) s1).
+    induction c.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      or_simple.
+      reflexivity.
+    * reflexivity.
+    * or_simple.
+      rewrite <- IHs2.
+      or_simple.
+      reflexivity.
+  + simpl; or_simple; trivial.
+    remember (compare_regex r s) as c.
+    induction c; try simpl; or_simple; trivial.
+    * symmetry in Heqc.
+      apply regex_proof_compare_eq_is_equal in Heqc.
+      rewrite Heqc.
+      or_simple.
+      reflexivity. 
+Qed.
+
+(* to_list_or is a helper function for smart_or'
+It turns a regex into a list of ors, for example:
+```
+to_list_or (or nothing empty) = [nothing, empty]
+to_list_or (or nothing (or empty (char x))) = [nothing, empty, char x]
+```
+It only turns the top level into ors and doesn't recurse past other operators:
+```
+to_list_or (or (and (or a b) c) (or empty (char x))) = [and (or a b) c, empty, char x]
+```
+It also doesn't recurse down the left side into or operators, 
+since it expects the previous construction into a tree was done in a way that satifies this property:
+```
+to_list_or (or (or empty nothing) (or empty (or nothing empty))) = [or empty nothing, empty, nothing, empty]
+```
+*)
+Fixpoint to_list_or {X: Set} {tc: comparable X} (r: regex X) : list (regex X) :=
+  match r with
+  | or s t => s :: to_list_or t
+  | _ => r :: nil
+  end.
+
+(* to_tree_or creates a regex from a list of regexes by combining them with an `or` operator.
+   At the end of the list a `nothing` expression is insert as this is the identity expression for `or.`
+*)
+Fixpoint to_tree_or {X: Set} (xs: list (regex X)) : regex X :=
+  match xs with
+  | nil => nothing _
+  | (x'::xs') => or x' (to_tree_or xs')
+  end.
+
+(* TODO: Help Wanted
+Define the property described in the comments of to_tree_or
+Also find the appropriate/official name for this property.
+I am pretty sure this tree of this form have a name:
+  x
+ / \
+a   x
+   / \
+  b   x
+     / \
+    c   id
+*)
+
+(* to_list_or__to_tree_or__is_id shows that:
+`to_tree_or . to_list_or = id`
+*)
+Theorem to_list_or__to_tree_or__is_id: forall {X: Set} {tc: comparable X} (r: regex X) (xs: list X),
+  matches r xs = matches (to_tree_or (to_list_or r)) xs.
+Proof.
+induction r; try (simpl; intros xs; rewrite or_id; reflexivity).
+- simpl.
+  intros xs.
+  rewrite or_is_logical_or.
+  rewrite or_is_logical_or.
+  rewrite IHr2.
+  reflexivity.
+Qed.
+
+(*
+  smart_or' applies all the following rules
+  r + r = r
+  r + s = s + r
+  (r + s) + t = r + (s + t)
+  r + nothing = r
+*)
+Definition smart_or' {X: Set} {tc: comparable X} (r s: regex X) : regex X :=
+  to_tree_or (remove_duplicates_from_sorted (fold_left insert_sort (to_list_or r) (to_list_or s))).
 
 (*
 merge_or_program merges two regexes.
@@ -145,128 +685,3 @@ omega.
 Qed.
 
 End merge_or_section.
-
-
-(* merge_or merges two regexes.
-It applies a merge sort on the root ors, while removing duplicates.
-It can do this because of the following properties:
-  idempotency: r + r = r
-  commutativity: r + s = s + r
-  associativity: (r + s) + t = r + (s + t)
-It does this to normalize the regular expression.
-It assumes the two regexes that is provided as input is already sorted with duplicates removed.
-
-For a Fixpoint function Coq always needs to know which argument is decreasing.
-For merge_or either `r` or `s` is decreasing, which is confusing to the termination checker, we need to be consistent.
-We introduce a closure fixpoint `merge_or_r` inside of our fixpoint `merge_or`.
-merge_or's descreasing argument is always `r` and
-merge_or_r's decreasing argument is always `s`, while `r` is not decreasing and is the original `r`, hence `_or_r`.
-
-For another example for a closure fixpoint inside a fixpoint, see the merge function in:
-https://coq.inria.fr/library/Coq.Sorting.Mergesort.html 
-*)
-Fixpoint merge_or {X: Set} {tc: comparable X} (r s': regex X) : regex X :=
-  let fix merge_or_r s :=
-    match r with
-    | or r_1 r_next =>
-      match s with
-      | or s_1 s_next =>
-        match compare r_1 s_1 with
-        | Lt => or r_1 (merge_or r_next s)
-        | Eq => or r_1 (merge_or r_next s_next)
-        | Gt => or s_1 (merge_or_r s_next)
-        end
-      | _ =>
-        match compare r_1 s with
-        | Lt => or r_1 (merge_or r_next s)
-        | Eq => r
-        | Gt => or s r
-        end
-      end
-    | _ =>
-      match s with
-      | or s_1 s_next =>
-        match compare r s_1 with
-        | Lt => or r s
-        | Eq => s
-        | Gt => or s_1 (merge_or_r s_next)
-        end
-      | _ =>
-        match compare r s with
-        | Lt => or r s
-        | Eq => s
-        | Gt => or s r
-        end
-      end
-    end
-  in merge_or_r s'.
-
-(* to_list_or is a helper function for smart_or'
-It turns a regex into a list of ors, for example:
-```
-to_list_or (or nothing empty) = [nothing, empty]
-to_list_or (or nothing (or empty (char x))) = [nothing, empty, char x]
-```
-It only turns the top level into ors and doesn't recurse past other operators:
-```
-to_list_or (or (and (or a b) c) (or empty (char x))) = [and (or a b) c, empty, char x]
-```
-It also doesn't recurse down the left side into or operators, 
-since it expects the previous construction into a tree was done in a way that satifies this property:
-```
-to_list_or (or (or empty nothing) (or empty (or nothing empty))) = [or empty nothing, empty, nothing, empty]
-```
-*)
-Fixpoint to_list_or {X: Set} {tc: comparable X} (r: regex X) : list (regex X) :=
-  match r with
-  | or s t => s :: to_list_or t
-  | _ => r :: nil
-  end.
-
-(* to_tree_or creates a regex from a list of regexes by combining them with an `or` operator.
-   At the end of the list a `nothing` expression is insert as this is the identity expression for `or.`
-*)
-Fixpoint to_tree_or {X: Set} (xs: list (regex X)) : regex X :=
-  match xs with
-  | nil => nothing _
-  | (x'::xs') => or x' (to_tree_or xs')
-  end.
-
-(* TODO: Help Wanted
-Define the property described in the comments of to_tree_or
-Also find the appropriate/official name for this property.
-I am pretty sure this tree of this form have a name:
-  x
- / \
-a   x
-   / \
-  b   x
-     / \
-    c   id
-*)
-
-(* to_list_or__to_tree_or__is_id shows that:
-`to_tree_or . to_list_or = id`
-*)
-Theorem to_list_or__to_tree_or__is_id: forall {X: Set} {tc: comparable X} (r: regex X) (xs: list X),
-  matches r xs = matches (to_tree_or (to_list_or r)) xs.
-Proof.
-induction r; try (simpl; intros xs; rewrite or_id; reflexivity).
-- simpl.
-  intros xs.
-  rewrite or_is_logical_or.
-  rewrite or_is_logical_or.
-  rewrite IHr2.
-  reflexivity.
-Qed.
-
-(*
-  smart_or' applies all the following rules
-  r + r = r
-  r + s = s + r
-  (r + s) + t = r + (s + t)
-  r + nothing = r
-*)
-Definition smart_or' {X: Set} {tc: comparable X} (r s: regex X) : regex X :=
-  to_tree_or (remove_duplicates_from_sorted (fold_left insert_sort (to_list_or r) (to_list_or s))).
-
