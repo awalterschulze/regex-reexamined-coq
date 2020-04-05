@@ -107,6 +107,41 @@ Fixpoint merge_or {X: Set} {tc: comparable X} (r s: regex X) : regex X :=
     end
   in merge_or_r s.
 
+Theorem merge_or_step: forall {X: Set} {tc: comparable X} (r s: regex X),
+  merge_or r s = match r with
+  | or r_1 r_next =>
+    match s with
+    | or s_1 s_next =>
+      match compare r_1 s_1 with
+      | Lt => or r_1 (merge_or r_next s)
+      | Eq => or r_1 (merge_or r_next s_next)
+      | Gt => or s_1 (merge_or r s_next)
+      end
+    | _ =>
+      match compare r_1 s with
+      | Lt => or r_1 (merge_or r_next s)
+      | Eq => r
+      | Gt => or s r
+      end
+    end
+  | _ =>
+    match s with
+    | or s_1 s_next =>
+      match compare r s_1 with
+      | Lt => or r s
+      | Eq => s
+      | Gt => or s_1 (merge_or r s_next)
+      end
+    | _ =>
+      match compare r s with
+      | Lt => or r s
+      | Eq => s
+      | Gt => or s r
+      end
+    end
+  end.
+Admitted.
+
 (* merged_or is a property that specifies whether a regex was merged with merge_or *)
 Fixpoint merged_or {X: Set} {tc: comparable X} (r: regex X) : Prop :=
   match r with
@@ -212,23 +247,16 @@ induction r; try (simpl; or_simple; trivial; fail).
       rewrite <- IHr2.
       or_simple.
       reflexivity.
-  + assert ((merge_or (char x) (or (char x0) r2)) =
-            match compare x x0 with
-            | Eq => or (char x0) r2
-            | Lt => or (char x) (or (char x0) r2)
-            | Gt => or (char x0) (merge_or (char x) r2)
-            end).
-            * simpl; or_simple; trivial.
-            * rewrite H.
-              induction_on_compare (compare x x0).
-              -- rewrite Heqc.
-                 or_simple.
-                 reflexivity.
-              -- reflexivity.
-              -- or_simple.
-                 rewrite <- IHr2.
-                 or_simple.
-                 reflexivity.
+  + rewrite merge_or_step.
+    induction_on_compare (compare (char x) (char x0)).
+    * rewrite Heqc.
+      or_simple.
+      reflexivity.
+    * reflexivity.
+    * or_simple.
+      rewrite <- IHr2.
+      or_simple.
+      reflexivity.
 Qed.
 
 Theorem merge_or_is_or: forall
@@ -299,22 +327,16 @@ induction r.
     (* IHs2: matches (or (or r1 r2) s2) xs = matches (merge_or (or r1 r2) s2) xs*)
     (* IHr1: forall s, matches (or r1 s) xs = matches (merge_or r1 s) xs *)
     (* IHr2: forall s, matches (or r2 s) xs = matches (merge_or r2 s) xs *)
-    assert (merge_or (or r1 r2) (or s1 s2) =
-      match compare_regex r1 s1 with
-      | Eq => or r1 (merge_or r2 s2)
-      | Lt => or r1 (merge_or r2 (or s1 s2))
-      | Gt => or s1 (merge_or (or r1 r2) s2)
-      end
-    ) as step1. simpl; or_simple; trivial. rewrite step1.
-    induction_on_compare_regex (compare_regex r1 s1).
+    rewrite merge_or_step.
+    induction_on_compare (compare r1 s1).
     * or_simple.
-      rewrite <- IHr2; try assumption.
+      rewrite <- IHr2.
       or_simple.
       rewrite Heqc.
       or_simple.
       reflexivity.
     * or_simple.
-      rewrite <- IHr2; try assumption.
+      rewrite <- IHr2.
       or_simple.
       repeat rewrite orb_assoc.
       reflexivity.

@@ -109,7 +109,7 @@ reflexivity.
 Qed.
 
 Theorem test_tactic_or_cases_4: forall (a b c d: bool),
-  a  || b  || (c || d ) =
+  a  || b || (c || d ) =
   a  || d || (b || (c || d )).
 Proof.
 intros.

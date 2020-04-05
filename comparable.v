@@ -62,7 +62,7 @@ Ltac induction_on_compare Compare :=
   remember Compare;
   match goal with
   | [ C: comparison |- _ ] =>
-    induction C; [ compare_to_eq | | ]
+    induction C; [ (* Eq *) compare_to_eq | (* Lt *) | (* Gt *)]
   end.
 
 Theorem proof_compare_eq_symm
