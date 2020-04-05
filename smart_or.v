@@ -11,8 +11,8 @@ Require Import comparable.
 Require Import compare_regex.
 Require Import dup.
 Require Import derive.
+Require Import derive_simple.
 Require Import nullable.
-Require Import orb_simple.
 Require Import regex.
 Require Import size.
 Require Import sort.
@@ -128,12 +128,17 @@ Fixpoint merged_or {X: Set} {tc: comparable X} (r: regex X) : Prop :=
   | _ => True
   end.
 
-Ltac o := repeat (orb_simple || rewrite or_is_logical_or || rewrite nothing_is_terminating).
-Ltac t := simpl; o; trivial.
-
 Theorem merged_or_upholds: forall {X: Set} {tc: comparable X} (r s: regex X) (mr: merged_or r) (ms: merged_or s),
   merged_or (merge_or r s).
 (* TODO: Help Wanted *)
+Admitted.
+
+Theorem merged_or_is_recursive: forall
+  {X: Set}
+  {tc: comparable X}
+  (r s: regex X),
+merged_or (or r s) -> merged_or r /\ merged_or s.
+(* TODO: Good First Issue *)
 Admitted.
 
 (* nothing|r = r *)
@@ -145,8 +150,8 @@ Theorem merge_or_id: forall
   matches (merge_or (nothing _) r) xs = matches r xs.
 Proof.
 intros.
-induction r; try (t; fail).
-- induction r1; t.
+induction r; try (simpl; or_simple; trivial; fail).
+- induction r1; try (simpl; or_simple; trivial; fail).
 Qed.
 
 (* merge_or_empty is a helper Lemma for merge_or_is_or *)
@@ -158,13 +163,13 @@ Lemma merge_or_empty: forall
   matches (or (empty _) r) xs = matches (merge_or (empty _) r) xs.
 Proof.
 intros.
-induction r; try (t; fail).
-- induction r1; try (t; fail).
+induction r; try (simpl; or_simple; trivial; fail).
+- induction r1; try (simpl; or_simple; trivial; fail).
   + assert (merge_or (empty X) (or (nothing X) r2) =
             or (nothing X) (merge_or (empty X) r2)).
-    * t.
+    * simpl; or_simple; trivial.
     * rewrite H.  
-      o.
+      or_simple.
       rewrite <- or_is_logical_or.
       rewrite IHr2.
       reflexivity.
@@ -180,35 +185,34 @@ Lemma merge_or_char: forall
   matches (or (char x) r) xs = matches (merge_or (char x) r) xs.
 Proof.
 intros.
-induction r; try (t; fail).
-- t. remember (compare x x0).
+induction r; try (simpl; or_simple; trivial; fail).
+- simpl; or_simple; trivial. remember (compare x x0).
   induction c.
   + symmetry in Heqc.
     apply proof_compare_eq_is_equal in Heqc.
     rewrite Heqc.
-    o.
+    or_simple.
     reflexivity.
-  + t.
-  + t.
-- induction r1; try (t; fail).
+  + simpl; or_simple; trivial.
+  + simpl; or_simple; trivial.
+- induction r1; try (simpl; or_simple; trivial; fail).
   + assert ((merge_or (char x) (or (nothing X) r2)) =
             (or (nothing X) (merge_or (char x) r2))
            ).
-    * t.
+    * simpl; or_simple; trivial.
     * rewrite H.
-      o.
+      or_simple.
       rewrite <- or_is_logical_or.
       rewrite IHr2.
       reflexivity.
   + assert ((merge_or (char x) (or (empty X) r2)) =
             (or (empty X) (merge_or (char x) r2))
             ).
-    * t.
+    * simpl; or_simple; trivial.
     * rewrite H.
-      o.
+      or_simple.
       rewrite <- IHr2.
-      rewrite or_is_logical_or.
-      o.
+      or_simple.
       reflexivity.
   + assert ((merge_or (char x) (or (char x0) r2)) =
             match compare x x0 with
@@ -216,28 +220,21 @@ induction r; try (t; fail).
             | Lt => or (char x) (or (char x0) r2)
             | Gt => or (char x0) (merge_or (char x) r2)
             end).
-            * t.
+            * simpl; or_simple; trivial.
             * rewrite H.
               remember (compare x x0).
               induction c.
               -- symmetry in Heqc.
                  apply proof_compare_eq_is_equal in Heqc.
                  rewrite Heqc.
-                 o.
+                 or_simple.
                  reflexivity.
               -- reflexivity.
-              -- o.
+              -- or_simple.
                  rewrite <- IHr2.
-                 o.
+                 or_simple.
                  reflexivity.
 Qed.
-
-Theorem merged_or_is_recursive: forall
-  {X: Set}
-  {tc: comparable X}
-  (r s: regex X),
-merged_or (or r s) -> merged_or r /\ merged_or s.
-Admitted.
 
 Theorem merge_or_is_or: forall
   {X: Set}
@@ -249,71 +246,71 @@ Theorem merge_or_is_or: forall
 Proof.
 induction r.
 - intros.
-  induction s; try (t; fail).
+  induction s; try (simpl; or_simple; trivial; fail).
   + rewrite or_is_logical_or.
     rewrite nothing_is_terminating.
     rewrite orb_false_l.
     rewrite merge_or_id.
     reflexivity.
 - intros.
-  induction s; try (t; fail).
+  induction s; try (simpl; or_simple; trivial; fail).
   + rewrite merge_or_empty.
     reflexivity.
 - intros.
-  induction s; try (t; fail).
-  + t.
+  induction s; try (simpl; or_simple; trivial; fail).
+  + simpl; or_simple; trivial.
     remember (compare x x0).
     induction c.
     * symmetry in Heqc.
       apply proof_compare_eq_is_equal in Heqc.
       rewrite Heqc.
-      o.
+      or_simple.
       reflexivity.
-    * t.
-    * t.
+    * simpl; or_simple; trivial.
+    * simpl; or_simple; trivial.
   + rewrite merge_or_char. reflexivity.
 - induction s.
-  + t.
+  + simpl; or_simple.
     remember (compare_regex r1 _).
     induction c.
     * symmetry in Heqc.
       apply regex_proof_compare_eq_is_equal in Heqc.
       rewrite Heqc.
-      o.
+      or_simple.
       reflexivity.
-    * o.
+    * or_simple.
       rewrite <- IHr2.
-      o.
+      or_simple.
       reflexivity.
-    * o.
+    * or_simple.
       reflexivity. 
-  + t.
+  + simpl; or_simple.
     remember (compare_regex r1 _).
     induction c.
     * symmetry in Heqc.
       apply regex_proof_compare_eq_is_equal in Heqc.
       rewrite Heqc.
-      o.
+      or_simple.
       reflexivity.
-    * o.
+    * or_simple.
       rewrite <- IHr2.
-      o.
+      or_simple.
       reflexivity.
-    * o.
+    * or_simple.
       reflexivity.
-  + t.
+  + simpl; or_simple.
     remember (compare_regex r1 _).
     induction c.
     * symmetry in Heqc.
       apply regex_proof_compare_eq_is_equal in Heqc.
       rewrite Heqc.
-      o.
+      or_simple.
       reflexivity.
-    * o.
+    * or_simple.
       rewrite <- IHr2.
-      o.
+      or_simple.
       reflexivity.
-    * o.
+    * or_simple.
       reflexivity. 
   + (* IHs1: matches (or (or r1 r2) s1) xs = matches (merge_or (or r1 r2) s1) xs *)
     (* IHs2: matches (or (or r1 r2) s2) xs = matches (merge_or (or r1 r2) s2) xs*)
@@ -325,203 +322,203 @@ induction r.
       | Lt => or r1 (merge_or r2 (or s1 s2))
       | Gt => or s1 (merge_or (or r1 r2) s2)
       end
-    ) as step1. t. rewrite step1.
+    ) as step1. simpl; or_simple; trivial. rewrite step1.
     remember (compare_regex r1 s1).
     induction c.
-    * o.
+    * or_simple.
       rewrite <- IHr2; try assumption.
-      o.
+      or_simple.
       symmetry in Heqc.
       apply regex_proof_compare_eq_is_equal in Heqc.
       rewrite Heqc.
-      o.
+      or_simple.
       reflexivity.
-    * o.
+    * or_simple.
       rewrite <- IHr2; try assumption.
-      o.
+      or_simple.
       repeat rewrite orb_assoc.
       reflexivity.
-    * o.
+    * or_simple.
       rewrite <- IHs2.
-      o.
+      or_simple.
       reflexivity.
-  + t.
+  + simpl; or_simple.
     remember (compare_regex r1 (and s1 s2)).
     induction c.
     * symmetry in Heqc.
       apply regex_proof_compare_eq_is_equal in Heqc.
       rewrite Heqc.
-      o.
+      or_simple.
       reflexivity.
-    * o. 
+    * or_simple. 
       rewrite <- IHr2.
-      o.
+      or_simple.
       reflexivity.
-    * t.
-  + t. 
+    * simpl; or_simple; trivial.
+  + simpl; or_simple. 
     remember (compare_regex r1 (concat s1 s2)).
     induction c.
     * symmetry in Heqc.
       apply regex_proof_compare_eq_is_equal in Heqc.
       rewrite Heqc.
-      o.
+      or_simple.
       reflexivity.
-    * o. 
+    * or_simple. 
       rewrite <- IHr2.
-      o.
+      or_simple.
       reflexivity.
-    * t.
-  + t.
+    * simpl; or_simple; trivial.
+  + simpl; or_simple.
     remember (compare_regex r1 (not s)).
     induction c.
     * symmetry in Heqc.
       apply regex_proof_compare_eq_is_equal in Heqc.
       rewrite Heqc.
-      o.
+      or_simple.
       reflexivity.
-    * o. 
+    * or_simple. 
       rewrite <- IHr2.
-      o.
+      or_simple.
       reflexivity.
-    * t.
-  + t.
+    * simpl; or_simple; trivial.
+  + simpl; or_simple.
     remember (compare_regex r1 (zero_or_more s)).
     induction c.
     * symmetry in Heqc.
       apply regex_proof_compare_eq_is_equal in Heqc.
       rewrite Heqc.
-      o.
+      or_simple.
       reflexivity.
-    * o. 
+    * or_simple. 
       rewrite <- IHr2.
-      o.
+      or_simple.
       reflexivity.
-    * t.
+    * simpl; or_simple; trivial.
 - intros.
-  induction s; try (t; fail).
+  induction s; try (simpl; or_simple; trivial; fail).
   + assert (merge_or (and r1 r2) (or s1 s2) =
       match compare (and r1 r2) s1 with
       | Lt => or (and r1 r2) (or s1 s2)
       | Eq => (or s1 s2)
       | Gt => or s1 (merge_or (and r1 r2) s2)
       end
-    ) as step1. t. rewrite step1.
+    ) as step1. simpl; or_simple; trivial. rewrite step1.
     remember (compare (and r1 r2) s1).
     induction c.
     * symmetry in Heqc.
       apply regex_proof_compare_eq_is_equal in Heqc.
       rewrite Heqc.
-      o.
+      or_simple.
       reflexivity.
     * reflexivity.
-    * o.
+    * or_simple.
       rewrite <- IHs2.
-      o.
+      or_simple.
       reflexivity.
-  + t.
+  + simpl; or_simple; trivial.
     remember (compare_regex r1 s1) as c1.
     remember (compare_regex r2 s2) as c2.
-    induction c1; try t.
-    * induction c2; try t.
+    induction c1; try simpl; or_simple; trivial.
+    * induction c2; try simpl; or_simple; trivial.
       -- symmetry in Heqc1.
          symmetry in Heqc2.
          apply regex_proof_compare_eq_is_equal in Heqc1.
          apply regex_proof_compare_eq_is_equal in Heqc2.
          rewrite Heqc1.
          rewrite Heqc2.
-         o.
+         or_simple.
          reflexivity.
 - intros.
-  induction s; try (t; fail).
+  induction s; try (simpl; or_simple; trivial; fail).
   + assert (merge_or (concat r1 r2) (or s1 s2) =
       match compare (concat r1 r2) s1 with
       | Lt => or (concat r1 r2) (or s1 s2)
       | Eq => (or s1 s2)
       | Gt => or s1 (merge_or (concat r1 r2) s2)
       end
-    ) as step1. t. rewrite step1.
+    ) as step1. simpl; or_simple; trivial. rewrite step1.
     remember (compare (concat r1 r2) s1).
     induction c.
     * symmetry in Heqc.
       apply regex_proof_compare_eq_is_equal in Heqc.
       rewrite Heqc.
-      o.
+      or_simple.
       reflexivity.
     * reflexivity.
-    * o.
+    * or_simple.
       rewrite <- IHs2.
-      o.
+      or_simple.
       reflexivity.
-  + t.
+  + simpl; or_simple; trivial.
     remember (compare_regex r1 s1) as c1.
     remember (compare_regex r2 s2) as c2.
-    induction c1; try t.
-    * induction c2; try t.
+    induction c1; try simpl; or_simple; trivial.
+    * induction c2; try simpl; or_simple; trivial.
       -- symmetry in Heqc1.
          symmetry in Heqc2.
          apply regex_proof_compare_eq_is_equal in Heqc1.
          apply regex_proof_compare_eq_is_equal in Heqc2.
          rewrite Heqc1.
          rewrite Heqc2.
-         o.
+         or_simple.
          reflexivity.
 - intros.
-  induction s; try (t; fail).
+  induction s; try (simpl; or_simple; trivial; fail).
   + assert (merge_or (not r) (or s1 s2) =
       match compare (not r) s1 with
       | Lt => or (not r) (or s1 s2)
       | Eq => (or s1 s2)
       | Gt => or s1 (merge_or (not r) s2)
       end
-    ) as step1. t. rewrite step1.
+    ) as step1. simpl; or_simple; trivial. rewrite step1.
     remember (compare (not r) s1).
     induction c.
     * symmetry in Heqc.
       apply regex_proof_compare_eq_is_equal in Heqc.
       rewrite Heqc.
-      o.
+      or_simple.
       reflexivity.
     * reflexivity.
-    * o.
+    * or_simple.
       rewrite <- IHs2.
-      o.
+      or_simple.
       reflexivity.
-  + t.
+  + simpl; or_simple; trivial.
     remember (compare_regex r s) as c.
-    induction c; try t.
+    induction c; try simpl; or_simple; trivial.
     * symmetry in Heqc.
       apply regex_proof_compare_eq_is_equal in Heqc.
       rewrite Heqc.
-      o.
+      or_simple.
       reflexivity.
 - intros.
-  induction s; try (t; fail).
+  induction s; try (simpl; or_simple; trivial; fail).
   + assert (merge_or (zero_or_more r) (or s1 s2) =
       match compare (zero_or_more r) s1 with
       | Lt => or (zero_or_more r) (or s1 s2)
       | Eq => (or s1 s2)
       | Gt => or s1 (merge_or (zero_or_more r) s2)
       end
-    ) as step1. t. rewrite step1.
+    ) as step1. simpl; or_simple; trivial. rewrite step1.
     remember (compare (zero_or_more r) s1).
     induction c.
     * symmetry in Heqc.
       apply regex_proof_compare_eq_is_equal in Heqc.
       rewrite Heqc.
-      o.
+      or_simple.
       reflexivity.
     * reflexivity.
-    * o.
+    * or_simple.
       rewrite <- IHs2.
-      o.
+      or_simple.
       reflexivity.
-  + t.
+  + simpl; or_simple; trivial.
     remember (compare_regex r s) as c.
-    induction c; try t.
+    induction c; try simpl; or_simple; trivial.
     * symmetry in Heqc.
       apply regex_proof_compare_eq_is_equal in Heqc.
       rewrite Heqc.
-      o.
+      or_simple.
       reflexivity. 
 Qed.
 

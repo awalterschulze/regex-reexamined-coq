@@ -1,9 +1,11 @@
+(* orb_simple is a module specifically created for the orb_simple tactic,
+   which simplifies orb expressions.
+*)
+
 Set Implicit Arguments.
 Set Asymmetric Patterns.
 
 Require Import Bool.
-
-(* orb_simple is a module specifically created for the orb_simple tactic. *)
 
 (* orb_reorder_and_remove_duplicates matches specific instances of orb combinators
    it then reorders then and remove duplicates with the hope that this would
