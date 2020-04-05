@@ -9,8 +9,8 @@ Require Import regex.
 Fixpoint size {X: Set} (r: regex X) := 
   match r with
   | nothing => 1
-  | empty => 2
-  | char _ => 3
+  | empty => 1
+  | char _ => 1
   | (or s t) => 1 + size s + size t
   | (and s t) => 1 + size s + size t
   | (concat s t) => 1 + size s + size t

@@ -30,6 +30,41 @@ Class comparable (X : Set) :=
     , compare x z = Gt
   }.
 
+(* compare_to_eq turns an hypothesis:
+  `Eq = compare x y` into:
+  `x = y`
+*)
+Ltac compare_to_eq :=
+  match goal with
+  | [ H_Eq_Compare : Eq = ?Compare |- _ ] =>
+    symmetry in H_Eq_Compare;
+    apply proof_compare_eq_is_equal in H_Eq_Compare
+  end.
+
+Lemma test_tactic_compare_to_eq
+  : forall {X: Set}
+           {tc: comparable X}
+           (x y: X)
+           (p: Eq = compare x y),
+  x = y.
+Proof.
+intros.
+compare_to_eq.
+rewrite p.
+reflexivity.
+Qed.
+
+(* induction_on_compare starts induction on its input parameter `Compare`.
+   It makes sense to remember this comparison, so that it be rewritten to an
+   equality in the Eq induction goal.
+*)
+Ltac induction_on_compare Compare :=
+  remember Compare;
+  match goal with
+  | [ C: comparison |- _ ] =>
+    induction C; [ (* Eq *) compare_to_eq | (* Lt *) | (* Gt *)]
+  end.
+
 Theorem proof_compare_eq_symm
   : forall {X: Set}
            {tc: comparable X}
@@ -53,8 +88,7 @@ Theorem compare_eq_is_only_equal
   , compare x1 x2 = Eq.
 Proof.
 intros.
-remember (compare x1 x2) as c.
-induction c.
+induction_on_compare (compare x1 x2).
 - reflexivity.
 - symmetry in Heqc.
   symmetry in p.
