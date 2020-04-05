@@ -138,6 +138,28 @@ Instance comparable_regex {X: Set} {tc: comparable X} : comparable (regex X) :=
   ; proof_compare_gt_assoc := regex_proof_compare_gt_assoc
   }.
 
+(* compare_regex_to_eq turns an hypothesis:
+  `Eq = compare x y` into:
+  `x = y`
+*)
+Ltac compare_regex_to_eq :=
+  match goal with
+  | [ H_Eq_Compare : Eq = ?Compare |- _ ] =>
+    symmetry in H_Eq_Compare; 
+    apply regex_proof_compare_eq_is_equal in H_Eq_Compare
+  end.
+
+(* induction_on_compare_regex starts induction on its input parameter `Compare`.
+   It makes sense to remember this comparison, so that it be rewritten to an
+   equality in the Eq induction goal.
+*)
+Ltac induction_on_compare_regex Compare :=
+  remember Compare;
+  match goal with
+  | [ C: comparison |- _ ] =>
+    induction C; [ compare_regex_to_eq | | ]
+  end.
+
 (* test_compare_list simply tests whether nat can be used
    with a function that expects a comparable instance.
    compare_list is defined in comparable, 
