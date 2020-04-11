@@ -1,5 +1,8 @@
 .DS_Store
+.idea
 *.glob
 *.aux
 *.vo
+*.vok
+*.vos
 \#*.v\#
