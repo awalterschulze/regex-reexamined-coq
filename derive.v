@@ -72,6 +72,27 @@ matches expressions it can spot.
 Ltac simpl_matches :=
   cbn; repeat fold_matches.
 
+Theorem or_is_logical_or: forall {X: Set} {tc: comparable X} (xs: list X) (r s: regex X),
+  matches (or r s) xs = (orb (matches r xs) (matches s xs)).
+Proof.
+  induction xs; intros; simpl_matches.
+  - trivial.
+  - apply IHxs.
+Qed.
+
+Theorem nothing_is_terminating : forall {X: Set} {tc: comparable X} (xs: list X),
+  matches (nothing _) xs = false.
+Proof.
+  induction xs; intros; simpl_matches; trivial.
+Qed.
+
+(* or_simple simplifies or expressions *)
+Ltac or_simple := repeat
+  (  orb_simple
+  || rewrite or_is_logical_or
+  || rewrite nothing_is_terminating
+  ).
+
 (* r&r = r *)
 Theorem and_idemp : forall {X: Set} {tc: comparable X} (xs: list X) (r1 r2: regex X) (p: compare_regex r1 r2 = Eq),
   matches (and r1 r2) xs = matches r1 xs.
@@ -147,14 +168,6 @@ Proof.
 (* TODO: Good First Issue *)
 Admitted.
 
-Theorem or_is_logical_or: forall {X: Set} {tc: comparable X} (xs: list X) (r s: regex X),
-  matches (or r s) xs = (orb (matches r xs) (matches s xs)).
-Proof.
-  induction xs; intros; simpl_matches.
-  - trivial.
-  - apply IHxs.
-Qed.
-
 (* concat (or r s) t => or (concat r t) (concat s t) *)
 Theorem concat_or_distrib_r': forall
   {X: Set}
@@ -172,23 +185,19 @@ induction xs.
   + cbn.
     repeat rewrite or_is_logical_or.
     rewrite IHxs.
-    repeat rewrite or_is_logical_or.
-    orb_simple.
+    or_simple.
   + cbn.
     repeat rewrite or_is_logical_or.
     rewrite IHxs.
-    repeat rewrite or_is_logical_or.
-    orb_simple.
+    or_simple.
   + cbn.
     repeat rewrite or_is_logical_or.
     rewrite IHxs.
-    repeat rewrite or_is_logical_or.
-    orb_simple.
+    or_simple.
   + cbn.
     repeat rewrite or_is_logical_or.
     rewrite IHxs.
-    repeat rewrite or_is_logical_or.
-    orb_simple.
+    or_simple.
 Qed.
 
 (* (r.s).t = r.(s.t) *)
@@ -225,12 +234,6 @@ induction xs.
   reflexivity.
 - simpl.
   exact IHxs.
-Qed.
-
-Theorem nothing_is_terminating : forall {X: Set} {tc: comparable X} (xs: list X),
-  matches (nothing _) xs = false.
-Proof.
-  induction xs; intros; simpl_matches; trivial.
 Qed.
 
 Theorem concat_nothing_r :
