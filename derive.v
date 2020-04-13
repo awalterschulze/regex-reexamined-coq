@@ -2,11 +2,13 @@ Set Implicit Arguments.
 Set Asymmetric Patterns.
 
 Require Import List.
+Require Import Bool.
 
 Require Import comparable.
 Require Import compare_regex.
 Require Import nullable.
 Require Import regex.
+Require Import reduce_orb.
 
 Definition is_eq {X: Set} {tc: comparable X} (x y: X) : bool :=
   match compare x y with
@@ -43,8 +45,16 @@ Fixpoint derive {X: Set} {tc: comparable X} (r: regex X) (x: X) : regex X :=
   end.
 
 Definition matches {X: Set} {tc: comparable X} (r: regex X) (xs: list X) : bool :=
-  nullable (fold_left derive xs r)
-.
+  nullable (fold_left derive xs r).
+
+Ltac fold_matches :=
+  match goal with
+    | [ |- context [nullable (fold_left derive ?XS ?R)] ] =>
+      fold (matches R XS)
+  end.
+
+Ltac reduce_matches :=
+  cbn; repeat fold_matches.
 
 (* r&r = r *)
 Theorem and_idemp : forall {X: Set} {tc: comparable X} (xs: list X) (r1 r2: regex X) (p: compare_regex r1 r2 = Eq),
@@ -118,14 +128,10 @@ Qed.
 Theorem and_is_logical_and: forall {X: Set} {tc: comparable X} (xs: list X) (r s: regex X),
   matches (and r s) xs = (andb (matches r xs) (matches s xs)).
 Proof.
-(* TODO: Good First Issue *)
-Admitted.
-
-(* (r.s).t = r.(s.t) *)
-Theorem concat_assoc: forall {X: Set} {tc: comparable X} (xs: list X) (r s t: regex X),
-  matches (concat (concat r s) t) xs = matches (concat r (concat s t)) xs.
-(* TODO: Good First Issue *)
-Admitted.
+  induction xs; intros; reduce_matches.
+  - trivial.
+  - apply IHxs.
+Qed.
 
 (* nothing.r = nothing *)
 Theorem concat_nothing : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
@@ -137,6 +143,79 @@ induction xs.
   reflexivity.
 - simpl.
   exact IHxs.
+Qed.
+
+
+Theorem or_is_logical_or: forall {X: Set} {tc: comparable X} (xs: list X) (r s: regex X),
+  matches (or r s) xs = (orb (matches r xs) (matches s xs)).
+Proof.
+  induction xs; intros; reduce_matches.
+  - reflexivity.
+  - apply IHxs.
+Qed.
+
+Theorem nothing_is_terminating : forall {X: Set} {tc: comparable X} (xs: list X),
+  matches (nothing _) xs = false.
+Proof.
+  induction xs; intros; reduce_matches; trivial.
+Qed.
+
+Theorem concat_nothing_r :
+  forall {X : Set}
+         {tc : comparable X}
+         (xs : list X)
+         (r : regex X),
+    matches (concat r (nothing _)) xs = matches (nothing _) xs.
+Proof.
+  induction xs; intros; reduce_matches.
+  - rewrite andb_false_r.
+    reflexivity.
+
+  - destruct (nullable r).
+    + rewrite or_is_logical_or.
+      rewrite IHxs.
+      rewrite orb_diag.
+      reflexivity.
+    + rewrite IHxs.
+      reflexivity.
+Qed.
+
+Lemma concat_or_distrib:
+  forall {X: Set}
+         {tc: comparable X}
+         (xs: list X)
+         (r s t: regex X),
+    matches (concat (or r s) t) xs = matches (concat r t) xs || matches (concat s t) xs.
+Proof.
+  induction xs; intros; reduce_matches.
+  - rewrite andb_orb_distrib_l.
+    reflexivity.
+  - destruct (nullable r), (nullable s);
+      reduce_matches;
+      repeat rewrite or_is_logical_or;
+      try apply IHxs;
+      try rewrite IHxs;
+      reduce_orb.
+    + reflexivity.
+    + reflexivity.
+    + rewrite orb_assoc.
+      reflexivity.
+Qed.
+
+(* (r.s).t = r.(s.t) *)
+Theorem concat_assoc: forall {X: Set} {tc: comparable X} (xs: list X) (r s t: regex X),
+  matches (concat (concat r s) t) xs = matches (concat r (concat s t)) xs.
+Proof.
+  induction xs; intros; reduce_matches.
+  - firstorder.
+  - destruct (nullable r), (nullable s);
+      reduce_matches;
+      repeat rewrite or_is_logical_or;
+      try apply IHxs;
+      try rewrite IHxs;
+      rewrite concat_or_distrib;
+      rewrite IHxs;
+      firstorder.
 Qed.
 
 Lemma fold_at_nothing : forall {X: Set} {tc: comparable X} (xs : list X), (fold_left derive xs (nothing _) = (nothing _)).
@@ -187,14 +266,31 @@ Qed.
 (* empty.r = r *)
 Theorem concat_empty : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
   matches (concat (empty _) r) xs = matches r xs.
-(* TODO: Good First Issue *)
-Admitted.
+Proof.
+  induction xs; intros; reduce_matches.
+  - reflexivity.
+  - rewrite or_is_logical_or.
+    rewrite concat_nothing.
+    rewrite nothing_is_terminating.
+    rewrite orb_false_l.
+    reflexivity.
+Qed.
 
 (* r.empty = r *)
 Theorem concat_empty2: forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
   matches (concat r (empty _)) xs = matches r xs.
-(* TODO: Good First Issue *)
-Admitted.
+Proof.
+  induction xs; intros; reduce_matches.
+  - rewrite andb_true_r.
+    reflexivity.
+  - case (nullable r).
+    + rewrite or_is_logical_or.
+      rewrite IHxs.
+      rewrite nothing_is_terminating.
+      rewrite orb_false_r.
+      reflexivity.
+    + apply IHxs.
+Qed.
 
 (* r|r = r *)
 Theorem or_idemp : forall {X: Set} {tc: comparable X} (xs: list X) (r1 r2: regex X) (p: compare_regex r1 r2 = Eq),
@@ -242,8 +338,9 @@ Qed.
 (* not(nothing)|r = not(nothing) *)
 Theorem or_not_nothing : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
   matches (or (not (nothing _)) r) xs = matches (not (nothing _)) xs.
-(* TODO: Good First Issue *)
-Admitted.
+Proof.
+  induction xs; intros; reduce_matches; trivial.
+Qed.
 
 (* nothing|r = r *)
 Theorem or_id : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
@@ -258,12 +355,6 @@ induction xs.
   apply IHxs.
 Qed.
 
-Theorem or_is_logical_or: forall {X: Set} {tc: comparable X} (xs: list X) (r s: regex X),
-  matches (or r s) xs = (orb (matches r xs) (matches s xs)).
-Proof.
-(* TODO: Good First Issue *)
-Admitted.
-
 (* zero_or_more(zero_or_more(r)) = zero_or_more(r) *)
 Theorem zero_or_more_zero_or_more : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
   matches (zero_or_more (zero_or_more r)) xs = matches (zero_or_more r) xs.
@@ -273,8 +364,12 @@ Admitted.
 (* (empty)* = empty *)
 Theorem zero_or_more_empty : forall {X: Set} {tc: comparable X} (xs: list X),
   matches (zero_or_more (empty _)) xs = matches (empty _) xs.
-(* TODO: Good First Issue *)
-Admitted.
+Proof.
+  induction xs; intros; reduce_matches.
+  - trivial.
+  - rewrite concat_nothing.
+    reflexivity.
+Qed.
 
 (* (nothing)* = empty *)
 Theorem nothing_zero_or_more : forall {X: Set} {tc: comparable X} (xs: list X),
@@ -292,24 +387,25 @@ Qed.
 Theorem not_not : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
   matches (not (not r)) xs = matches r xs.
 Proof.
-(* TODO: Good First Issue *)
-Admitted.
-
-Theorem nothing_is_terminating : forall {X: Set} {tc: comparable X} (xs: list X),
-  matches (nothing _) xs = false.
-Proof.
-(* TODO: Good First Issue *)
-Admitted.
+  induction xs; intros; reduce_matches.
+  - rewrite negb_involutive.
+    reflexivity.
+  - apply IHxs.
+Qed.
 
 Theorem not_nothing_is_terminating : forall {X: Set} {tc: comparable X} (xs: list X),
   matches (not (nothing _)) xs = true.
 Proof.
-(* TODO: Good First Issue *)
-Admitted.
+  induction xs; intros; reduce_matches.
+  - trivial.
+  - apply IHxs.
+Qed.
 
 (* not(not(r)) = r *)
 Theorem not_is_logical_not : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
   matches (not r) xs = negb (matches r xs).
 Proof.
-(* TODO: Good First Issue *)
-Admitted.
+  induction xs; intros; reduce_matches.
+  - reflexivity.
+  - apply IHxs.
+Qed.

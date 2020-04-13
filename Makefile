@@ -11,6 +11,7 @@ build:
 	coqc size.v
 	coqc nullable.v
 	coqc compare_regex.v
+	coqc reduce_orb.v
 
 	coqc derive.v
 	coqc derive_simple.v
