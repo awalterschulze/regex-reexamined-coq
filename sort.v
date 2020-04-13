@@ -5,7 +5,6 @@ Require Import List.
 
 Require Import comparable.
 
-
 (* is_sorted is a property that says whether a list is sorted *)
 Fixpoint is_sorted {X: Set} {tc: comparable X} (xs: list X) : Prop :=
   match xs with
@@ -19,6 +18,20 @@ Fixpoint is_sorted {X: Set} {tc: comparable X} (xs: list X) : Prop :=
       end
     end
   end.
+
+Lemma is_sorted_sufficient_cond
+  {X: Set}
+  {tc: comparable X}
+  (x x' : X)
+  (xs: list X):
+  ((compare x x' = Lt) \/ (compare x x' = Eq)) ->
+  (is_sorted (x'::xs)) ->
+  is_sorted (x::x'::xs).
+Proof.
+intros.
+unfold is_sorted.
+destruct H; rewrite H; trivial.
+Qed.
 
 Inductive is_sorted' {X: Set} {tc: comparable X} : list X -> Prop :=
   | empty_sorted' : is_sorted' nil

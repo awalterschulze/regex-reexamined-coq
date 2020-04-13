@@ -4,7 +4,7 @@ Set Asymmetric Patterns.
 Require Import List.
 
 Class comparable (X : Set) :=
-  { compare : X -> X -> comparison
+  { compare : X -> X -> comparison (* Eq | Lt | Gt *)
 
   ; proof_compare_eq_is_equal
     : forall (x y: X)
@@ -33,12 +33,15 @@ Class comparable (X : Set) :=
 (* compare_to_eq turns an hypothesis:
   `Eq = compare x y` into:
   `x = y`
+  and then tries to rewrite with it.
 *)
 Ltac compare_to_eq :=
   match goal with
   | [ H_Eq_Compare : Eq = ?Compare |- _ ] =>
     symmetry in H_Eq_Compare;
-    apply proof_compare_eq_is_equal in H_Eq_Compare
+    let Heq := fresh "Heq"
+    in apply proof_compare_eq_is_equal in H_Eq_Compare as Heq;
+       try (rewrite Heq)
   end.
 
 Lemma test_tactic_compare_to_eq
@@ -49,21 +52,35 @@ Lemma test_tactic_compare_to_eq
   x = y.
 Proof.
 intros.
+set (Heq := tc).
 compare_to_eq.
-rewrite p.
 reflexivity.
 Qed.
 
-(* induction_on_compare starts induction on its input parameter `Compare`.
+(* induction_on_compare starts induction on a `compare` expression in the goal.
    It makes sense to remember this comparison, so that it be rewritten to an
    equality in the Eq induction goal.
 *)
-Ltac induction_on_compare Compare :=
-  remember Compare;
+Ltac induction_on_compare :=
+  (*
+  Find an expression (compare ?X ?Y)
+  inside the goal and remember it.
+  *)
+  match goal with
+  | [ |- context [(compare ?X ?Y)] ] =>
+    remember (compare X Y)
+  end;
+  (* remember (compare a b) =>
+    [
+    c: comparison
+    Heqc: c = compare a b
+    |- _ ]
+  *)
   match goal with
   | [ C: comparison |- _ ] =>
     induction C; [ (* Eq *) compare_to_eq | (* Lt *) | (* Gt *)]
-  end.
+  end
+.
 
 Theorem proof_compare_eq_symm
   : forall {X: Set}
@@ -88,7 +105,7 @@ Theorem compare_eq_is_only_equal
   , compare x1 x2 = Eq.
 Proof.
 intros.
-induction_on_compare (compare x1 x2).
+induction_on_compare.
 - reflexivity.
 - symmetry in Heqc.
   symmetry in p.
@@ -178,8 +195,8 @@ Theorem compare_gt_lt_symm
   , compare x2 x1 = Lt.
 Proof.
   intros.
-  induction_on_compare (compare x2 x1).
-  - rewrite Heqc in p.
+  induction_on_compare.
+  - rewrite Heq in p.
     rewrite proof_compare_eq_reflex in p.
     discriminate.
   - trivial.
