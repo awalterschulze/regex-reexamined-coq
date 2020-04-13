@@ -2,7 +2,7 @@
 
 ## How to start
 
-1. Create a pull request
+1. Create a pull request on master
 2. Make sure the github action that automatically checks your proofs passes.
 3. Wait for at least one approval from a reviewer
 4. Merge (or poke for a merge, depending on your permissions)

@@ -13,6 +13,7 @@ Require Import regex.
    nullable a            = false
    nullable (abc)*|ab    = true
    nullable a(abc)*|ab   = false
+   nullable !(a)         = true
 *)
 Fixpoint nullable {X: Set} {tc: comparable X} (r: regex X) : bool :=
   match r with

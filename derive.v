@@ -6,6 +6,7 @@ Require Import List.
 Require Import comparable.
 Require Import compare_regex.
 Require Import nullable.
+Require Import orb_simple.
 Require Import regex.
 
 Definition is_eq {X: Set} {tc: comparable X} (x y: X) : bool :=
@@ -45,6 +46,30 @@ Fixpoint derive {X: Set} {tc: comparable X} (r: regex X) (x: X) : regex X :=
 Definition matches {X: Set} {tc: comparable X} (r: regex X) (xs: list X) : bool :=
   nullable (fold_left derive xs r)
 .
+
+(* fold_matches tries to find a expression
+   `nullable (fold_left derive XS R)`
+   in the goal, where XS and R are variables.
+   It then applies the fold tactic to
+   refold:
+   `nullable (fold_left derive XS R)`
+   into:
+   `matches XS R`
+   since that is the definition of matches.
+*)
+Ltac fold_matches :=
+  match goal with
+    | [ |- context [nullable (fold_left derive ?XS ?R)] ] =>
+      fold (matches R XS)
+  end.
+
+(*
+simpl_matches simplifies the current expression
+with the cbn tactic and tries to fold back up any
+matches expressions it can spot.
+*)
+Ltac simpl_matches :=
+  cbn; repeat fold_matches.
 
 (* r&r = r *)
 Theorem and_idemp : forall {X: Set} {tc: comparable X} (xs: list X) (r1 r2: regex X) (p: compare_regex r1 r2 = Eq),
@@ -121,11 +146,71 @@ Proof.
 (* TODO: Good First Issue *)
 Admitted.
 
-(* (r.s).t = r.(s.t) *)
-Theorem concat_assoc: forall {X: Set} {tc: comparable X} (xs: list X) (r s t: regex X),
-  matches (concat (concat r s) t) xs = matches (concat r (concat s t)) xs.
+Theorem or_is_logical_or: forall {X: Set} {tc: comparable X} (xs: list X) (r s: regex X),
+  matches (or r s) xs = (orb (matches r xs) (matches s xs)).
+Proof.
 (* TODO: Good First Issue *)
 Admitted.
+
+(* concat (or r s) t => or (concat r t) (concat s t) *)
+Theorem concat_or_distrib_r: forall
+  {X: Set}
+  {tc: comparable X}
+  (xs: list X)
+  (r s t: regex X),
+  matches (concat (or r s) t) xs
+  = matches (or (concat r t) (concat s t)) xs.
+Proof.
+induction xs.
+- intros. simpl_matches.
+  orb_simple.
+- intros. simpl_matches.
+  case (nullable r), (nullable s).
+  + cbn.
+    repeat rewrite or_is_logical_or.
+    rewrite IHxs.
+    repeat rewrite or_is_logical_or.
+    orb_simple.
+  + cbn.
+    repeat rewrite or_is_logical_or.
+    rewrite IHxs.
+    repeat rewrite or_is_logical_or.
+    orb_simple.
+  + cbn.
+    repeat rewrite or_is_logical_or.
+    rewrite IHxs.
+    repeat rewrite or_is_logical_or.
+    orb_simple.
+  + cbn.
+    repeat rewrite or_is_logical_or.
+    rewrite IHxs.
+    repeat rewrite or_is_logical_or.
+    orb_simple.
+Qed.
+
+(* (r.s).t = r.(s.t) *)
+Theorem concat_assoc: forall
+  {X: Set}
+  {tc: comparable X}
+  (xs: list X)
+  (r s t: regex X),
+  matches (concat (concat r s) t) xs
+  = matches (concat r (concat s t)) xs.
+Proof.
+induction xs.
+- intros.
+  cbn.
+  firstorder.
+- intros.
+  simpl_matches.
+  case (nullable r), (nullable s);
+  try ( cbn;
+    repeat rewrite or_is_logical_or;
+    try rewrite concat_or_distrib_r;
+    repeat rewrite or_is_logical_or;
+    rewrite IHxs;
+    orb_simple).
+Qed.
 
 (* nothing.r = nothing *)
 Theorem concat_nothing : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
@@ -257,12 +342,6 @@ induction xs.
   simpl.
   apply IHxs.
 Qed.
-
-Theorem or_is_logical_or: forall {X: Set} {tc: comparable X} (xs: list X) (r s: regex X),
-  matches (or r s) xs = (orb (matches r xs) (matches s xs)).
-Proof.
-(* TODO: Good First Issue *)
-Admitted.
 
 (* zero_or_more(zero_or_more(r)) = zero_or_more(r) *)
 Theorem zero_or_more_zero_or_more : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
