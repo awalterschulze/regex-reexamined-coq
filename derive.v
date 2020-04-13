@@ -156,7 +156,7 @@ Proof.
 Qed.
 
 (* concat (or r s) t => or (concat r t) (concat s t) *)
-(* Theorem concat_or_distrib_r: forall
+Theorem concat_or_distrib_r': forall
   {X: Set}
   {tc: comparable X}
   (xs: list X)
@@ -192,7 +192,7 @@ induction xs.
 Qed.
 
 (* (r.s).t = r.(s.t) *)
-Theorem concat_assoc: forall
+Theorem concat_assoc': forall
   {X: Set}
   {tc: comparable X}
   (xs: list X)
@@ -209,11 +209,11 @@ induction xs.
   case (nullable r), (nullable s);
   try ( cbn;
     repeat rewrite or_is_logical_or;
-    try rewrite concat_or_distrib_r;
+    try rewrite concat_or_distrib_r';
     repeat rewrite or_is_logical_or;
     rewrite IHxs;
     orb_simple).
-Qed. *)
+Qed.
 
 (* nothing.r = nothing *)
 Theorem concat_nothing_l : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
