@@ -7,7 +7,7 @@ Class comparable (X : Set) :=
   { compare : X -> X -> comparison (* Eq | Lt | Gt *)
 
   ; proof_compare_eq_is_equal
-    : forall (x y: X) 
+    : forall (x y: X)
              (p: compare x y = Eq)
     , x = y
   ; proof_compare_eq_reflex
@@ -193,8 +193,18 @@ Theorem compare_gt_lt_symm
            (x1 x2: X)
            (p: compare x1 x2 = Gt)
   , compare x2 x1 = Lt.
-(* TODO: Good First Issue *)
-Admitted.
+Proof.
+  intros.
+  induction_on_compare.
+  - rewrite Heq in p.
+    rewrite proof_compare_eq_reflex in p.
+    discriminate.
+  - trivial.
+  - symmetry in Heqc.
+    set (a := proof_compare_gt_assoc x1 x2 x1 p Heqc).
+    rewrite proof_compare_eq_reflex in a.
+    discriminate.
+Qed.
 
 Fixpoint comparable_list {X: Set} {tc: comparable X} (xs: list X) (ys: list X) : comparison :=
   match xs with
