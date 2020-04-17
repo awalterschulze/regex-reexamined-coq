@@ -11,7 +11,6 @@ Require Import comparable.
 Require Import compare_regex.
 Require Import dup.
 Require Import derive.
-Require Import derive_simple.
 Require Import nullable.
 Require Import orb_simple.
 Require Import regex.

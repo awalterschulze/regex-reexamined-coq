@@ -14,7 +14,6 @@ build:
 	coqc reduce_orb.v
 
 	coqc derive.v
-	coqc derive_simple.v
 	coqc smart_or.v
 	coqc smart.v
 	coqc simplified.v
