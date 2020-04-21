@@ -6,79 +6,13 @@ Require Import Bool.
 
 Require Import comparable.
 Require Import compare_regex.
+Require Export derive_def.
 Require Import nullable.
 Require Import orb_simple.
 Require Import regex.
 Require Import reduce_orb.
+Require Import setoid.
 
-Definition is_eq {X: Set} {tc: comparable X} (x y: X) : bool :=
-  match compare x y with
-  | Eq => true
-  | _ => false
-  end.
-
-(* derive returns the regular expression that is left to match
-   after matching the input character x, for example:
-   derive (ba)*      b    = a(ba)*
-   derive a          a    = empty
-   derive b          a    = nothing
-   derive ab|a       a    = b|empty
-   derive bc         b    = c
-   derive (a|empty)b a    = b
-   derive (a|empty)b b    = empty
-   derive empty b    b    = empty
-*)
-Fixpoint derive {X: Set} {tc: comparable X} (r: regex X) (x: X) : regex X :=
-  match r with
-  | nothing => nothing _
-  | empty => nothing _
-  | char y => if is_eq x y
-    then empty _
-    else nothing _
-  | or s t => or (derive s x) (derive t x)
-  | and s t => and (derive s x) (derive t x)
-  | concat s t =>
-    if nullable s
-    then or (concat (derive s x) t) (derive t x)
-    else concat (derive s x) t
-  | not s => not (derive s x)
-  | zero_or_more s => concat (derive s x) (zero_or_more s)
-  end.
-
-Definition matches {X: Set} {tc: comparable X} (r: regex X) (xs: list X) : bool :=
-  nullable (fold_left derive xs r).
-
-(* fold_matches tries to find a expression
-   `nullable (fold_left derive XS R)`
-   in the goal, where XS and R are variables.
-   It then applies the fold tactic to
-   refold:
-   `nullable (fold_left derive XS R)`
-   into:
-   `matches XS R`
-   since that is the definition of matches.
-*)
-Ltac fold_matches :=
-  match goal with
-    | [ |- context [nullable (fold_left derive ?XS ?R)] ] =>
-      fold (matches R XS)
-  end.
-
-(*
-simpl_matches simplifies the current expression
-with the cbn tactic and tries to fold back up any
-matches expressions it can spot.
-*)
-Ltac simpl_matches :=
-  cbn; repeat fold_matches.
-
-Theorem or_is_logical_or: forall {X: Set} {tc: comparable X} (xs: list X) (r s: regex X),
-  matches (or r s) xs = (orb (matches r xs) (matches s xs)).
-Proof.
-  induction xs; intros; simpl_matches.
-  - trivial.
-  - apply IHxs.
-Qed.
 
 Theorem nothing_is_terminating : forall {X: Set} {tc: comparable X} (xs: list X),
   matches (nothing _) xs = false.
@@ -162,11 +96,6 @@ induction xs.
   apply IHxs.
 Qed.
 
-Theorem and_is_logical_and: forall {X: Set} {tc: comparable X} (xs: list X) (r s: regex X),
-  matches (and r s) xs = (andb (matches r xs) (matches s xs)).
-Proof.
-(* TODO: Good First Issue *)
-Admitted.
 
 (* concat (or r s) t => or (concat r t) (concat s t) *)
 Theorem concat_or_distrib_r': forall
@@ -475,11 +404,3 @@ Proof.
   - apply IHxs.
 Qed.
 
-(* not(not(r)) = r *)
-Theorem not_is_logical_not : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
-  matches (not r) xs = negb (matches r xs).
-Proof.
-  induction xs; intros; simpl_matches.
-  - reflexivity.
-  - apply IHxs.
-Qed.

@@ -1,10 +1,10 @@
 Set Implicit Arguments.
 
-Require Export Relations.
+Require Export Relation_Definitions.
 Require Export Setoid.
 
 Require Import comparable.
-Require Import derive.
+Require Import derive_def.
 Require Import nullable.
 Require Import orb_simple.
 Require Import regex.
@@ -165,6 +165,15 @@ Section RegexEq.
   Add Parametric Morphism: (@zero_or_more X)
       with signature regex_eq ==> regex_eq as zero_or_more_morph.
   Proof.
-    Admitted.
+  Admitted.
 
 End RegexEq.
+
+Existing Instance regex_setoid.
+Existing Instance and_morph_Proper.
+Existing Instance or_morph_Proper.
+Existing Instance not_morph_Proper.
+Existing Instance concat_morph_Proper.
+Existing Instance nullable_morph_Proper.
+Existing Instance derive_morph_Proper.
+
