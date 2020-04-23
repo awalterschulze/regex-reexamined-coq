@@ -32,9 +32,6 @@ Inductive matches {A} : regex -> (list A) ->  Prop :=
 
 Notation "r =? s" := (matches r s) (at level 80).
 
-(* Notation "r =~ s" := *)
-(*   (forall {A : Type} (xs : list A), matches r xs -> matches s xs) (at level 80). *)
-
 Theorem concat_empty_l: forall {A : Type}
                           (xs : list A)
                           (r : regex),
@@ -110,8 +107,7 @@ Proof.
   intros.
   remember (concat r s) as r'.
   induction H; (try inversion Heqr').
-  - rewrite H2 in *; clear H2.
-    rewrite H3 in *; clear H3.
+  - subst.
     clear Heqr' IHmatches1 IHmatches2.
     exists xs.
     exists ys.
@@ -150,7 +146,7 @@ Proof.
   (* TODO clean up above *)
 
 
-  rewrite H0 in *; clear H0.
+  subst.
   rewrite <- app_assoc.
 
   apply concat_matches.
@@ -189,10 +185,9 @@ Proof.
   intros.
   remember (or r s) as r'.
   induction H; (try inversion Heqr').
-  -
-    rewrite H1 in *; clear H1.
+  - subst.
     left; assumption.
-  - rewrite H2 in *; clear H2.
+  - subst.
     right; assumption.
 Qed.
 
@@ -205,8 +200,7 @@ Proof.
   intros.
   remember (concat (or r s) t) as r'.
   induction H; (try inversion Heqr').
-  - rewrite H2 in *; clear H2.
-    rewrite H3 in *; clear H3.
+  - subst.
     clear IHmatches2.
     clear IHmatches1.
 
@@ -271,7 +265,7 @@ Proof.
   remember (star r) as r'.
   induction H; (try inversion Heqr').
   - elim (H0 (eq_refl nil)).
-  - rewrite H3 in *; clear H3.
+  - subst.
     exists xs.
     exists ys.
     split.
@@ -297,7 +291,7 @@ Proof.
     cbn.
     assumption.
   (* star concat case *)
-  - rewrite H3 in *; clear H3.
+  - subst.
     clear IHmatches1.
     rewrite <- app_assoc.
     apply star_matches_concat.
@@ -317,7 +311,7 @@ Proof.
   remember (star (star r)) as r'.
   induction H; (try inversion Heqr').
   - apply star_matches_nil.
-  - rewrite H2 in *; clear H2.
+  - subst.
     apply star_app.
     + assumption.
     + apply IHmatches2.
