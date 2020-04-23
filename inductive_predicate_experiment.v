@@ -1,5 +1,14 @@
 Require Import List.
 
+(* TODO How do I just import this?? *)
+Module ListNotations.
+Notation "[ ]" := nil (format "[ ]") : list_scope.
+Notation "[ x ]" := (cons x nil) : list_scope.
+Notation "[ x ; y ; .. ; z ]" := (cons x (cons y .. (cons z nil) ..)) : list_scope.
+End ListNotations.
+
+Import ListNotations.
+
 Inductive regex {A : Type} : Type :=
   | fail    : regex
   | empty   : regex
@@ -8,35 +17,47 @@ Inductive regex {A : Type} : Type :=
   | or      : regex -> regex -> regex
   | star    : regex -> regex.
 
+Reserved Notation "r << xs" (at level 80).
+
 Inductive matches {A} : regex -> (list A) ->  Prop :=
-| empty_matches :
-    matches empty nil
+  | empty_matches :
+      empty << []
 
-| char_matches (a : A):
-    matches (char a) (a::nil)
+  | char_matches (a : A):
+      char a << [a]
 
-| concat_matches (r s : regex) (xs ys: list A) :
-    (matches r xs) -> (matches s ys) -> matches (concat r s) (xs ++ ys)
+  | concat_matches (r s : regex) (xs ys: list A) :
+      r << xs ->
+      s << ys ->
+      (* --------- *)
+      concat r s << xs ++ ys
 
-| or_matches_l (r s : regex) (xs : list A):
-    (matches r xs) -> matches (or r s) xs
+  | or_matches_l (r s : regex) (xs : list A):
+      r << xs ->
+      (* --------- *)
+      or r s << xs
 
-| or_matches_r (r s : regex) (xs : list A):
-    (matches s xs) -> matches (or r s) xs
+  | or_matches_r (r s : regex) (xs : list A):
+      s << xs ->
+      (* --------- *)
+      or r s << xs
 
-| star_matches_nil (r : regex):
-    matches (star r) nil
+  | star_matches_nil (r : regex):
+      star r << []
 
-| star_matches_concat (r : regex) (xs ys : list A):
-    matches r xs -> matches (star r) ys -> matches (star r) (xs ++ ys).
+  | star_matches_concat (r : regex) (xs ys : list A):
+      r << xs ->
+      star r << ys ->
+      (* --------- *)
+      star r << (xs ++ ys)
 
-Notation "r =? s" := (matches r s) (at level 80).
+where "r << xs" := (matches r xs).
 
 Theorem concat_empty_l: forall {A : Type}
                           (xs : list A)
                           (r : regex),
-    r =? xs
-    -> concat r empty =? xs.
+    r << xs
+    -> concat r empty << xs.
 Proof.
   intros.
   rewrite <- app_nil_r.
@@ -48,7 +69,7 @@ Qed.
 Theorem concat_empty_r: forall {A : Type}
                           (xs : list A)
                           (r : regex),
-    r =? xs -> concat r empty =? xs.
+    r << xs -> concat r empty << xs.
 Proof.
   intros.
   rewrite <- app_nil_r.
@@ -61,22 +82,22 @@ Theorem concat_nil:
   forall {A : Type}
     (xs : list A)
     (r : regex),
-    r =? xs
-    -> r =? (xs ++ nil).
+    r << xs
+    -> r << (xs ++ nil).
 Proof.
   intros.
   rewrite <- app_nil_r in H.
   assumption.
 Qed.
 
-Example regex_ex2 : (concat (char 1) (char 2)) =? (1::nil) ++ (2::nil).
+Example regex_ex2 : (concat (char 1) (char 2)) << [1] ++ [2].
 Proof.
   apply concat_matches.
   - apply char_matches.
   - apply char_matches.
 Qed.
 
-Example regex_ex3 : (char 1) =? (1::nil) ++ (2::nil) -> False.
+Example regex_ex3 : (char 1) << [1] ++ [2] -> False.
 Proof.
   intros.
   inversion H.
@@ -85,7 +106,7 @@ Qed.
 Theorem star1 : forall {A : Type}
                   (xs : list A)
                   (r : regex),
-    r =? xs -> (star r) =? xs.
+    r << xs -> (star r) << xs.
 Proof.
   intros.
   rewrite app_nil_end.
@@ -98,11 +119,11 @@ Theorem concatP:
   forall {A : Type}
     (xs : list A)
     (r s : regex),
-    concat r s =? xs
+    concat r s << xs
     -> (exists (prefix suffix : list A),
           xs = prefix ++ suffix
-          /\ r =? prefix
-          /\ s =? suffix).
+          /\ r << prefix
+          /\ s << suffix).
 Proof.
   intros.
   remember (concat r s) as r'.
@@ -120,8 +141,8 @@ Theorem concat_assoc:
   forall {A : Type}
     (l : list A)
     (r s t: regex),
-    (concat (concat r s) t) =? l
-    -> (concat r (concat s t)) =? l.
+    (concat (concat r s) t) << l
+    -> (concat r (concat s t)) << l.
 Proof.
   intros.
   apply concatP in H.
@@ -158,12 +179,12 @@ Theorem concat_assoc1:
   forall {A : Type}
     (xs ys zs l : list A)
     (r s t: regex),
-    r =? xs
-    -> s =? ys
-    -> t =? zs
+    r << xs
+    -> s << ys
+    -> t << zs
     -> l = xs ++ ys ++ zs
-    -> (concat (concat r s) t) =? l
-    -> (concat r (concat s t)) =? l.
+    -> (concat (concat r s) t) << l
+    -> (concat r (concat s t)) << l.
 Proof.
   intros.
   rewrite H2 in *.
@@ -179,8 +200,8 @@ Theorem orP:
   forall {A : Type}
     (xs : list A)
     (r s : regex),
-    or r s =? xs
-    -> r =? xs \/ s =? xs.
+    or r s << xs
+    -> r << xs \/ s << xs.
 Proof.
   intros.
   remember (or r s) as r'.
@@ -195,7 +216,7 @@ Theorem concat_or_distrib_r:
   forall {A : Type}
     (xs: list A)
     (r s t: regex),
-    (concat (or r s) t) =? xs -> or (concat r t) (concat s t) =? xs.
+    (concat (or r s) t) << xs -> or (concat r t) (concat s t) << xs.
 Proof.
   intros.
   remember (concat (or r s) t) as r'.
@@ -218,8 +239,8 @@ Theorem concat_fail_l:
   forall {A : Type}
     (xs : list A)
     (r : regex),
-    concat fail r =? xs
-    -> fail =? xs.
+    concat fail r << xs
+    -> fail << xs.
 Proof.
   intros.
   inversion H.
@@ -230,7 +251,7 @@ Theorem concat_fail_r:
   forall {A : Type}
     (xs : list A)
     (r : regex),
-    concat r fail =? xs -> fail =? xs.
+    concat r fail << xs -> fail << xs.
 Proof.
   intros.
   inversion H.
@@ -241,8 +262,8 @@ Theorem or_comm:
   forall {A : Type}
     (xs : list A)
     (r s : regex),
-    (or r s) =? xs
-    -> (or s r) =? xs.
+    (or r s) << xs
+    -> (or s r) << xs.
 Proof.
   intros.
   apply orP in H; elim H; intros.
@@ -254,12 +275,12 @@ Theorem starP:
   forall {A : Type}
     (xs : list A)
     (r : regex),
-    star r =? xs
+    star r << xs
     -> xs <> nil
     -> exists prefix suffix : list A,
         xs = prefix ++ suffix
-        /\ r =? prefix
-        /\ star r =? suffix.
+        /\ r << prefix
+        /\ star r << suffix.
 Proof.
   intros.
   remember (star r) as r'.
@@ -277,9 +298,9 @@ Lemma star_app:
   forall {A : Type}
     (xs ys : list A)
     (r : regex),
-    (star r) =? xs
-    -> (star r) =? ys
-    -> (star r) =? xs ++ ys.
+    (star r) << xs
+    -> (star r) << ys
+    -> (star r) << xs ++ ys.
 Proof.
   intros.
   remember (star r) as r'.
@@ -305,7 +326,7 @@ Theorem star_idem:
   forall {A : Type}
     (xs : list A)
     (r : regex),
-    star (star r) =? xs -> (star r) =? xs.
+    star (star r) << xs -> (star r) << xs.
 Proof.
   intros.
   remember (star (star r)) as r'.
