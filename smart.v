@@ -15,13 +15,13 @@ Require Import smart_or.
    This way we don't have to apply simplification after derivation.
    We hope this will also make it easier to prove things.
 *)
-Fixpoint sderive {X: Set} {tc: comparable X} (r: regex X) (x: X) : regex X :=
+Fixpoint sderive {X: Type} {tc: comparable X} (r: regex X) (x: X) : regex X :=
   match r with
-  | fail => fail _
-  | empty => fail _
+  | fail => fail
+  | empty => fail
   | char y => if is_eq x y
-    then empty _
-    else fail _
+    then empty
+    else fail
   | or s t => smart_or (derive s x) (derive t x)
   | and s t => and (derive s x) (derive t x)
   | concat s t =>
@@ -32,12 +32,12 @@ Fixpoint sderive {X: Set} {tc: comparable X} (r: regex X) (x: X) : regex X :=
   | star s => concat (derive s x) (star s)
   end.
 
-Definition smatches {X: Set} {tc: comparable X} (r: regex X) (xs: list X) : bool :=
+Definition smatches {X: Type} {tc: comparable X} (r: regex X) (xs: list X) : bool :=
   nullable (fold_left sderive xs r)
 .
 
 (* mathing without simplification is the same as with simplification *)
-Theorem simplify_is_correct : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
+Theorem simplify_is_correct : forall {X: Type} {tc: comparable X} (xs: list X) (r: regex X),
   matches r xs = smatches r xs.
 Proof.
 unfold matches.

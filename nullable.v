@@ -1,6 +1,3 @@
-Set Implicit Arguments.
-Set Asymmetric Patterns.
-
 Require Import List.
 
 Require Import comparable.
@@ -15,7 +12,7 @@ Require Import regex.
    nullable a(abc)*|ab   = false
    nullable !(a)         = true
 *)
-Fixpoint nullable {X: Set} {tc: comparable X} (r: regex X) : bool :=
+Fixpoint nullable {X: Type} {C: comparable X} (r: regex X) : bool :=
   match r with
   | fail => false
   | empty => true

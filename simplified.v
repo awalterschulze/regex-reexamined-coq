@@ -7,7 +7,7 @@ Require Import nullable.
 Require Import regex.
 
 (* simplified is a property that a regex's ors are somewhat simplified *)
-Fixpoint simplified {X: Set} {tc: comparable X} (r: regex X) : Prop :=
+Fixpoint simplified {X: Type} {tc: comparable X} (r: regex X) : Prop :=
   match r with
   | fail => True
   | empty => True
@@ -40,7 +40,7 @@ or
     - x3
     - x4
 *)
-Lemma test_simplified_or_all_left_in_order : forall {X: Set} {tc: comparable X} (x1 x2 x3 x4: X)
+Lemma test_simplified_or_all_left_in_order : forall {X: Type} {tc: comparable X} (x1 x2 x3 x4: X)
   (p12: compare x1 x2 = Lt)
   (p23: compare x2 x3 = Lt)
   (p34: compare x3 x4 = Lt),
@@ -61,7 +61,7 @@ or
     - x1
 *)
 Lemma test_simplified_or_all_left_out_of_order : forall
-  {X: Set}
+  {X: Type}
   {tc: comparable X}
   (x1 x2 x3 x4: X)
   (p12: compare x1 x2 = Lt)
@@ -89,7 +89,7 @@ or
     - x3
     - x4
 *)
-Lemma test_simplified_or_symmetric: forall {X: Set} {tc: comparable X} (x1 x2 x3 x4: X)
+Lemma test_simplified_or_symmetric: forall {X: Type} {tc: comparable X} (x1 x2 x3 x4: X)
   (p12: compare x1 x2 = Lt)
   (p23: compare x2 x3 = Lt)
   (p34: compare x3 x4 = Lt),

@@ -11,7 +11,7 @@ Require Import regex.
 
 Section RegexEq.
 
-  Context {X: Set}.
+  Context {X: Type}.
   Context {tc: comparable X}.
 
   Definition bool_eq (b1 b2: bool) : Prop := b1 = b2.
@@ -81,7 +81,7 @@ Section RegexEq.
     assumption.
   Qed.
 
-  Add Parametric Morphism: (@or X)
+  Add Parametric Morphism: or
       with signature regex_eq ==> regex_eq ==> regex_eq as or_morph.
   Proof.
     intros.
@@ -93,7 +93,7 @@ Section RegexEq.
     reflexivity.
   Qed.
 
-  Add Parametric Morphism: (@and X)
+  Add Parametric Morphism: and
     with signature regex_eq ==> regex_eq ==> regex_eq as and_morph.
   Proof.
     intros.
@@ -105,7 +105,7 @@ Section RegexEq.
     reflexivity.
   Qed.
 
-  Add Parametric Morphism: (@not X)
+  Add Parametric Morphism: not
     with signature regex_eq ==> regex_eq as not_morph.
   Proof.
     intros.
@@ -137,7 +137,6 @@ Section RegexEq.
       rewrite (nullable_morph H0).
       destruct (nullable x0).
       + repeat rewrite or_is_logical_or.
-        Check derive_morph.
         rewrite (derive_morph H1 (proof_compare_eq_reflex a)).
         replace (matches (concat (derive x0 a) y0) xs) with (matches (concat (derive x a) y) xs).
         * reflexivity.
@@ -151,7 +150,7 @@ Section RegexEq.
         * assumption.
   Qed.
 
-  Add Parametric Morphism: (@concat X)
+  Add Parametric Morphism: concat
       with signature regex_eq ==> regex_eq ==> regex_eq as concat_morph.
   Proof.
     intros.
@@ -162,9 +161,10 @@ Section RegexEq.
     - assumption.
   Qed.
 
-  Add Parametric Morphism: (@star X)
+  Add Parametric Morphism: star
       with signature regex_eq ==> regex_eq as star_morph.
   Proof.
+  (* TODO: Help Wanted *)
   Admitted.
 
 End RegexEq.

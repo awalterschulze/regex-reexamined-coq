@@ -1,6 +1,3 @@
-Set Implicit Arguments.
-Set Asymmetric Patterns.
-
 Require Import List.
 Require Import Bool.
 
@@ -13,9 +10,8 @@ Require Import regex.
 Require Import reduce_orb.
 Require Import setoid.
 
-
-Theorem fail_is_terminating : forall {X: Set} {tc: comparable X} (xs: list X),
-  matches (fail _) xs = false.
+Theorem fail_is_terminating : forall {X: Type} {C: comparable X} (xs: list X),
+  matches fail xs = false.
 Proof.
   induction xs; intros; simpl_matches; trivial.
 Qed.
@@ -27,8 +23,13 @@ Ltac or_simple := repeat
   || rewrite fail_is_terminating
   ).
 
+Section Derive.
+
+Context {X: Type}.
+Context {C: comparable X}.
+
 (* r&r = r *)
-Theorem and_idemp : forall {X: Set} {tc: comparable X} (xs: list X) (r1 r2: regex X) (p: compare_regex r1 r2 = Eq),
+Theorem and_idemp : forall (xs: list X) (r1 r2: regex X) (p: compare_regex r1 r2 = Eq),
   matches (and r1 r2) xs = matches r1 xs.
 Proof.
 unfold matches.
@@ -45,7 +46,7 @@ induction xs.
 Qed.
 
 (* r&s = s&r *)
-Theorem and_comm : forall {X: Set} {tc: comparable X} (xs: list X) (r1 r2: regex X),
+Theorem and_comm : forall (xs: list X) (r1 r2: regex X),
   matches (and r1 r2) xs = matches (and r2 r1) xs.
 Proof.
 unfold matches.
@@ -58,7 +59,7 @@ induction xs.
 Qed.
 
 (* (r&s)&t = r&(s&t) *)
-Theorem and_assoc : forall {X: Set} {tc: comparable X} (xs: list X) (r s t: regex X),
+Theorem and_assoc : forall (xs: list X) (r s t: regex X),
     matches (and (and r s) t) xs = matches (and r (and s t)) xs.
 Proof.
 unfold matches.
@@ -71,8 +72,8 @@ induction xs.
 Qed.
 
 (* fail&r = fail *)
-Theorem and_fail : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
-  matches (and (fail _) r) xs = matches (fail _) xs.
+Theorem and_fail : forall (xs: list X) (r: regex X),
+  matches (and fail r) xs = matches fail xs.
 Proof.
 unfold matches.
 induction xs.
@@ -84,8 +85,8 @@ induction xs.
 Qed.
 
 (* not(fail)&r = r *)
-Theorem and_not_fail : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
-    matches (and (not (fail _)) r) xs = matches r xs.
+Theorem and_not_fail : forall (xs: list X) (r: regex X),
+    matches (and (not fail) r) xs = matches r xs.
 Proof.
 unfold matches.
 induction xs.
@@ -99,8 +100,6 @@ Qed.
 
 (* concat (or r s) t => or (concat r t) (concat s t) *)
 Theorem concat_or_distrib_r': forall
-  {X: Set}
-  {tc: comparable X}
   (xs: list X)
   (r s t: regex X),
   matches (concat (or r s) t) xs
@@ -131,8 +130,6 @@ Qed.
 
 (* (r.s).t = r.(s.t) *)
 Theorem concat_assoc': forall
-  {X: Set}
-  {tc: comparable X}
   (xs: list X)
   (r s t: regex X),
   matches (concat (concat r s) t) xs
@@ -154,8 +151,8 @@ induction xs.
 Qed.
 
 (* fail.r = fail *)
-Theorem concat_fail_l : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
-  matches (concat (fail _) r) xs = matches (fail _) xs.
+Theorem concat_fail_l : forall (xs: list X) (r: regex X),
+  matches (concat fail r) xs = matches fail xs.
 Proof.
 unfold matches.
 induction xs.
@@ -166,11 +163,9 @@ induction xs.
 Qed.
 
 Theorem concat_fail_r :
-  forall {X : Set}
-         {tc : comparable X}
-         (xs : list X)
+  forall (xs : list X)
          (r : regex X),
-    matches (concat r (fail _)) xs = matches (fail _) xs.
+    matches (concat r fail) xs = matches fail xs.
 Proof.
   induction xs; intros; simpl_matches.
   - rewrite andb_false_r.
@@ -186,9 +181,7 @@ Qed.
 
 (* concat (or r s) t => or (concat r t) (concat s t) *)
 Lemma concat_or_distrib_r:
-  forall {X: Set}
-         {tc: comparable X}
-         (xs: list X)
+  forall (xs: list X)
          (r s t: regex X),
     matches (concat (or r s) t) xs = matches (or (concat r t) (concat s t)) xs.
 Proof.
@@ -205,7 +198,7 @@ Proof.
 Qed.
 
 (* (r.s).t = r.(s.t) *)
-Theorem concat_assoc: forall {X: Set} {tc: comparable X} (xs: list X) (r s t: regex X),
+Theorem concat_assoc: forall (xs: list X) (r s t: regex X),
   matches (concat (concat r s) t) xs = matches (concat r (concat s t)) xs.
 Proof.
   induction xs; intros; simpl_matches.
@@ -221,7 +214,7 @@ Proof.
       orb_simple.
 Qed.
 
-Lemma fold_at_fail : forall {X: Set} {tc: comparable X} (xs : list X), (fold_left derive xs (fail _) = (fail _)).
+Lemma fold_at_fail : forall (xs : list X), (fold_left derive xs fail = fail).
 Proof.
 simpl.
 intros.
@@ -232,7 +225,7 @@ induction xs.
   apply IHxs.
 Qed.
 
-Lemma nullable_fold : forall {X: Set} {tc: comparable X} (xs : list X) (r s: regex X), (nullable (fold_left derive xs (or r s))) = (orb (nullable (fold_left derive xs r)) (nullable (fold_left derive xs s))).
+Lemma nullable_fold : forall (xs : list X) (r s: regex X), (nullable (fold_left derive xs (or r s))) = (orb (nullable (fold_left derive xs r)) (nullable (fold_left derive xs s))).
 Proof.
 induction xs.
 - intros.
@@ -244,8 +237,8 @@ induction xs.
 Qed.
 
 (* r.fail = fail *)
-Theorem concat_fail_r' : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
-  matches (concat r (fail _)) xs = matches (fail _) xs.
+Theorem concat_fail_r' : forall (xs: list X) (r: regex X),
+  matches (concat r fail) xs = matches fail xs.
 Proof.
 unfold matches.
 induction xs.
@@ -257,7 +250,7 @@ induction xs.
   remember (nullable r).
   destruct b.
   + rewrite nullable_fold.
-    case (nullable(fold_left derive xs (fail _))).
+    case (nullable(fold_left derive xs fail)).
     * firstorder.
     * rewrite IHxs.
       rewrite fold_at_fail.
@@ -267,8 +260,8 @@ induction xs.
 Qed.
 
 (* empty.r = r *)
-Theorem concat_empty : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
-  matches (concat (empty _) r) xs = matches r xs.
+Theorem concat_empty : forall (xs: list X) (r: regex X),
+  matches (concat empty r) xs = matches r xs.
 Proof.
   induction xs; intros; simpl_matches.
   - reflexivity.
@@ -280,8 +273,8 @@ Proof.
 Qed.
 
 (* r.empty = r *)
-Theorem concat_empty2: forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
-  matches (concat r (empty _)) xs = matches r xs.
+Theorem concat_empty2: forall (xs: list X) (r: regex X),
+  matches (concat r empty) xs = matches r xs.
 Proof.
   induction xs; intros; simpl_matches.
   - rewrite andb_true_r.
@@ -296,7 +289,7 @@ Proof.
 Qed.
 
 (* r|r = r *)
-Theorem or_idemp : forall {X: Set} {tc: comparable X} (xs: list X) (r1 r2: regex X) (p: compare_regex r1 r2 = Eq),
+Theorem or_idemp : forall (xs: list X) (r1 r2: regex X) (p: compare_regex r1 r2 = Eq),
   matches (or r1 r2) xs = matches r1 xs.
 Proof.
 unfold matches.
@@ -313,7 +306,7 @@ induction xs.
 Qed.
 
 (* r|s = s|r *)
-Theorem or_comm : forall {X: Set} {tc: comparable X} (xs: list X) (r s: regex X),
+Theorem or_comm : forall (xs: list X) (r s: regex X),
   matches (or r s) xs = matches (or s r) xs.
 Proof.
 unfold matches.
@@ -326,7 +319,7 @@ induction xs.
 Qed.
 
 (* (r|s)|t = r|(s|t) *)
-Theorem or_assoc : forall {X: Set} {tc: comparable X} (xs: list X) (r s t: regex X),
+Theorem or_assoc : forall (xs: list X) (r s t: regex X),
   matches (or r (or s t)) xs = matches (or (or r s) t) xs.
 Proof.
 unfold matches.
@@ -339,15 +332,15 @@ induction xs.
 Qed.
 
 (* not(fail)|r = not(fail) *)
-Theorem or_not_fail : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
-  matches (or (not (fail _)) r) xs = matches (not (fail _)) xs.
+Theorem or_not_fail : forall (xs: list X) (r: regex X),
+  matches (or (not fail) r) xs = matches (not fail) xs.
 Proof.
   induction xs; intros; simpl_matches; trivial.
 Qed.
 
 (* fail|r = r *)
-Theorem or_id : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
-  matches (or r (fail _)) xs = matches r xs.
+Theorem or_id : forall (xs: list X) (r: regex X),
+  matches (or r fail) xs = matches r xs.
 Proof.
 unfold matches.
 induction xs.
@@ -359,14 +352,14 @@ induction xs.
 Qed.
 
 (* star(star(r)) = star(r) *)
-Theorem star_star : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
+Theorem star_star : forall (xs: list X) (r: regex X),
   matches (star (star r)) xs = matches (star r) xs.
 (* TODO: Good First Issue *)
 Admitted.
 
 (* (empty)* = empty *)
-Theorem star_empty : forall {X: Set} {tc: comparable X} (xs: list X),
-  matches (star (empty _)) xs = matches (empty _) xs.
+Theorem star_empty : forall (xs: list X),
+  matches (star empty) xs = matches empty xs.
 Proof.
   induction xs; intros; simpl_matches.
   - trivial.
@@ -375,8 +368,8 @@ Proof.
 Qed.
 
 (* (fail)* = empty *)
-Theorem fail_star : forall {X: Set} {tc: comparable X} (xs: list X),
-  matches (star (fail _)) xs = matches (empty _) xs.
+Theorem fail_star : forall (xs: list X),
+  matches (star fail) xs = matches empty xs.
 Proof.
 unfold matches.
 induction xs.
@@ -387,7 +380,7 @@ induction xs.
 Qed.
 
 (* not(not(r)) = r *)
-Theorem not_not : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
+Theorem not_not : forall (xs: list X) (r: regex X),
   matches (not (not r)) xs = matches r xs.
 Proof.
   induction xs; intros; simpl_matches.
@@ -396,11 +389,12 @@ Proof.
   - apply IHxs.
 Qed.
 
-Theorem not_fail_is_terminating : forall {X: Set} {tc: comparable X} (xs: list X),
-  matches (not (fail _)) xs = true.
+Theorem not_fail_is_terminating : forall (xs: list X),
+  matches (not fail) xs = true.
 Proof.
   induction xs; intros; simpl_matches.
   - trivial.
   - apply IHxs.
 Qed.
 
+End Derive.

@@ -12,7 +12,7 @@ Require Import smart.
 Require Import smart_or.
 
 (* simple is a simpler version of simplified to learn how to prove simplified in future *)
-Fixpoint simple {X: Set} {tc: comparable X} (r: regex X) : Prop :=
+Fixpoint simple {X: Type} {tc: comparable X} (r: regex X) : Prop :=
   match r with
   | fail => True
   | empty => True
@@ -25,7 +25,7 @@ Fixpoint simple {X: Set} {tc: comparable X} (r: regex X) : Prop :=
   | star s => simple s
   end.
 
-Lemma smart_or_is_simple: forall {X: Set} {tc: comparable X} (r s: regex X) (simple_r: simple r) (simple_s: simple s),
+Lemma smart_or_is_simple: forall {X: Type} {tc: comparable X} (r s: regex X) (simple_r: simple r) (simple_s: simple s),
   simple (smart_or r s).
 intros.
 induction r, s; simpl; try easy.

@@ -3,7 +3,7 @@ Set Asymmetric Patterns.
 
 Require Import List.
 
-Class comparable (X : Set) :=
+Class comparable (X : Type) :=
   { compare : X -> X -> comparison (* Eq | Lt | Gt *)
 
   ; proof_compare_eq_is_equal
@@ -45,7 +45,7 @@ Ltac compare_to_eq :=
   end.
 
 Lemma test_tactic_compare_to_eq
-  : forall {X: Set}
+  : forall {X: Type}
            {tc: comparable X}
            (x y: X)
            (p: Eq = compare x y),
@@ -83,7 +83,7 @@ Ltac induction_on_compare :=
 .
 
 Theorem proof_compare_eq_symm
-  : forall {X: Set}
+  : forall {X: Type}
            {tc: comparable X}
            (x y: X)
            (p: compare x y = Eq)
@@ -98,7 +98,7 @@ assumption.
 Qed.
 
 Theorem compare_eq_is_only_equal
-  : forall {X: Set}
+  : forall {X: Type}
            {tc: comparable X}
            (x1 x2: X)
            (p: compare x1 x2 = compare x2 x1)
@@ -120,7 +120,7 @@ induction_on_compare.
 Qed.
 
 Theorem compare_lt_not_symm_1
-  : forall {X: Set}
+  : forall {X: Type}
            {tc: comparable X}
            (x1 x2: X)
            (c12: compare x1 x2 = Lt)
@@ -135,7 +135,7 @@ discriminate.
 Qed.
 
 Theorem compare_lt_not_symm_2
-  : forall {X: Set}
+  : forall {X: Type}
            {tc: comparable X}
            (x1 x2: X)
            (c12: compare x1 x2 = Lt)
@@ -151,7 +151,7 @@ discriminate.
 Qed.
 
 Theorem compare_gt_not_symm
-  : forall {X: Set}
+  : forall {X: Type}
            {tc: comparable X}
            (x1 x2: X)
            (c12: compare x1 x2 = Gt)
@@ -167,7 +167,7 @@ discriminate.
 Qed.
 
 Theorem compare_lt_gt_symm
-  : forall {X: Set}
+  : forall {X: Type}
            {tc: comparable X}
            (x1 x2: X)
            (p: compare x1 x2 = Lt)
@@ -188,7 +188,7 @@ induction iH.
 Qed.
 
 Theorem compare_gt_lt_symm
-  : forall {X: Set}
+  : forall {X: Type}
            {tc: comparable X}
            (x1 x2: X)
            (p: compare x1 x2 = Gt)
@@ -206,7 +206,7 @@ Proof.
     discriminate.
 Qed.
 
-Fixpoint comparable_list {X: Set} {tc: comparable X} (xs: list X) (ys: list X) : comparison :=
+Fixpoint comparable_list {X: Type} {tc: comparable X} (xs: list X) (ys: list X) : comparison :=
   match xs with
   | nil => match ys with
       | nil => Eq

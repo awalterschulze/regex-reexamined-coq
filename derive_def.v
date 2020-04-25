@@ -1,6 +1,3 @@
-Set Implicit Arguments.
-Set Asymmetric Patterns.
-
 Require Import List.
 Require Import Bool.
 
@@ -8,7 +5,7 @@ Require Import comparable.
 Require Import nullable.
 Require Import regex.
 
-Definition is_eq {X: Set} {tc: comparable X} (x y: X) : bool :=
+Definition is_eq {X: Type} {tc: comparable X} (x y: X) : bool :=
   match compare x y with
   | Eq => true
   | _ => false
@@ -25,13 +22,13 @@ Definition is_eq {X: Set} {tc: comparable X} (x y: X) : bool :=
    derive (a|empty)b b    = empty
    derive empty b    b    = empty
 *)
-Fixpoint derive {X: Set} {tc: comparable X} (r: regex X) (x: X) : regex X :=
+Fixpoint derive {X: Type} {tc: comparable X} (r: regex X) (x: X) : regex X :=
   match r with
-  | fail => fail _
-  | empty => fail _
+  | fail => fail
+  | empty => fail
   | char y => if is_eq x y
-    then empty _
-    else fail _
+    then empty
+    else fail
   | or s t => or (derive s x) (derive t x)
   | and s t => and (derive s x) (derive t x)
   | concat s t =>
@@ -42,7 +39,7 @@ Fixpoint derive {X: Set} {tc: comparable X} (r: regex X) (x: X) : regex X :=
   | star s => concat (derive s x) (star s)
   end.
 
-Definition matches {X: Set} {tc: comparable X} (r: regex X) (xs: list X) : bool :=
+Definition matches {X: Type} {tc: comparable X} (r: regex X) (xs: list X) : bool :=
   nullable (fold_left derive xs r).
 
 (* fold_matches tries to find a expression
@@ -69,7 +66,7 @@ matches expressions it can spot.
 Ltac simpl_matches :=
   cbn; repeat fold_matches.
 
-Theorem or_is_logical_or: forall {X: Set} {tc: comparable X} (xs: list X) (r s: regex X),
+Theorem or_is_logical_or: forall {X: Type} {tc: comparable X} (xs: list X) (r s: regex X),
   matches (or r s) xs = (orb (matches r xs) (matches s xs)).
 Proof.
   induction xs; intros; simpl_matches.
@@ -77,14 +74,14 @@ Proof.
   - apply IHxs.
 Qed.
 
-Theorem and_is_logical_and: forall {X: Set} {tc: comparable X} (xs: list X) (r s: regex X),
+Theorem and_is_logical_and: forall {X: Type} {tc: comparable X} (xs: list X) (r s: regex X),
   matches (and r s) xs = (andb (matches r xs) (matches s xs)).
 Proof.
 (* TODO: Good First Issue *)
 Admitted.
 
 (* not(not(r)) = r *)
-Theorem not_is_logical_not : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
+Theorem not_is_logical_not : forall {X: Type} {tc: comparable X} (xs: list X) (r: regex X),
   matches (not r) xs = negb (matches r xs).
 Proof.
   induction xs; intros; simpl_matches.

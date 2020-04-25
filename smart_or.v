@@ -29,14 +29,14 @@ These smart constructors assume that the regular expressions provided as input h
 
 (* TODO: Help Wanted
 Define a property `is_merge_or` that expresses the type the `merge_or` function returns.
-`is_merge_or {X: Set} {tc: comparable X} (r: regex X) : Prop`
+`is_merge_or {X: Type} {tc: comparable X} (r: regex X) : Prop`
 It should express that the tree is sorted and duplicates have been removed.
 *)
 
 (* TODO: Help Wanted
 Use the previous defined property `is_merge_or` to prove:
 ```
-merge_or_is_correct: forall {X: Set} {tc: comparable X} 
+merge_or_is_correct: forall {X: Type} {tc: comparable X} 
   (r s: regex X) (is_merge_or r) (is_merge_or s),
   is_merge_or (merge_or r s)
 ```
@@ -46,7 +46,7 @@ merge_or_is_correct: forall {X: Set} {tc: comparable X}
 Call merge_or, instead of this naive smart_or function, that doesn't reorder recursively.
 It will break proofs in other files, so this todo is more about fixing those proofs.
 *)
-Definition smart_or {X: Set} {tc: comparable X} (r s: regex X) : regex X :=
+Definition smart_or {X: Type} {tc: comparable X} (r s: regex X) : regex X :=
   match compare_regex r s with
   | Eq => s
   | Lt => or r s
@@ -71,7 +71,7 @@ merge_or_r's decreasing argument is always `s`, while `r` is not decreasing and 
 For another example for a closure fixpoint inside a fixpoint, see the merge function in:
 https://coq.inria.fr/library/Coq.Sorting.Mergesort.html 
 *)
-Fixpoint merge_or {X: Set} {tc: comparable X} (r s: regex X) : regex X :=
+Fixpoint merge_or {X: Type} {tc: comparable X} (r s: regex X) : regex X :=
   let fix merge_or_r s :=
     match r with
     | or r_1 r_next =>
@@ -111,7 +111,7 @@ Fixpoint merge_or {X: Set} {tc: comparable X} (r s: regex X) : regex X :=
    which was just there so Coq can see that the function is terminating.
    This way the function is easier to read and smaller steps can be taken inside proofs.
 *)
-Theorem merge_or_step: forall {X: Set} {tc: comparable X} (r s: regex X),
+Theorem merge_or_step: forall {X: Type} {tc: comparable X} (r s: regex X),
   merge_or r s = match r with
   | or r_1 r_next =>
     match s with
@@ -149,7 +149,7 @@ induction r, s; simpl; trivial.
 Qed.
 
 (* merged_or is a property that specifies whether a regex was merged with merge_or *)
-Fixpoint merged_or {X: Set} {tc: comparable X} (r: regex X) : Prop :=
+Fixpoint merged_or {X: Type} {tc: comparable X} (r: regex X) : Prop :=
   match r with
   | or s t =>
     match s with
@@ -169,13 +169,13 @@ Fixpoint merged_or {X: Set} {tc: comparable X} (r: regex X) : Prop :=
   | _ => True
   end.
 
-Theorem merged_or_upholds: forall {X: Set} {tc: comparable X} (r s: regex X) (mr: merged_or r) (ms: merged_or s),
+Theorem merged_or_upholds: forall {X: Type} {tc: comparable X} (r s: regex X) (mr: merged_or r) (ms: merged_or s),
   merged_or (merge_or r s).
 (* TODO: Help Wanted *)
 Admitted.
 
 Theorem merged_or_is_recursive: forall
-  {X: Set}
+  {X: Type}
   {tc: comparable X}
   (r s: regex X),
 merged_or (or r s) -> merged_or r /\ merged_or s.
@@ -184,11 +184,11 @@ Admitted.
 
 (* fail|r = r *)
 Theorem merge_or_id: forall
-  {X: Set}
+  {X: Type}
   {tc: comparable X}
   (r: regex X)
   (xs: list X),
-  matches (merge_or (fail _) r) xs = matches r xs.
+  matches (merge_or fail r) xs = matches r xs.
 Proof.
 intros.
 induction r; try (simpl; or_simple; fail).
@@ -197,17 +197,17 @@ Qed.
 
 (* merge_or_empty is a helper Lemma for merge_or_is_or *)
 Lemma merge_or_empty: forall
-  {X: Set}
+  {X: Type}
   {tc: comparable X}
   (r: regex X)
   (xs: list X),
-  matches (or (empty _) r) xs = matches (merge_or (empty _) r) xs.
+  matches (or empty r) xs = matches (merge_or empty r) xs.
 Proof.
 intros.
 induction r; try (simpl; or_simple; fail).
 - induction r1; try (simpl; or_simple; fail).
-  + assert (merge_or (empty X) (or (fail X) r2) =
-            or (fail X) (merge_or (empty X) r2)).
+  + assert (merge_or empty (or fail r2) =
+            or fail (merge_or empty r2)).
     * simpl; or_simple. trivial.
     * rewrite H.  
       or_simple.
@@ -218,7 +218,7 @@ Qed.
 
 (* merge_or_char is a helper Lemma for merge_or_is_or *)
 Lemma merge_or_char: forall
-  {X: Set}
+  {X: Type}
   {tc: comparable X}
   (r: regex X)
   (xs: list X)
@@ -230,8 +230,8 @@ induction r; try (simpl; or_simple; fail).
 - simpl; or_simple.
   induction_on_compare; (simpl; or_simple).
 - induction r1; try (simpl; or_simple; fail).
-  + assert ((merge_or (char x) (or (fail X) r2)) =
-            (or (fail X) (merge_or (char x) r2))
+  + assert ((merge_or (char x) (or fail r2)) =
+            (or fail (merge_or (char x) r2))
            ).
     * simpl; or_simple; trivial.
     * rewrite H.
@@ -239,8 +239,8 @@ induction r; try (simpl; or_simple; fail).
       rewrite <- or_is_logical_or.
       rewrite IHr2.
       reflexivity.
-  + assert ((merge_or (char x) (or (empty X) r2)) =
-            (or (empty X) (merge_or (char x) r2))
+  + assert ((merge_or (char x) (or empty r2)) =
+            (or empty (merge_or (char x) r2))
             ).
     * simpl; or_simple; trivial.
     * rewrite H.
@@ -257,7 +257,7 @@ induction r; try (simpl; or_simple; fail).
 Qed.
 
 Theorem merge_or_is_or: forall
-  {X: Set}
+  {X: Type}
   {tc: comparable X}
   (xs: list X)
   (r: regex X)
@@ -432,7 +432,7 @@ since it expects the previous construction into a tree was done in a way that sa
 to_list_or (or (or empty fail) (or empty (or fail empty))) = [or empty fail, empty, fail, empty]
 ```
 *)
-Fixpoint to_list_or {X: Set} {tc: comparable X} (r: regex X) : list (regex X) :=
+Fixpoint to_list_or {X: Type} {tc: comparable X} (r: regex X) : list (regex X) :=
   match r with
   | or s t => s :: to_list_or t
   | _ => r :: nil
@@ -441,9 +441,9 @@ Fixpoint to_list_or {X: Set} {tc: comparable X} (r: regex X) : list (regex X) :=
 (* to_tree_or creates a regex from a list of regexes by combining them with an `or` operator.
    At the end of the list a `fail` expression is insert as this is the identity expression for `or.`
 *)
-Fixpoint to_tree_or {X: Set} (xs: list (regex X)) : regex X :=
+Fixpoint to_tree_or {X: Type} {C: comparable X} (xs: list (regex X)) : regex X :=
   match xs with
-  | nil => fail _
+  | nil => fail
   | (x'::xs') => or x' (to_tree_or xs')
   end.
 
@@ -463,7 +463,7 @@ a   x
 (* to_list_or__to_tree_or__is_id shows that:
 `to_tree_or . to_list_or = id`
 *)
-Theorem to_list_or__to_tree_or__is_id: forall {X: Set} {tc: comparable X} (r: regex X) (xs: list X),
+Theorem to_list_or__to_tree_or__is_id: forall {X: Type} {tc: comparable X} (r: regex X) (xs: list X),
   matches r xs = matches (to_tree_or (to_list_or r)) xs.
 Proof.
 induction r; try (simpl; intros xs; rewrite or_id; reflexivity).
@@ -482,7 +482,7 @@ Qed.
   (r + s) + t = r + (s + t)
   r + fail = r
 *)
-Definition smart_or' {X: Set} {tc: comparable X} (r s: regex X) : regex X :=
+Definition smart_or' {X: Type} {tc: comparable X} (r s: regex X) : regex X :=
   to_tree_or (remove_duplicates_from_sorted (fold_left insert_sort (to_list_or r) (to_list_or s))).
 
 (*
@@ -507,7 +507,7 @@ Section merge_or_section.
 
 Set Transparent Obligations.
 
-Program Fixpoint merge_or_program {X: Set} {tc: comparable X} (r s: regex X) {measure ((size r)+(size s))} : regex X :=
+Program Fixpoint merge_or_program {X: Type} {tc: comparable X} (r s: regex X) {measure ((size r)+(size s))} : regex X :=
   match r with
   | or r_1 r_next =>
     match s with
