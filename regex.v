@@ -6,9 +6,9 @@ Require Import comparable.
 *)
 
 Inductive regex (X: Type) {C: comparable X} : Type :=
-  fail : regex X (* matches no strings *)
-  | empty : regex X (* matches the empty string *)
-  | char : X -> regex X (* matches a single character *)
+  fail : regex X (* matchesb no strings *)
+  | empty : regex X (* matchesb the empty string *)
+  | char : X -> regex X (* matchesb a single character *)
   | or : regex X -> regex X -> regex X
   | and : regex X -> regex X -> regex X
   | concat : regex X -> regex X -> regex X

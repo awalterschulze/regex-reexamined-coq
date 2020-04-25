@@ -3,7 +3,7 @@ Require Import List.
 Require Import comparable.
 Require Import regex.
 
-(* nullable returns whether the regular expression matches the
+(* nullable returns whether the regular expression matchesb the
    empty string, for example:
    nullable (ab)*        = true
    nullable a(ab)*       = false

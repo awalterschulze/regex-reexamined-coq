@@ -11,9 +11,9 @@ Require Import reduce_orb.
 Require Import setoid.
 
 Theorem fail_is_terminating : forall {X: Type} {C: comparable X} (xs: list X),
-  matches fail xs = false.
+  matchesb fail xs = false.
 Proof.
-  induction xs; intros; simpl_matches; trivial.
+  induction xs; intros; simpl_matchesb; trivial.
 Qed.
 
 (* or_simple simplifies or expressions *)
@@ -30,9 +30,9 @@ Context {C: comparable X}.
 
 (* r&r = r *)
 Theorem and_idemp : forall (xs: list X) (r1 r2: regex X) (p: compare_regex r1 r2 = Eq),
-  matches (and r1 r2) xs = matches r1 xs.
+  matchesb (and r1 r2) xs = matchesb r1 xs.
 Proof.
-unfold matches.
+unfold matchesb.
 induction xs.
 - simpl.
   intros.
@@ -47,9 +47,9 @@ Qed.
 
 (* r&s = s&r *)
 Theorem and_comm : forall (xs: list X) (r1 r2: regex X),
-  matches (and r1 r2) xs = matches (and r2 r1) xs.
+  matchesb (and r1 r2) xs = matchesb (and r2 r1) xs.
 Proof.
-unfold matches.
+unfold matchesb.
 induction xs.
 - simpl.
   firstorder.
@@ -60,9 +60,9 @@ Qed.
 
 (* (r&s)&t = r&(s&t) *)
 Theorem and_assoc : forall (xs: list X) (r s t: regex X),
-    matches (and (and r s) t) xs = matches (and r (and s t)) xs.
+    matchesb (and (and r s) t) xs = matchesb (and r (and s t)) xs.
 Proof.
-unfold matches.
+unfold matchesb.
 induction xs.
 - simpl.
   firstorder.
@@ -73,9 +73,9 @@ Qed.
 
 (* fail&r = fail *)
 Theorem and_fail : forall (xs: list X) (r: regex X),
-  matches (and fail r) xs = matches fail xs.
+  matchesb (and fail r) xs = matchesb fail xs.
 Proof.
-unfold matches.
+unfold matchesb.
 induction xs.
 - simpl.
   trivial.
@@ -86,9 +86,9 @@ Qed.
 
 (* not(fail)&r = r *)
 Theorem and_not_fail : forall (xs: list X) (r: regex X),
-    matches (and (not fail) r) xs = matches r xs.
+    matchesb (and (not fail) r) xs = matchesb r xs.
 Proof.
-unfold matches.
+unfold matchesb.
 induction xs.
 - simpl.
   trivial.
@@ -102,13 +102,13 @@ Qed.
 Theorem concat_or_distrib_r': forall
   (xs: list X)
   (r s t: regex X),
-  matches (concat (or r s) t) xs
-  = matches (or (concat r t) (concat s t)) xs.
+  matchesb (concat (or r s) t) xs
+  = matchesb (or (concat r t) (concat s t)) xs.
 Proof.
 induction xs.
-- intros. simpl_matches.
+- intros. simpl_matchesb.
   orb_simple.
-- intros. simpl_matches.
+- intros. simpl_matchesb.
   case (nullable r), (nullable s).
   + cbn.
     repeat rewrite or_is_logical_or.
@@ -132,15 +132,15 @@ Qed.
 Theorem concat_assoc': forall
   (xs: list X)
   (r s t: regex X),
-  matches (concat (concat r s) t) xs
-  = matches (concat r (concat s t)) xs.
+  matchesb (concat (concat r s) t) xs
+  = matchesb (concat r (concat s t)) xs.
 Proof.
 induction xs.
 - intros.
   cbn.
   firstorder.
 - intros.
-  simpl_matches.
+  simpl_matchesb.
   case (nullable r), (nullable s);
   try ( cbn;
     repeat rewrite or_is_logical_or;
@@ -152,9 +152,9 @@ Qed.
 
 (* fail.r = fail *)
 Theorem concat_fail_l : forall (xs: list X) (r: regex X),
-  matches (concat fail r) xs = matches fail xs.
+  matchesb (concat fail r) xs = matchesb fail xs.
 Proof.
-unfold matches.
+unfold matchesb.
 induction xs.
 - simpl.
   reflexivity.
@@ -165,9 +165,9 @@ Qed.
 Theorem concat_fail_r :
   forall (xs : list X)
          (r : regex X),
-    matches (concat r fail) xs = matches fail xs.
+    matchesb (concat r fail) xs = matchesb fail xs.
 Proof.
-  induction xs; intros; simpl_matches.
+  induction xs; intros; simpl_matchesb.
   - rewrite andb_false_r.
     reflexivity.
   - destruct (nullable r).
@@ -183,13 +183,13 @@ Qed.
 Lemma concat_or_distrib_r:
   forall (xs: list X)
          (r s t: regex X),
-    matches (concat (or r s) t) xs = matches (or (concat r t) (concat s t)) xs.
+    matchesb (concat (or r s) t) xs = matchesb (or (concat r t) (concat s t)) xs.
 Proof.
-  induction xs; intros; simpl_matches.
+  induction xs; intros; simpl_matchesb.
   - rewrite andb_orb_distrib_l.
     reflexivity.
   - destruct (nullable r), (nullable s);
-      simpl_matches;
+      simpl_matchesb;
       repeat rewrite or_is_logical_or;
       try apply IHxs;
       try rewrite IHxs;
@@ -199,12 +199,12 @@ Qed.
 
 (* (r.s).t = r.(s.t) *)
 Theorem concat_assoc: forall (xs: list X) (r s t: regex X),
-  matches (concat (concat r s) t) xs = matches (concat r (concat s t)) xs.
+  matchesb (concat (concat r s) t) xs = matchesb (concat r (concat s t)) xs.
 Proof.
-  induction xs; intros; simpl_matches.
+  induction xs; intros; simpl_matchesb.
   - firstorder.
   - destruct (nullable r), (nullable s);
-      simpl_matches;
+      simpl_matchesb;
       repeat rewrite or_is_logical_or;
       try apply IHxs;
       try rewrite IHxs;
@@ -238,9 +238,9 @@ Qed.
 
 (* r.fail = fail *)
 Theorem concat_fail_r' : forall (xs: list X) (r: regex X),
-  matches (concat r fail) xs = matches fail xs.
+  matchesb (concat r fail) xs = matchesb fail xs.
 Proof.
-unfold matches.
+unfold matchesb.
 induction xs.
 - intros.
   simpl.
@@ -261,9 +261,9 @@ Qed.
 
 (* empty.r = r *)
 Theorem concat_empty : forall (xs: list X) (r: regex X),
-  matches (concat empty r) xs = matches r xs.
+  matchesb (concat empty r) xs = matchesb r xs.
 Proof.
-  induction xs; intros; simpl_matches.
+  induction xs; intros; simpl_matchesb.
   - reflexivity.
   - rewrite or_is_logical_or.
     rewrite concat_fail_l.
@@ -274,9 +274,9 @@ Qed.
 
 (* r.empty = r *)
 Theorem concat_empty2: forall (xs: list X) (r: regex X),
-  matches (concat r empty) xs = matches r xs.
+  matchesb (concat r empty) xs = matchesb r xs.
 Proof.
-  induction xs; intros; simpl_matches.
+  induction xs; intros; simpl_matchesb.
   - rewrite andb_true_r.
     reflexivity.
   - case (nullable r).
@@ -290,9 +290,9 @@ Qed.
 
 (* r|r = r *)
 Theorem or_idemp : forall (xs: list X) (r1 r2: regex X) (p: compare_regex r1 r2 = Eq),
-  matches (or r1 r2) xs = matches r1 xs.
+  matchesb (or r1 r2) xs = matchesb r1 xs.
 Proof.
-unfold matches.
+unfold matchesb.
 induction xs.
 - simpl.
   intros.
@@ -307,9 +307,9 @@ Qed.
 
 (* r|s = s|r *)
 Theorem or_comm : forall (xs: list X) (r s: regex X),
-  matches (or r s) xs = matches (or s r) xs.
+  matchesb (or r s) xs = matchesb (or s r) xs.
 Proof.
-unfold matches.
+unfold matchesb.
 induction xs.
 - simpl.
   firstorder.
@@ -320,9 +320,9 @@ Qed.
 
 (* (r|s)|t = r|(s|t) *)
 Theorem or_assoc : forall (xs: list X) (r s t: regex X),
-  matches (or r (or s t)) xs = matches (or (or r s) t) xs.
+  matchesb (or r (or s t)) xs = matchesb (or (or r s) t) xs.
 Proof.
-unfold matches.
+unfold matchesb.
 induction xs.
 - simpl.
   intros.
@@ -333,16 +333,16 @@ Qed.
 
 (* not(fail)|r = not(fail) *)
 Theorem or_not_fail : forall (xs: list X) (r: regex X),
-  matches (or (not fail) r) xs = matches (not fail) xs.
+  matchesb (or (not fail) r) xs = matchesb (not fail) xs.
 Proof.
-  induction xs; intros; simpl_matches; trivial.
+  induction xs; intros; simpl_matchesb; trivial.
 Qed.
 
 (* fail|r = r *)
 Theorem or_id : forall (xs: list X) (r: regex X),
-  matches (or r fail) xs = matches r xs.
+  matchesb (or r fail) xs = matchesb r xs.
 Proof.
-unfold matches.
+unfold matchesb.
 induction xs.
 - simpl.
   firstorder.
@@ -353,15 +353,15 @@ Qed.
 
 (* star(star(r)) = star(r) *)
 Theorem star_star : forall (xs: list X) (r: regex X),
-  matches (star (star r)) xs = matches (star r) xs.
+  matchesb (star (star r)) xs = matchesb (star r) xs.
 (* TODO: Good First Issue *)
 Admitted.
 
 (* (empty)* = empty *)
 Theorem star_empty : forall (xs: list X),
-  matches (star empty) xs = matches empty xs.
+  matchesb (star empty) xs = matchesb empty xs.
 Proof.
-  induction xs; intros; simpl_matches.
+  induction xs; intros; simpl_matchesb.
   - trivial.
   - rewrite concat_fail_l.
     reflexivity.
@@ -369,9 +369,9 @@ Qed.
 
 (* (fail)* = empty *)
 Theorem fail_star : forall (xs: list X),
-  matches (star fail) xs = matches empty xs.
+  matchesb (star fail) xs = matchesb empty xs.
 Proof.
-unfold matches.
+unfold matchesb.
 induction xs.
 - simpl.
   reflexivity.
@@ -381,18 +381,18 @@ Qed.
 
 (* not(not(r)) = r *)
 Theorem not_not : forall (xs: list X) (r: regex X),
-  matches (not (not r)) xs = matches r xs.
+  matchesb (not (not r)) xs = matchesb r xs.
 Proof.
-  induction xs; intros; simpl_matches.
+  induction xs; intros; simpl_matchesb.
   - rewrite negb_involutive.
     reflexivity.
   - apply IHxs.
 Qed.
 
 Theorem not_fail_is_terminating : forall (xs: list X),
-  matches (not fail) xs = true.
+  matchesb (not fail) xs = true.
 Proof.
-  induction xs; intros; simpl_matches.
+  induction xs; intros; simpl_matchesb.
   - trivial.
   - apply IHxs.
 Qed.

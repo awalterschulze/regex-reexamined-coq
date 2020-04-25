@@ -188,7 +188,7 @@ Theorem merge_or_id: forall
   {tc: comparable X}
   (r: regex X)
   (xs: list X),
-  matches (merge_or fail r) xs = matches r xs.
+  matchesb (merge_or fail r) xs = matchesb r xs.
 Proof.
 intros.
 induction r; try (simpl; or_simple; fail).
@@ -201,7 +201,7 @@ Lemma merge_or_empty: forall
   {tc: comparable X}
   (r: regex X)
   (xs: list X),
-  matches (or empty r) xs = matches (merge_or empty r) xs.
+  matchesb (or empty r) xs = matchesb (merge_or empty r) xs.
 Proof.
 intros.
 induction r; try (simpl; or_simple; fail).
@@ -223,7 +223,7 @@ Lemma merge_or_char: forall
   (r: regex X)
   (xs: list X)
   (x: X),
-  matches (or (char x) r) xs = matches (merge_or (char x) r) xs.
+  matchesb (or (char x) r) xs = matchesb (merge_or (char x) r) xs.
 Proof.
 intros.
 induction r; try (simpl; or_simple; fail).
@@ -262,7 +262,7 @@ Theorem merge_or_is_or: forall
   (xs: list X)
   (r: regex X)
   (s: regex X),
-  matches (or r s) xs = matches (merge_or r s) xs.
+  matchesb (or r s) xs = matchesb (merge_or r s) xs.
 Proof.
 induction r.
 - intros.
@@ -301,10 +301,10 @@ induction r.
       rewrite <- IHr2.
       or_simple.
     * or_simple.
-  + (* IHs1: matches (or (or r1 r2) s1) xs = matches (merge_or (or r1 r2) s1) xs *)
-    (* IHs2: matches (or (or r1 r2) s2) xs = matches (merge_or (or r1 r2) s2) xs*)
-    (* IHr1: forall s, matches (or r1 s) xs = matches (merge_or r1 s) xs *)
-    (* IHr2: forall s, matches (or r2 s) xs = matches (merge_or r2 s) xs *)
+  + (* IHs1: matchesb (or (or r1 r2) s1) xs = matchesb (merge_or (or r1 r2) s1) xs *)
+    (* IHs2: matchesb (or (or r1 r2) s2) xs = matchesb (merge_or (or r1 r2) s2) xs*)
+    (* IHr1: forall s, matchesb (or r1 s) xs = matchesb (merge_or r1 s) xs *)
+    (* IHr2: forall s, matchesb (or r2 s) xs = matchesb (merge_or r2 s) xs *)
     rewrite merge_or_step.
     induction_on_compare.
     * or_simple.
@@ -464,7 +464,7 @@ a   x
 `to_tree_or . to_list_or = id`
 *)
 Theorem to_list_or__to_tree_or__is_id: forall {X: Type} {tc: comparable X} (r: regex X) (xs: list X),
-  matches r xs = matches (to_tree_or (to_list_or r)) xs.
+  matchesb r xs = matchesb (to_tree_or (to_list_or r)) xs.
 Proof.
 induction r; try (simpl; intros xs; rewrite or_id; reflexivity).
 - simpl.
