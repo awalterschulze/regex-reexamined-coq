@@ -9,7 +9,7 @@ Require Import regex.
 (* simplified is a property that a regex's ors are somewhat simplified *)
 Fixpoint simplified {X: Set} {tc: comparable X} (r: regex X) : Prop :=
   match r with
-  | nothing => True
+  | fail => True
   | empty => True
   | char _ => True
   | or s t =>
@@ -27,7 +27,7 @@ Fixpoint simplified {X: Set} {tc: comparable X} (r: regex X) : Prop :=
   | and s t => simplified s /\ simplified t
   | concat s t => simplified s /\ simplified t
   | not s => simplified s
-  | zero_or_more s => simplified s
+  | star s => simplified s
   end.
 
 (*

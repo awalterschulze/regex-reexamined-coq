@@ -18,7 +18,7 @@ Definition is_eq {X: Set} {tc: comparable X} (x y: X) : bool :=
    after matching the input character x, for example:
    derive (ba)*      b    = a(ba)*
    derive a          a    = empty
-   derive b          a    = nothing
+   derive b          a    = fail
    derive ab|a       a    = b|empty
    derive bc         b    = c
    derive (a|empty)b a    = b
@@ -27,11 +27,11 @@ Definition is_eq {X: Set} {tc: comparable X} (x y: X) : bool :=
 *)
 Fixpoint derive {X: Set} {tc: comparable X} (r: regex X) (x: X) : regex X :=
   match r with
-  | nothing => nothing _
-  | empty => nothing _
+  | fail => fail _
+  | empty => fail _
   | char y => if is_eq x y
     then empty _
-    else nothing _
+    else fail _
   | or s t => or (derive s x) (derive t x)
   | and s t => and (derive s x) (derive t x)
   | concat s t =>
@@ -39,7 +39,7 @@ Fixpoint derive {X: Set} {tc: comparable X} (r: regex X) (x: X) : regex X :=
     then or (concat (derive s x) t) (derive t x)
     else concat (derive s x) t
   | not s => not (derive s x)
-  | zero_or_more s => concat (derive s x) (zero_or_more s)
+  | star s => concat (derive s x) (star s)
   end.
 
 Definition matches {X: Set} {tc: comparable X} (r: regex X) (xs: list X) : bool :=

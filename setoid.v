@@ -162,8 +162,8 @@ Section RegexEq.
     - assumption.
   Qed.
 
-  Add Parametric Morphism: (@zero_or_more X)
-      with signature regex_eq ==> regex_eq as zero_or_more_morph.
+  Add Parametric Morphism: (@star X)
+      with signature regex_eq ==> regex_eq as star_morph.
   Proof.
   Admitted.
 

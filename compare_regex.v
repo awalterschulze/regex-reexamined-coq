@@ -7,23 +7,23 @@ Require Import regex.
 
 Fixpoint compare_regex {X: Set} {tc: comparable X} (r s: regex X) : comparison :=
   match r with
-  | nothing => match s with
-    | nothing => Eq
+  | fail => match s with
+    | fail => Eq
     | _ => Lt
     end
   | empty => match s with
-    | nothing => Gt
+    | fail => Gt
     | empty => Eq
     | _ => Lt
     end
   | char x => match s with
-    | nothing => Gt
+    | fail => Gt
     | empty => Gt
     | char y => compare x y
     | _ => Lt
     end
   | or r1 r2 => match s with
-    | nothing => Gt
+    | fail => Gt
     | empty => Gt
     | char _ => Gt
     | or s1 s2 =>
@@ -35,7 +35,7 @@ Fixpoint compare_regex {X: Set} {tc: comparable X} (r s: regex X) : comparison :
     | _ => Lt
     end
   | and r1 r2 => match s with
-    | nothing => Gt
+    | fail => Gt
     | empty => Gt
     | char _ => Gt
     | or _ _ => Gt
@@ -48,7 +48,7 @@ Fixpoint compare_regex {X: Set} {tc: comparable X} (r s: regex X) : comparison :
     | _ => Lt
     end
   | concat r1 r2 => match s with
-    | nothing => Gt
+    | fail => Gt
     | empty => Gt
     | char _ => Gt
     | or _ _ => Gt
@@ -62,7 +62,7 @@ Fixpoint compare_regex {X: Set} {tc: comparable X} (r s: regex X) : comparison :
     | _ => Lt
     end
   | not r1 => match s with
-    | nothing => Gt
+    | fail => Gt
     | empty => Gt
     | char _ => Gt
     | or _ _ => Gt
@@ -71,8 +71,8 @@ Fixpoint compare_regex {X: Set} {tc: comparable X} (r s: regex X) : comparison :
     | not s1 => compare_regex r1 s1
     | _ => Lt
     end
-  | zero_or_more r1 => match s with
-    | zero_or_more s1 => compare_regex r1 s1
+  | star r1 => match s with
+    | star s1 => compare_regex r1 s1
     | _ => Gt
     end
   end.
@@ -161,7 +161,7 @@ Ltac induction_on_compare_regex :=
    compare_list is defined in comparable, 
    specifically for this use case.
 *)
-Definition list_a : list (regex nat) := ((empty _) :: (nothing _) :: nil).
+Definition list_a : list (regex nat) := ((empty _) :: (fail _) :: nil).
 Definition list_b : list (regex nat) := ((empty _) :: (char 1) :: nil).
 Definition test_compare_list : Prop :=
   comparable_list list_a list_b = Lt.
@@ -202,7 +202,7 @@ Theorem compare_equal : forall {X: Set} {tc: comparable X} (r1 r2: regex X) (p: 
   r1 = r2.
 Proof.
 induction r1.
- - induction r2; simpl; trivial; discriminate. (* nothing *)
+ - induction r2; simpl; trivial; discriminate. (* fail *)
  - induction r2; simpl; trivial; discriminate. (* empty *) 
  - induction r2; simpl; try discriminate. (* char *)
   + remember (compare x x0).
@@ -263,9 +263,9 @@ induction r1.
     remember (e p).
     rewrite e1.
     reflexivity.
- - induction r2; simpl; try discriminate. (* zero_or_more *)
+ - induction r2; simpl; try discriminate. (* star *)
   + remember (IHr1 r2).
-    remember (IHr1 (zero_or_more r2)).
+    remember (IHr1 (star r2)).
     intros.
     remember (e p).
     rewrite e1.

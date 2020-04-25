@@ -14,7 +14,7 @@ Require Import smart_or.
 (* simple is a simpler version of simplified to learn how to prove simplified in future *)
 Fixpoint simple {X: Set} {tc: comparable X} (r: regex X) : Prop :=
   match r with
-  | nothing => True
+  | fail => True
   | empty => True
   | char _ => True
   | or s t => simple s /\ simple t
@@ -22,7 +22,7 @@ Fixpoint simple {X: Set} {tc: comparable X} (r: regex X) : Prop :=
   | and s t => simple s /\ simple t
   | concat s t => simple s /\ simple t
   | not s => simple s
-  | zero_or_more s => simple s
+  | star s => simple s
   end.
 
 Lemma smart_or_is_simple: forall {X: Set} {tc: comparable X} (r s: regex X) (simple_r: simple r) (simple_s: simple s),
@@ -158,7 +158,7 @@ induction r, s; simpl; try easy.
          rewrite compare_reflex in Heqc.
          discriminate.
 - unfold smart_or.
-  remember (compare_regex (zero_or_more r) (zero_or_more s)) as c.
+  remember (compare_regex (star r) (star s)) as c.
   induction c.
   + assumption.
   + unfold simple; fold simple.

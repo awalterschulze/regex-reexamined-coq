@@ -8,12 +8,12 @@ Require Import regex.
 
 Fixpoint size {X: Set} (r: regex X) := 
   match r with
-  | nothing => 1
+  | fail => 1
   | empty => 1
   | char _ => 1
   | (or s t) => 1 + size s + size t
   | (and s t) => 1 + size s + size t
   | (concat s t) => 1 + size s + size t
   | (not s) => 1 + size s
-  | (zero_or_more s) => 1 + size s
+  | (star s) => 1 + size s
   end.

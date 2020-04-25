@@ -14,14 +14,14 @@ Variable X: Set.
 Parameter TC: comparable X.
 
 Inductive regex :=
-  nothing : regex (* matches no strings *)
+  fail : regex (* matches no strings *)
   | empty : regex (* matches the empty string *)
   | char : X -> regex (* matches a single character *)
   | or : regex -> regex -> regex
   | and : regex -> regex -> regex
   | concat : regex -> regex -> regex
   | not : regex -> regex
-  | zero_or_more : regex -> regex
+  | star : regex -> regex
   .
 
 End Regex.

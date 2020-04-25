@@ -17,12 +17,12 @@ Require Import regex.
 *)
 Fixpoint nullable {X: Set} {tc: comparable X} (r: regex X) : bool :=
   match r with
-  | nothing => false
+  | fail => false
   | empty => true
   | char _ => false
   | or s t => nullable s || nullable t
   | and s t => nullable s && nullable t
   | concat s t => nullable s && nullable t
   | not s => negb (nullable s)
-  | zero_or_more _ => true
+  | star _ => true
   end.

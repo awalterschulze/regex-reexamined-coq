@@ -182,13 +182,13 @@ merged_or (or r s) -> merged_or r /\ merged_or s.
 (* TODO: Good First Issue *)
 Admitted.
 
-(* nothing|r = r *)
+(* fail|r = r *)
 Theorem merge_or_id: forall
   {X: Set}
   {tc: comparable X}
   (r: regex X)
   (xs: list X),
-  matches (merge_or (nothing _) r) xs = matches r xs.
+  matches (merge_or (fail _) r) xs = matches r xs.
 Proof.
 intros.
 induction r; try (simpl; or_simple; fail).
@@ -206,8 +206,8 @@ Proof.
 intros.
 induction r; try (simpl; or_simple; fail).
 - induction r1; try (simpl; or_simple; fail).
-  + assert (merge_or (empty X) (or (nothing X) r2) =
-            or (nothing X) (merge_or (empty X) r2)).
+  + assert (merge_or (empty X) (or (fail X) r2) =
+            or (fail X) (merge_or (empty X) r2)).
     * simpl; or_simple. trivial.
     * rewrite H.  
       or_simple.
@@ -230,8 +230,8 @@ induction r; try (simpl; or_simple; fail).
 - simpl; or_simple.
   induction_on_compare; (simpl; or_simple).
 - induction r1; try (simpl; or_simple; fail).
-  + assert ((merge_or (char x) (or (nothing X) r2)) =
-            (or (nothing X) (merge_or (char x) r2))
+  + assert ((merge_or (char x) (or (fail X) r2)) =
+            (or (fail X) (merge_or (char x) r2))
            ).
     * simpl; or_simple; trivial.
     * rewrite H.
@@ -399,11 +399,11 @@ induction r.
     induction_on_compare_regex; simpl; or_simple.
 - intros.
   induction s; try (simpl; or_simple; fail).
-  + assert (merge_or (zero_or_more r) (or s1 s2) =
-      match compare (zero_or_more r) s1 with
-      | Lt => or (zero_or_more r) (or s1 s2)
+  + assert (merge_or (star r) (or s1 s2) =
+      match compare (star r) s1 with
+      | Lt => or (star r) (or s1 s2)
       | Eq => (or s1 s2)
-      | Gt => or s1 (merge_or (zero_or_more r) s2)
+      | Gt => or s1 (merge_or (star r) s2)
       end
     ) as step1. simpl; or_simple; trivial. rewrite step1.
     induction_on_compare.
@@ -419,8 +419,8 @@ Qed.
 (* to_list_or is a helper function for smart_or'
 It turns a regex into a list of ors, for example:
 ```
-to_list_or (or nothing empty) = [nothing, empty]
-to_list_or (or nothing (or empty (char x))) = [nothing, empty, char x]
+to_list_or (or fail empty) = [fail, empty]
+to_list_or (or fail (or empty (char x))) = [fail, empty, char x]
 ```
 It only turns the top level into ors and doesn't recurse past other operators:
 ```
@@ -429,7 +429,7 @@ to_list_or (or (and (or a b) c) (or empty (char x))) = [and (or a b) c, empty, c
 It also doesn't recurse down the left side into or operators, 
 since it expects the previous construction into a tree was done in a way that satifies this property:
 ```
-to_list_or (or (or empty nothing) (or empty (or nothing empty))) = [or empty nothing, empty, nothing, empty]
+to_list_or (or (or empty fail) (or empty (or fail empty))) = [or empty fail, empty, fail, empty]
 ```
 *)
 Fixpoint to_list_or {X: Set} {tc: comparable X} (r: regex X) : list (regex X) :=
@@ -439,11 +439,11 @@ Fixpoint to_list_or {X: Set} {tc: comparable X} (r: regex X) : list (regex X) :=
   end.
 
 (* to_tree_or creates a regex from a list of regexes by combining them with an `or` operator.
-   At the end of the list a `nothing` expression is insert as this is the identity expression for `or.`
+   At the end of the list a `fail` expression is insert as this is the identity expression for `or.`
 *)
 Fixpoint to_tree_or {X: Set} (xs: list (regex X)) : regex X :=
   match xs with
-  | nil => nothing _
+  | nil => fail _
   | (x'::xs') => or x' (to_tree_or xs')
   end.
 
@@ -480,7 +480,7 @@ Qed.
   r + r = r
   r + s = s + r
   (r + s) + t = r + (s + t)
-  r + nothing = r
+  r + fail = r
 *)
 Definition smart_or' {X: Set} {tc: comparable X} (r s: regex X) : regex X :=
   to_tree_or (remove_duplicates_from_sorted (fold_left insert_sort (to_list_or r) (to_list_or s))).

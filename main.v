@@ -35,7 +35,7 @@ Definition eqv_char {X: Set} {tc: comparable X} (a b: X) (r: regex X) : Prop :=
    - concat
    - or
    - and
-   - zero_or_more
+   - star
    - not
    or those regular expressions.
 *)
@@ -65,9 +65,9 @@ Proof.
 (* TODO: Good First Issue *)
 Admitted.
 
-Lemma eqv_zero_or_more : forall {X: Set} {tc: comparable X} (a b: X) (r: regex X)
+Lemma eqv_star : forall {X: Set} {tc: comparable X} (a b: X) (r: regex X)
   (eqvr: eqv_char a b r),
-eqv_char a b (zero_or_more r).
+eqv_char a b (star r).
 Proof.
 (* TODO: Good First Issue *)
 Admitted.
