@@ -11,7 +11,7 @@ Require Import regex.
 
 Section RegexEq.
 
-  Context {X: Set}.
+  Context {X: Type}.
   Context {tc: comparable X}.
 
   Definition bool_eq (b1 b2: bool) : Prop := b1 = b2.
@@ -19,7 +19,7 @@ Section RegexEq.
   Definition char_eq (a b: X) : Prop := compare a b = Eq.
 
   Definition regex_eq (r s: regex X): Prop :=
-      forall (xs: list X), matches r xs = matches s xs.
+      forall (xs: list X), matchesb r xs = matchesb s xs.
 
   Lemma regex_eq_refl : reflexive (regex X) regex_eq.
   Proof.
@@ -72,16 +72,16 @@ Section RegexEq.
     symmetry in H0.
     compare_to_eq.
     unfold regex_eq in *.
-    unfold matches in H.
+    unfold matchesb in H.
     intro.
     specialize H with (cons y0 xs).
     cbn in H.
-    fold (matches (derive x y0) xs) in H.
-    fold (matches (derive y y0) xs) in H.
+    fold (matchesb (derive x y0) xs) in H.
+    fold (matchesb (derive y y0) xs) in H.
     assumption.
   Qed.
 
-  Add Parametric Morphism: (@or X)
+  Add Parametric Morphism: or
       with signature regex_eq ==> regex_eq ==> regex_eq as or_morph.
   Proof.
     intros.
@@ -93,7 +93,7 @@ Section RegexEq.
     reflexivity.
   Qed.
 
-  Add Parametric Morphism: (@and X)
+  Add Parametric Morphism: and
     with signature regex_eq ==> regex_eq ==> regex_eq as and_morph.
   Proof.
     intros.
@@ -105,7 +105,7 @@ Section RegexEq.
     reflexivity.
   Qed.
 
-  Add Parametric Morphism: (@not X)
+  Add Parametric Morphism: not
     with signature regex_eq ==> regex_eq as not_morph.
   Proof.
     intros.
@@ -121,7 +121,7 @@ Section RegexEq.
       (x y x0 y0: regex X)
       (H0: (regex_eq x x0))
       (H1: (regex_eq y y0)),
-      (matches (concat x y) xs) = (matches (concat x0 y0) xs).
+      (matchesb (concat x y) xs) = (matchesb (concat x0 y0) xs).
   Proof.
     intro.
     induction xs.
@@ -131,15 +131,14 @@ Section RegexEq.
       rewrite (nullable_morph H1).
       reflexivity.
     - intros.
-      unfold matches.
+      unfold matchesb.
       cbn.
-      simpl_matches.
+      simpl_matchesb.
       rewrite (nullable_morph H0).
       destruct (nullable x0).
       + repeat rewrite or_is_logical_or.
-        Check derive_morph.
         rewrite (derive_morph H1 (proof_compare_eq_reflex a)).
-        replace (matches (concat (derive x0 a) y0) xs) with (matches (concat (derive x a) y) xs).
+        replace (matchesb (concat (derive x0 a) y0) xs) with (matchesb (concat (derive x a) y) xs).
         * reflexivity.
         * eapply IHxs.
           ** rewrite (derive_morph H0 (proof_compare_eq_reflex a)).
@@ -151,7 +150,7 @@ Section RegexEq.
         * assumption.
   Qed.
 
-  Add Parametric Morphism: (@concat X)
+  Add Parametric Morphism: concat
       with signature regex_eq ==> regex_eq ==> regex_eq as concat_morph.
   Proof.
     intros.
@@ -162,9 +161,10 @@ Section RegexEq.
     - assumption.
   Qed.
 
-  Add Parametric Morphism: (@zero_or_more X)
-      with signature regex_eq ==> regex_eq as zero_or_more_morph.
+  Add Parametric Morphism: star
+      with signature regex_eq ==> regex_eq as star_morph.
   Proof.
+  (* TODO: Help Wanted *)
   Admitted.
 
 End RegexEq.

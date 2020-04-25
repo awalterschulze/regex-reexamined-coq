@@ -1,6 +1,3 @@
-Set Implicit Arguments.
-Set Asymmetric Patterns.
-
 Require Import List.
 Require Import Bool.
 
@@ -8,7 +5,7 @@ Require Import comparable.
 Require Import nullable.
 Require Import regex.
 
-Definition is_eq {X: Set} {tc: comparable X} (x y: X) : bool :=
+Definition is_eq {X: Type} {tc: comparable X} (x y: X) : bool :=
   match compare x y with
   | Eq => true
   | _ => false
@@ -18,20 +15,20 @@ Definition is_eq {X: Set} {tc: comparable X} (x y: X) : bool :=
    after matching the input character x, for example:
    derive (ba)*      b    = a(ba)*
    derive a          a    = empty
-   derive b          a    = nothing
+   derive b          a    = fail
    derive ab|a       a    = b|empty
    derive bc         b    = c
    derive (a|empty)b a    = b
    derive (a|empty)b b    = empty
    derive empty b    b    = empty
 *)
-Fixpoint derive {X: Set} {tc: comparable X} (r: regex X) (x: X) : regex X :=
+Fixpoint derive {X: Type} {tc: comparable X} (r: regex X) (x: X) : regex X :=
   match r with
-  | nothing => nothing _
-  | empty => nothing _
+  | fail => fail
+  | empty => fail
   | char y => if is_eq x y
-    then empty _
-    else nothing _
+    then empty
+    else fail
   | or s t => or (derive s x) (derive t x)
   | and s t => and (derive s x) (derive t x)
   | concat s t =>
@@ -39,55 +36,55 @@ Fixpoint derive {X: Set} {tc: comparable X} (r: regex X) (x: X) : regex X :=
     then or (concat (derive s x) t) (derive t x)
     else concat (derive s x) t
   | not s => not (derive s x)
-  | zero_or_more s => concat (derive s x) (zero_or_more s)
+  | star s => concat (derive s x) (star s)
   end.
 
-Definition matches {X: Set} {tc: comparable X} (r: regex X) (xs: list X) : bool :=
+Definition matchesb {X: Type} {tc: comparable X} (r: regex X) (xs: list X) : bool :=
   nullable (fold_left derive xs r).
 
-(* fold_matches tries to find a expression
+(* fold_matchesb tries to find a expression
    `nullable (fold_left derive XS R)`
    in the goal, where XS and R are variables.
    It then applies the fold tactic to
    refold:
    `nullable (fold_left derive XS R)`
    into:
-   `matches XS R`
-   since that is the definition of matches.
+   `matchesb XS R`
+   since that is the definition of matchesb.
 *)
-Ltac fold_matches :=
+Ltac fold_matchesb :=
   match goal with
     | [ |- context [nullable (fold_left derive ?XS ?R)] ] =>
-      fold (matches R XS)
+      fold (matchesb R XS)
   end.
 
 (*
-simpl_matches simplifies the current expression
+simpl_matchesb simplifies the current expression
 with the cbn tactic and tries to fold back up any
-matches expressions it can spot.
+matchesb expressions it can spot.
 *)
-Ltac simpl_matches :=
-  cbn; repeat fold_matches.
+Ltac simpl_matchesb :=
+  cbn; repeat fold_matchesb.
 
-Theorem or_is_logical_or: forall {X: Set} {tc: comparable X} (xs: list X) (r s: regex X),
-  matches (or r s) xs = (orb (matches r xs) (matches s xs)).
+Theorem or_is_logical_or: forall {X: Type} {tc: comparable X} (xs: list X) (r s: regex X),
+  matchesb (or r s) xs = (orb (matchesb r xs) (matchesb s xs)).
 Proof.
-  induction xs; intros; simpl_matches.
+  induction xs; intros; simpl_matchesb.
   - trivial.
   - apply IHxs.
 Qed.
 
-Theorem and_is_logical_and: forall {X: Set} {tc: comparable X} (xs: list X) (r s: regex X),
-  matches (and r s) xs = (andb (matches r xs) (matches s xs)).
+Theorem and_is_logical_and: forall {X: Type} {tc: comparable X} (xs: list X) (r s: regex X),
+  matchesb (and r s) xs = (andb (matchesb r xs) (matchesb s xs)).
 Proof.
 (* TODO: Good First Issue *)
 Admitted.
 
 (* not(not(r)) = r *)
-Theorem not_is_logical_not : forall {X: Set} {tc: comparable X} (xs: list X) (r: regex X),
-  matches (not r) xs = negb (matches r xs).
+Theorem not_is_logical_not : forall {X: Type} {tc: comparable X} (xs: list X) (r: regex X),
+  matchesb (not r) xs = negb (matchesb r xs).
 Proof.
-  induction xs; intros; simpl_matches.
+  induction xs; intros; simpl_matchesb.
   - reflexivity.
   - apply IHxs.
 Qed.
