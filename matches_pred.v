@@ -2,7 +2,7 @@ Require Import List.
 Import ListNotations.
 
 Require Import comparable.
-Require Import derive.
+Require Import derive_def.
 Require Import regex.
 
 Reserved Notation "xs =~ r" (at level 80).
