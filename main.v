@@ -44,7 +44,7 @@ Lemma eqv_concat : forall {X: Type} {tc: comparable X} (a b: X) (r s: regex X)
 eqv_char a b (concat r s).
 Proof.
 (* TODO: Good First Issue *)
-Admitted.
+Abort.
 
 Lemma eqv_or : forall {X: Type} {tc: comparable X} (a b: X) (r s: regex X)
   (eqvr: eqv_char a b r) (eqvs: eqv_char a b s),
@@ -63,20 +63,20 @@ Lemma eqv_and : forall {X: Type} {tc: comparable X} (a b: X) (r s: regex X)
 eqv_char a b (and r s).
 Proof.
 (* TODO: Good First Issue *)
-Admitted.
+Abort.
 
 Lemma eqv_star : forall {X: Type} {tc: comparable X} (a b: X) (r: regex X)
   (eqvr: eqv_char a b r),
 eqv_char a b (star r).
 Proof.
 (* TODO: Good First Issue *)
-Admitted.
+Abort.
 
 Lemma eqv_not : forall {X: Type} {tc: comparable X} (a b: X) (r: regex X)
   (eqvr: eqv_char a b r),
 eqv_char a b (not r).
 Proof.
 (* TODO: Good First Issue *)
-Admitted.
+Abort.
 
 

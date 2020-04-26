@@ -26,7 +26,7 @@ Theorem remove_duplicates_from_sorted_is_sorted:
   is_sorted (remove_duplicates_from_sorted xs).
 Proof.
 (* TODO: Good First Issue *)
-Admitted.
+Abort.
 
 (* TODO: Help Wanted
 Define more theorems to prove that remove_duplicates is correct 

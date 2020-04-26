@@ -165,7 +165,7 @@ Section RegexEq.
       with signature regex_eq ==> regex_eq as star_morph.
   Proof.
   (* TODO: Help Wanted *)
-  Admitted.
+  Abort.
 
 End RegexEq.
 

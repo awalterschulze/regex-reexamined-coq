@@ -83,7 +83,7 @@ Lemma regex_proof_compare_eq_is_equal
              (p: compare_regex x y = Eq)
     , x = y.
 Proof.
-(* TODO *)
+(* TODO: Good First Issue *)
 Admitted.
 
 Lemma regex_proof_compare_eq_reflex
@@ -92,7 +92,7 @@ Lemma regex_proof_compare_eq_reflex
              (x: regex X)
     , compare_regex x x = Eq.
 Proof.
-(* TODO *)
+(* TODO: Good First Issue *)
 Admitted.
 
 Lemma regex_proof_compare_eq_trans
@@ -103,7 +103,7 @@ Lemma regex_proof_compare_eq_trans
              (q: compare_regex y z = Eq)
     , compare_regex x z = Eq.
 Proof.
-(* TODO *)
+(* TODO: Good First Issue *)
 Admitted.
 
 Lemma regex_proof_compare_lt_assoc
@@ -114,7 +114,7 @@ Lemma regex_proof_compare_lt_assoc
              (q: compare_regex y z = Lt)
     , compare_regex x z = Lt.
 Proof.
-(* TODO *)
+(* TODO: Good First Issue *)
 Admitted.
 
 Lemma regex_proof_compare_gt_assoc
@@ -125,7 +125,7 @@ Lemma regex_proof_compare_gt_assoc
              (q: compare_regex y z = Gt)
     , compare_regex x z = Gt.
 Proof.
-(* TODO *)
+(* TODO: Good First Issue *)
 Admitted.
 
 Instance comparable_regex {X: Type} {tc: comparable X} : comparable (regex X) :=
