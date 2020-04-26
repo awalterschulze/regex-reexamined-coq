@@ -7,7 +7,7 @@ Require Import comparable.
 Require Import sort.
 
 (* remove_duplicates_from_sorted removes duplicates from a sorted list *)
-Fixpoint remove_duplicates_from_sorted {X: Type} {tc: comparable X} (xs: list X): list X :=
+Fixpoint remove_duplicates_from_sorted {A: Type} {tc: comparable A} (xs: list A): list A :=
   match xs with
   | nil => nil
   | (x'::xs') => match xs' with
@@ -22,7 +22,7 @@ Fixpoint remove_duplicates_from_sorted {X: Type} {tc: comparable X} (xs: list X)
 
 (* remove_duplicates_from_sorted_is_sorted shows that a sorted list with its duplicates removed is still sorted *)
 Theorem remove_duplicates_from_sorted_is_sorted:
-  forall {X: Type} {tc: comparable X} (xs: list X) {s: is_sorted xs},
+  forall {A: Type} {tc: comparable A} (xs: list A) {s: is_sorted xs},
   is_sorted (remove_duplicates_from_sorted xs).
 Proof.
 (* TODO: Good First Issue *)

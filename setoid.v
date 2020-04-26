@@ -11,24 +11,24 @@ Require Import regex.
 
 Section RegexEq.
 
-  Context {X: Type}.
-  Context {tc: comparable X}.
+  Context {A: Type}.
+  Context {tc: comparable A}.
 
   Definition bool_eq (b1 b2: bool) : Prop := b1 = b2.
 
-  Definition char_eq (a b: X) : Prop := compare a b = Eq.
+  Definition char_eq (a b: A) : Prop := compare a b = Eq.
 
-  Definition regex_eq (r s: regex X): Prop :=
-      forall (xs: list X), matchesb r xs = matchesb s xs.
+  Definition regex_eq (r s: regex A): Prop :=
+      forall (xs: list A), matchesb r xs = matchesb s xs.
 
-  Lemma regex_eq_refl : reflexive (regex X) regex_eq.
+  Lemma regex_eq_refl : reflexive (regex A) regex_eq.
   Proof.
     unfold reflexive.
     unfold regex_eq.
     reflexivity.
   Qed.
 
-  Lemma regex_eq_sym: symmetric (regex X) regex_eq.
+  Lemma regex_eq_sym: symmetric (regex A) regex_eq.
   Proof.
     unfold symmetric.
     unfold regex_eq.
@@ -36,7 +36,7 @@ Section RegexEq.
     apply H.
   Qed.
 
-  Lemma regex_eq_trans: transitive (regex X) regex_eq.
+  Lemma regex_eq_trans: transitive (regex A) regex_eq.
   Proof.
     unfold transitive.
     unfold regex_eq.
@@ -48,7 +48,7 @@ Section RegexEq.
     - exact H0.
   Qed.
 
-  Add Parametric Relation: (regex X) regex_eq
+  Add Parametric Relation: (regex A) regex_eq
       reflexivity proved by regex_eq_refl
       symmetry proved by regex_eq_sym
       transitivity proved by regex_eq_trans as regex_setoid.
@@ -64,7 +64,7 @@ Section RegexEq.
     assumption.
   Qed.
 
-  Add Parametric Morphism: (@derive X tc)
+  Add Parametric Morphism: (@derive A tc)
       with signature regex_eq ==> char_eq ==> regex_eq as derive_morph.
   Proof.
     intros.
@@ -117,8 +117,8 @@ Section RegexEq.
   Qed.
 
   Lemma concat_morph_specialized : forall
-      (xs: list X)
-      (x y x0 y0: regex X)
+      (xs: list A)
+      (x y x0 y0: regex A)
       (H0: (regex_eq x x0))
       (H1: (regex_eq y y0)),
       (matchesb (concat x y) xs) = (matchesb (concat x0 y0) xs).

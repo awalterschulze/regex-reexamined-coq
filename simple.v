@@ -12,7 +12,7 @@ Require Import smart.
 Require Import smart_or.
 
 (* simple is a simpler version of simplified to learn how to prove simplified in future *)
-Fixpoint simple {X: Type} {tc: comparable X} (r: regex X) : Prop :=
+Fixpoint simple {A: Type} {tc: comparable A} (r: regex A) : Prop :=
   match r with
   | fail => True
   | empty => True
@@ -25,12 +25,12 @@ Fixpoint simple {X: Type} {tc: comparable X} (r: regex X) : Prop :=
   | star s => simple s
   end.
 
-Lemma smart_or_is_simple: forall {X: Type} {tc: comparable X} (r s: regex X) (simple_r: simple r) (simple_s: simple s),
+Lemma smart_or_is_simple: forall {A: Type} {tc: comparable A} (r s: regex A) (simple_r: simple r) (simple_s: simple s),
   simple (smart_or r s).
 intros.
 induction r, s; simpl; try easy.
 - unfold smart_or.
-  remember (compare_regex (char x) (char x0)) as c.
+  remember (compare_regex (char a) (char a0)) as c.
   induction c.
   + assumption.
   + simpl.
@@ -45,7 +45,7 @@ induction r, s; simpl; try easy.
     unfold Logic.not.
     simpl in Heqc.
     intros.
-    apply (proof_compare_eq_symm x0 x) in H.
+    apply (proof_compare_eq_symm a0 a) in H.
     rewrite H in Heqc.
     discriminate.
 - unfold smart_or.
