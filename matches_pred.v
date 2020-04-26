@@ -2,11 +2,12 @@ Require Import List.
 Import ListNotations.
 
 Require Import comparable.
+Require Import derive.
 Require Import regex.
 
 Reserved Notation "xs =~ r" (at level 80).
 
-Inductive matches {A: Type} {C: comparable A} : regex A -> (list A) ->  Prop :=
+Inductive matches_prop {A: Type} {C: comparable A} : regex A -> (list A) ->  Prop :=
   | empty_matches :
     [] =~ empty
 
@@ -48,4 +49,19 @@ Inductive matches {A: Type} {C: comparable A} : regex A -> (list A) ->  Prop :=
     (* --------- *)
     (xs ++ ys) =~ star r
 
-  where "xs =~ r" := (matches r xs).
+  where "xs =~ r" := (matches_prop r xs).
+
+Theorem matches_prop_describes_matches_impl: 
+  forall
+    {A: Type}
+    {cmp: comparable A}
+    (r: regex A) 
+    (xs: list A), 
+  matchesb r xs = true <-> matches_prop r xs
+.
+(* TODO: Help Wanted 
+   If this theorem is proved,
+   then matches_prop can be used in proofs,
+   rather than induction on xs and matchesb.
+*)
+Admitted.
