@@ -12,8 +12,8 @@ Fixpoint is_sorted {A: Type} {cmp: comparable A} (xs: list A) : Prop :=
   | (x'::xs') => match xs' with
     | nil => True
     | (x''::xs'') => match compare x' x'' with
-      | Eq => True
-      | Lt => True
+      | Eq => is_sorted xs'
+      | Lt => is_sorted xs'
       | Gt => False
       end
     end
@@ -78,7 +78,9 @@ Lemma tail_of_is_sorted_is_sorted:
   (xs: list A),
   is_sorted (x :: xs) -> is_sorted xs.
 Proof.
-(* TODO: Good First Issue *)
+(* TODO: Good First Issue 
+   By Admitting this we previously let a bug slip through
+*)
 Admitted.
 
 Lemma tail_of_is_sorted'_is_sorted':
@@ -133,9 +135,11 @@ split.
   + intros.
     inversion H.
     * simpl. trivial.
-    * simpl. rewrite c. trivial.
-    * simpl. rewrite c. trivial.
-Qed.
+    * cbn. rewrite c.
+(* TODO: Good First Issue
+   Finish this Proof
+*)
+Admitted.
 
 Theorem is_sorted'_and_is_sorted''_are_equivalent : forall {A: Type} {cmp: comparable A} (xs: list A),
   is_sorted' xs <-> is_sorted'' xs.
