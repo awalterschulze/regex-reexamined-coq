@@ -44,15 +44,29 @@ Ltac compare_to_eq :=
        try (rewrite Heq)
   end.
 
+(* Generalizable Variables allows us to write
+  ```
+  forall
+    `{cmp: comparable A}`
+  ```
+  instead of
+  ```
+  forall
+    {A: Type}
+    {cmp: comparable A}
+  ```
+  see https://coq.inria.fr/refman/addendum/type-classes.html
+*)
+Generalizable Variables A.
+
 Lemma test_tactic_compare_to_eq
-  : forall {A: Type}
-           {tc: comparable A}
+  : forall `{cmp: comparable A}
            (x y: A)
            (p: Eq = compare x y),
   x = y.
 Proof.
 intros.
-set (Heq := tc).
+set (Heq := cmp).
 compare_to_eq.
 reflexivity.
 Qed.
@@ -83,8 +97,7 @@ Ltac induction_on_compare :=
 .
 
 Theorem proof_compare_eq_symm
-  : forall {A: Type}
-           {tc: comparable A}
+  : forall `{cmp: comparable A}
            (x y: A)
            (p: compare x y = Eq)
   , compare y x = Eq.
@@ -98,8 +111,7 @@ assumption.
 Qed.
 
 Theorem compare_eq_is_only_equal
-  : forall {A: Type}
-           {tc: comparable A}
+  : forall `{cmp: comparable A}
            (x1 x2: A)
            (p: compare x1 x2 = compare x2 x1)
   , compare x1 x2 = Eq.
@@ -120,8 +132,7 @@ induction_on_compare.
 Qed.
 
 Theorem compare_lt_not_symm_1
-  : forall {A: Type}
-           {tc: comparable A}
+  : forall `{cmp: comparable A}
            (x1 x2: A)
            (c12: compare x1 x2 = Lt)
            (c21: compare x2 x1 = Lt)
@@ -135,8 +146,7 @@ discriminate.
 Qed.
 
 Theorem compare_lt_not_symm_2
-  : forall {A: Type}
-           {tc: comparable A}
+  : forall `{cmp: comparable A}
            (x1 x2: A)
            (c12: compare x1 x2 = Lt)
            (c21: compare x2 x1 = Lt)
@@ -151,8 +161,7 @@ discriminate.
 Qed.
 
 Theorem compare_gt_not_symm
-  : forall {A: Type}
-           {tc: comparable A}
+  : forall `{cmp: comparable A}
            (x1 x2: A)
            (c12: compare x1 x2 = Gt)
            (c21: compare x2 x1 = Gt)
@@ -167,8 +176,7 @@ discriminate.
 Qed.
 
 Theorem compare_lt_gt_symm
-  : forall {A: Type}
-           {tc: comparable A}
+  : forall `{cmp: comparable A}
            (x1 x2: A)
            (p: compare x1 x2 = Lt)
   , compare x2 x1 = Gt.
@@ -188,8 +196,7 @@ induction iH.
 Qed.
 
 Theorem compare_gt_lt_symm
-  : forall {A: Type}
-           {tc: comparable A}
+  : forall `{cmp: comparable A}
            (x1 x2: A)
            (p: compare x1 x2 = Gt)
   , compare x2 x1 = Lt.
@@ -206,7 +213,7 @@ Proof.
     discriminate.
 Qed.
 
-Fixpoint comparable_list {A: Type} {tc: comparable A} (xs: list A) (ys: list A) : comparison :=
+Fixpoint comparable_list `{cmp: comparable A} (xs: list A) (ys: list A) : comparison :=
   match xs with
   | nil => match ys with
       | nil => Eq

@@ -88,7 +88,7 @@ Admitted.
 
 Lemma regex_proof_compare_eq_reflex
     : forall {A: Type}
-             {tc: comparable A}
+             {cmp: comparable A}
              (x: regex A)
     , compare_regex x x = Eq.
 Proof.
@@ -97,7 +97,7 @@ Admitted.
 
 Lemma regex_proof_compare_eq_trans
     : forall {A: Type}
-             {tc: comparable A}
+             {cmp: comparable A}
              (x y z: regex A)
              (p: compare_regex x y = Eq)
              (q: compare_regex y z = Eq)
@@ -108,7 +108,7 @@ Admitted.
 
 Lemma regex_proof_compare_lt_assoc
     : forall {A: Type}
-             {tc: comparable A}
+             {cmp: comparable A}
              (x y z: regex A)
              (p: compare_regex x y = Lt)
              (q: compare_regex y z = Lt)
@@ -119,7 +119,7 @@ Admitted.
 
 Lemma regex_proof_compare_gt_assoc
     : forall {A: Type}
-             {tc: comparable A}
+             {cmp: comparable A}
              (x y z: regex A)
              (p: compare_regex x y = Gt)
              (q: compare_regex y z = Gt)
@@ -128,7 +128,7 @@ Proof.
 (* TODO *)
 Admitted.
 
-Instance comparable_regex {A: Type} {tc: comparable A} : comparable (regex A) :=
+Instance comparable_regex {A: Type} {cmp: comparable A} : comparable (regex A) :=
   { compare := compare_regex
   ; proof_compare_eq_is_equal := regex_proof_compare_eq_is_equal
   ; proof_compare_eq_reflex := regex_proof_compare_eq_reflex
@@ -139,7 +139,7 @@ Instance comparable_regex {A: Type} {tc: comparable A} : comparable (regex A) :=
 
 Theorem compare_regex_is_compare: forall
   {A: Type}
-  {tc: comparable A}
+  {cmp: comparable A}
   (r s: regex A),
   compare_regex r s = compare r s.
 Proof.
@@ -157,7 +157,7 @@ Ltac induction_on_compare_regex :=
 
 Lemma test_compare_regex_char : forall 
   {A: Type}
-  {tc: comparable A}
+  {cmp: comparable A}
   (x1 x2: A)
   (p: compare x1 x2 = Lt),
   compare_regex (char x1) (char x2) = Lt.
@@ -173,7 +173,7 @@ or
     - x2
     - x1
 *)
-Lemma test_compare_regex_or_all_left : forall {A: Type} {tc: comparable A} (x1 x2: A) (p: compare x1 x2 = Lt),
+Lemma test_compare_regex_or_all_left : forall {A: Type} {cmp: comparable A} (x1 x2: A) (p: compare x1 x2 = Lt),
   compare_regex (char x1) (or (char x2) (or (char x2) (char x1))) = Lt.
 Proof. intros. simpl. reflexivity. Qed.
 
@@ -187,11 +187,11 @@ or
     - x2
     - x1
 *)
-Lemma test_compare_regex_or_symmetric: forall {A: Type} {tc: comparable A} (x1 x2: A) (p: compare x1 x2 = Lt),
+Lemma test_compare_regex_or_symmetric: forall {A: Type} {cmp: comparable A} (x1 x2: A) (p: compare x1 x2 = Lt),
   compare_regex (or (char x1) (char x2)) (or (char x2) (char x1)) = Lt.
 Proof. intros. simpl. now (rewrite p). Qed.
 
-Theorem compare_equal : forall {A: Type} {tc: comparable A} (r1 r2: regex A) (p: compare_regex r1 r2 = Eq),
+Theorem compare_equal : forall {A: Type} {cmp: comparable A} (r1 r2: regex A) (p: compare_regex r1 r2 = Eq),
   r1 = r2.
 Proof.
 induction r1.
@@ -265,7 +265,7 @@ induction r1.
     reflexivity.
 Qed.
 
-Theorem compare_reflex : forall {A: Type} {tc: comparable A} (r: regex A), 
+Theorem compare_reflex : forall {A: Type} {cmp: comparable A} (r: regex A), 
  compare_regex r r = Eq.
 Proof.
 induction r; try reflexivity; simpl.
