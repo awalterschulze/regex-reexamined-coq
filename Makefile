@@ -13,8 +13,8 @@ build:
 	coqc compare_regex.v
 	coqc reduce_orb.v
 
-	coqc matches_pred.v
 	coqc derive_def.v
+	coqc matches_pred.v
 	coqc setoid.v
 	coqc derive.v
 	coqc smart_or.v
@@ -25,4 +25,9 @@ build:
 	coqc main.v
 
 clean:
-	(rm *.vo || true && rm *.glob || true && rm *.aux || true && rm *.vok || true && rm *.vos || true)
+	( rm *.vo \
+	; rm *.glob \
+	; rm .*.aux \
+	; rm *.vok \
+	; rm *.vos \
+	|| true)
