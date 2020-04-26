@@ -13,12 +13,6 @@ Inductive matches {A: Type} {C: comparable A} : regex A -> (list A) ->  Prop :=
   | char_matches (a : A):
     [a] =~ char a
 
-  | concat_matches (r s : regex A) (xs ys: list A) :
-    xs =~ r ->
-    ys =~ s ->
-    (* --------- *)
-    (xs ++ ys) =~ concat r s
-
   | or_matches_l (r s : regex A) (xs : list A):
     xs =~ r ->
     (* --------- *)
@@ -28,6 +22,22 @@ Inductive matches {A: Type} {C: comparable A} : regex A -> (list A) ->  Prop :=
     xs =~ s ->
     (* --------- *)
     xs =~ or r s
+
+  | and_matches (r s : regex A) (xs: list A) :
+    xs =~ r ->
+    xs =~ s ->
+    (* --------- *)
+    xs =~ and r s
+
+  | concat_matches (r s : regex A) (xs ys: list A) :
+    xs =~ r ->
+    ys =~ s ->
+    (* --------- *)
+    (xs ++ ys) =~ concat r s
+
+  (* | not_matches (r : regex A) (xs : list A):
+    TODO: Help Wanted
+  *)
 
   | star_matches_nil (r : regex A):
     [] =~ star r
