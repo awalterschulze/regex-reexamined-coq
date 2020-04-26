@@ -12,7 +12,7 @@ Require Import regex.
 Section RegexEq.
 
   Context {A: Type}.
-  Context {tc: comparable A}.
+  Context {cmp: comparable A}.
 
   Definition bool_eq (b1 b2: bool) : Prop := b1 = b2.
 
@@ -64,7 +64,7 @@ Section RegexEq.
     assumption.
   Qed.
 
-  Add Parametric Morphism: (@derive A tc)
+  Add Parametric Morphism: (@derive A cmp)
       with signature regex_eq ==> char_eq ==> regex_eq as derive_morph.
   Proof.
     intros.

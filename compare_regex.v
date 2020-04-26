@@ -4,7 +4,7 @@ Set Asymmetric Patterns.
 Require Import comparable.
 Require Import regex.
 
-Fixpoint compare_regex {A: Type} {C: comparable A} (r s: regex A) : comparison :=
+Fixpoint compare_regex {A: Type} {cmp: comparable A} (r s: regex A) : comparison :=
   match r with
   | fail => match s with
     | fail => Eq
@@ -78,7 +78,7 @@ Fixpoint compare_regex {A: Type} {C: comparable A} (r s: regex A) : comparison :
 
 Lemma regex_proof_compare_eq_is_equal
     : forall {A: Type}
-             {C: comparable A}
+             {cmp: comparable A}
              (x y: regex A) 
              (p: compare_regex x y = Eq)
     , x = y.

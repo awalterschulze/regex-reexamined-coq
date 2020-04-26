@@ -5,7 +5,7 @@ Require Import comparable.
 Require Import nullable.
 Require Import regex.
 
-Definition is_eq {A: Type} {tc: comparable A} (x y: A) : bool :=
+Definition is_eq {A: Type} {cmp: comparable A} (x y: A) : bool :=
   match compare x y with
   | Eq => true
   | _ => false
@@ -22,7 +22,7 @@ Definition is_eq {A: Type} {tc: comparable A} (x y: A) : bool :=
    derive (a|empty)b b    = empty
    derive empty b    b    = empty
 *)
-Fixpoint derive {A: Type} {tc: comparable A} (r: regex A) (x: A) : regex A :=
+Fixpoint derive {A: Type} {cmp: comparable A} (r: regex A) (x: A) : regex A :=
   match r with
   | fail => fail
   | empty => fail
@@ -39,7 +39,7 @@ Fixpoint derive {A: Type} {tc: comparable A} (r: regex A) (x: A) : regex A :=
   | star s => concat (derive s x) (star s)
   end.
 
-Definition matchesb {A: Type} {tc: comparable A} (r: regex A) (xs: list A) : bool :=
+Definition matchesb {A: Type} {cmp: comparable A} (r: regex A) (xs: list A) : bool :=
   nullable (fold_left derive xs r).
 
 (* fold_matchesb tries to find a expression
@@ -66,7 +66,7 @@ matchesb expressions it can spot.
 Ltac simpl_matchesb :=
   cbn; repeat fold_matchesb.
 
-Theorem or_is_logical_or: forall {A: Type} {tc: comparable A} (xs: list A) (r s: regex A),
+Theorem or_is_logical_or: forall {A: Type} {cmp: comparable A} (xs: list A) (r s: regex A),
   matchesb (or r s) xs = (orb (matchesb r xs) (matchesb s xs)).
 Proof.
   induction xs; intros; simpl_matchesb.
@@ -74,14 +74,14 @@ Proof.
   - apply IHxs.
 Qed.
 
-Theorem and_is_logical_and: forall {A: Type} {tc: comparable A} (xs: list A) (r s: regex A),
+Theorem and_is_logical_and: forall {A: Type} {cmp: comparable A} (xs: list A) (r s: regex A),
   matchesb (and r s) xs = (andb (matchesb r xs) (matchesb s xs)).
 Proof.
 (* TODO: Good First Issue *)
 Admitted.
 
 (* not(not(r)) = r *)
-Theorem not_is_logical_not : forall {A: Type} {tc: comparable A} (xs: list A) (r: regex A),
+Theorem not_is_logical_not : forall {A: Type} {cmp: comparable A} (xs: list A) (r: regex A),
   matchesb (not r) xs = negb (matchesb r xs).
 Proof.
   induction xs; intros; simpl_matchesb.

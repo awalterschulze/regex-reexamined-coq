@@ -15,7 +15,7 @@ Require Import smart_or.
    This way we don't have to apply simplification after derivation.
    We hope this will also make it easier to prove things.
 *)
-Fixpoint sderive {A: Type} {tc: comparable A} (r: regex A) (x: A) : regex A :=
+Fixpoint sderive {A: Type} {cmp: comparable A} (r: regex A) (x: A) : regex A :=
   match r with
   | fail => fail
   | empty => fail
@@ -32,12 +32,12 @@ Fixpoint sderive {A: Type} {tc: comparable A} (r: regex A) (x: A) : regex A :=
   | star s => concat (derive s x) (star s)
   end.
 
-Definition smatchesb {A: Type} {tc: comparable A} (r: regex A) (xs: list A) : bool :=
+Definition smatchesb {A: Type} {cmp: comparable A} (r: regex A) (xs: list A) : bool :=
   nullable (fold_left sderive xs r)
 .
 
 (* mathing without simplification is the same as with simplification *)
-Theorem simplify_is_correct : forall {A: Type} {tc: comparable A} (xs: list A) (r: regex A),
+Theorem simplify_is_correct : forall {A: Type} {cmp: comparable A} (xs: list A) (r: regex A),
   matchesb r xs = smatchesb r xs.
 Proof.
 unfold matchesb.

@@ -5,7 +5,7 @@ Require Import comparable.
    It needs to be comparable.
 *)
 
-Inductive regex (A: Type) {C: comparable A} : Type :=
+Inductive regex (A: Type) {cmp: comparable A} : Type :=
   fail : regex A (* matchesb no strings *)
   | empty : regex A (* matchesb the empty string *)
   | char : A -> regex A (* matchesb a single character *)
@@ -18,15 +18,15 @@ Inductive regex (A: Type) {C: comparable A} : Type :=
 
 (*
 We set arguments for fail and empty so that A is implicit when constructing a regex.
-For fail: Arguments A, C are implicit and maximally inserted
-For empty: Arguments A, C are implicit and maximally inserted
+For fail: Arguments A, cmp are implicit and maximally inserted
+For empty: Arguments A, cmp are implicit and maximally inserted
 *)
 
-Arguments fail {A} {C}.
-Arguments empty {A} {C}.
-Arguments char {A} {C} _.
-Arguments or {A} {C} _ _.
-Arguments and {A} {C} _ _.
-Arguments concat {A} {C} _ _.
-Arguments not {A} {C} _.
-Arguments star {A} {C} _.
+Arguments fail {A} {cmp}.
+Arguments empty {A} {cmp}.
+Arguments char {A} {cmp} _.
+Arguments or {A} {cmp} _ _.
+Arguments and {A} {cmp} _ _.
+Arguments concat {A} {cmp} _ _.
+Arguments not {A} {cmp} _.
+Arguments star {A} {cmp} _.

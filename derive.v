@@ -10,7 +10,7 @@ Require Import regex.
 Require Import reduce_orb.
 Require Import setoid.
 
-Theorem fail_is_terminating : forall {A: Type} {C: comparable A} (xs: list A),
+Theorem fail_is_terminating : forall {A: Type} {cmp: comparable A} (xs: list A),
   matchesb fail xs = false.
 Proof.
   induction xs; intros; simpl_matchesb; trivial.
@@ -26,7 +26,7 @@ Ltac or_simple := repeat
 Section Derive.
 
 Context {A: Type}.
-Context {C: comparable A}.
+Context {cmp: comparable A}.
 
 (* r&r = r *)
 Theorem and_idemp : forall (xs: list A) (r1 r2: regex A) (p: compare_regex r1 r2 = Eq),

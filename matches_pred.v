@@ -6,7 +6,7 @@ Require Import regex.
 
 Reserved Notation "xs =~ r" (at level 80).
 
-Inductive matches {A: Type} {C: comparable A} : regex A -> (list A) ->  Prop :=
+Inductive matches {A: Type} {cmp: comparable A} : regex A -> (list A) ->  Prop :=
   | empty_matches :
     [] =~ empty
 

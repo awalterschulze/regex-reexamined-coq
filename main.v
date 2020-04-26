@@ -25,7 +25,7 @@ Require Import smart.
    Two input characters are equivalent if for the same regex r
    they produce the same derivative.
 *)
-Definition eqv_char {A: Type} {tc: comparable A} (a b: A) (r: regex A) : Prop :=
+Definition eqv_char {A: Type} {cmp: comparable A} (a b: A) (r: regex A) : Prop :=
   derive r a = derive r b.
 
 (* Lemma 4.1 proves that given the equivalent_character property
@@ -39,14 +39,14 @@ Definition eqv_char {A: Type} {tc: comparable A} (a b: A) (r: regex A) : Prop :=
    - not
    or those regular expressions.
 *)
-Lemma eqv_concat : forall {A: Type} {tc: comparable A} (a b: A) (r s: regex A)
+Lemma eqv_concat : forall {A: Type} {cmp: comparable A} (a b: A) (r s: regex A)
   (eqvr: eqv_char a b r) (eqvs: eqv_char a b s),
 eqv_char a b (concat r s).
 Proof.
 (* TODO: Good First Issue *)
 Admitted.
 
-Lemma eqv_or : forall {A: Type} {tc: comparable A} (a b: A) (r s: regex A)
+Lemma eqv_or : forall {A: Type} {cmp: comparable A} (a b: A) (r s: regex A)
   (eqvr: eqv_char a b r) (eqvs: eqv_char a b s),
 eqv_char a b (or r s).
 Proof.
@@ -58,21 +58,21 @@ rewrite eqvs.
 reflexivity.
 Qed.
 
-Lemma eqv_and : forall {A: Type} {tc: comparable A} (a b: A) (r s: regex A)
+Lemma eqv_and : forall {A: Type} {cmp: comparable A} (a b: A) (r s: regex A)
   (eqvr: eqv_char a b r) (eqvs: eqv_char a b s),
 eqv_char a b (and r s).
 Proof.
 (* TODO: Good First Issue *)
 Admitted.
 
-Lemma eqv_star : forall {A: Type} {tc: comparable A} (a b: A) (r: regex A)
+Lemma eqv_star : forall {A: Type} {cmp: comparable A} (a b: A) (r: regex A)
   (eqvr: eqv_char a b r),
 eqv_char a b (star r).
 Proof.
 (* TODO: Good First Issue *)
 Admitted.
 
-Lemma eqv_not : forall {A: Type} {tc: comparable A} (a b: A) (r: regex A)
+Lemma eqv_not : forall {A: Type} {cmp: comparable A} (a b: A) (r: regex A)
   (eqvr: eqv_char a b r),
 eqv_char a b (not r).
 Proof.
