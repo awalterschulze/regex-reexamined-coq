@@ -13,8 +13,8 @@ build:
 	coqc compare_regex.v
 	coqc reduce_orb.v
 
-	coqc matches_pred.v
 	coqc derive_def.v
+	coqc matches_pred.v
 	coqc setoid.v
 	coqc derive.v
 	coqc smart_or.v
