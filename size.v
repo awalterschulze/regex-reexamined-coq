@@ -6,7 +6,7 @@ Require Import List.
 Require Import comparable.
 Require Import regex.
 
-Fixpoint size {X: Type} {C: comparable X} (r: regex X) := 
+Fixpoint size {A: Type} {cmp: comparable A} (r: regex A) := 
   match r with
   | fail => 1
   | empty => 1

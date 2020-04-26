@@ -12,7 +12,7 @@ Require Import regex.
    nullable a(abc)*|ab   = false
    nullable !(a)         = true
 *)
-Fixpoint nullable {X: Type} {C: comparable X} (r: regex X) : bool :=
+Fixpoint nullable {A: Type} {cmp: comparable A} (r: regex A) : bool :=
   match r with
   | fail => false
   | empty => true

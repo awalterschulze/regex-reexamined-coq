@@ -10,7 +10,7 @@ Require Import regex.
 Require Import reduce_orb.
 Require Import setoid.
 
-Theorem fail_is_terminating : forall {X: Type} {C: comparable X} (xs: list X),
+Theorem fail_is_terminating : forall {A: Type} {cmp: comparable A} (xs: list A),
   matchesb fail xs = false.
 Proof.
   induction xs; intros; simpl_matchesb; trivial.
@@ -25,11 +25,11 @@ Ltac or_simple := repeat
 
 Section Derive.
 
-Context {X: Type}.
-Context {C: comparable X}.
+Context {A: Type}.
+Context {cmp: comparable A}.
 
 (* r&r = r *)
-Theorem and_idemp : forall (xs: list X) (r1 r2: regex X) (p: compare_regex r1 r2 = Eq),
+Theorem and_idemp : forall (xs: list A) (r1 r2: regex A) (p: compare_regex r1 r2 = Eq),
   matchesb (and r1 r2) xs = matchesb r1 xs.
 Proof.
 unfold matchesb.
@@ -46,7 +46,7 @@ induction xs.
 Qed.
 
 (* r&s = s&r *)
-Theorem and_comm : forall (xs: list X) (r1 r2: regex X),
+Theorem and_comm : forall (xs: list A) (r1 r2: regex A),
   matchesb (and r1 r2) xs = matchesb (and r2 r1) xs.
 Proof.
 unfold matchesb.
@@ -59,7 +59,7 @@ induction xs.
 Qed.
 
 (* (r&s)&t = r&(s&t) *)
-Theorem and_assoc : forall (xs: list X) (r s t: regex X),
+Theorem and_assoc : forall (xs: list A) (r s t: regex A),
     matchesb (and (and r s) t) xs = matchesb (and r (and s t)) xs.
 Proof.
 unfold matchesb.
@@ -72,7 +72,7 @@ induction xs.
 Qed.
 
 (* fail&r = fail *)
-Theorem and_fail : forall (xs: list X) (r: regex X),
+Theorem and_fail : forall (xs: list A) (r: regex A),
   matchesb (and fail r) xs = matchesb fail xs.
 Proof.
 unfold matchesb.
@@ -85,7 +85,7 @@ induction xs.
 Qed.
 
 (* not(fail)&r = r *)
-Theorem and_not_fail : forall (xs: list X) (r: regex X),
+Theorem and_not_fail : forall (xs: list A) (r: regex A),
     matchesb (and (not fail) r) xs = matchesb r xs.
 Proof.
 unfold matchesb.
@@ -100,8 +100,8 @@ Qed.
 
 (* concat (or r s) t => or (concat r t) (concat s t) *)
 Theorem concat_or_distrib_r': forall
-  (xs: list X)
-  (r s t: regex X),
+  (xs: list A)
+  (r s t: regex A),
   matchesb (concat (or r s) t) xs
   = matchesb (or (concat r t) (concat s t)) xs.
 Proof.
@@ -130,8 +130,8 @@ Qed.
 
 (* (r.s).t = r.(s.t) *)
 Theorem concat_assoc': forall
-  (xs: list X)
-  (r s t: regex X),
+  (xs: list A)
+  (r s t: regex A),
   matchesb (concat (concat r s) t) xs
   = matchesb (concat r (concat s t)) xs.
 Proof.
@@ -151,7 +151,7 @@ induction xs.
 Qed.
 
 (* fail.r = fail *)
-Theorem concat_fail_l : forall (xs: list X) (r: regex X),
+Theorem concat_fail_l : forall (xs: list A) (r: regex A),
   matchesb (concat fail r) xs = matchesb fail xs.
 Proof.
 unfold matchesb.
@@ -163,8 +163,8 @@ induction xs.
 Qed.
 
 Theorem concat_fail_r :
-  forall (xs : list X)
-         (r : regex X),
+  forall (xs : list A)
+         (r : regex A),
     matchesb (concat r fail) xs = matchesb fail xs.
 Proof.
   induction xs; intros; simpl_matchesb.
@@ -181,8 +181,8 @@ Qed.
 
 (* concat (or r s) t => or (concat r t) (concat s t) *)
 Lemma concat_or_distrib_r:
-  forall (xs: list X)
-         (r s t: regex X),
+  forall (xs: list A)
+         (r s t: regex A),
     matchesb (concat (or r s) t) xs = matchesb (or (concat r t) (concat s t)) xs.
 Proof.
   induction xs; intros; simpl_matchesb.
@@ -198,7 +198,7 @@ Proof.
 Qed.
 
 (* (r.s).t = r.(s.t) *)
-Theorem concat_assoc: forall (xs: list X) (r s t: regex X),
+Theorem concat_assoc: forall (xs: list A) (r s t: regex A),
   matchesb (concat (concat r s) t) xs = matchesb (concat r (concat s t)) xs.
 Proof.
   induction xs; intros; simpl_matchesb.
@@ -214,7 +214,7 @@ Proof.
       orb_simple.
 Qed.
 
-Lemma fold_at_fail : forall (xs : list X), (fold_left derive xs fail = fail).
+Lemma fold_at_fail : forall (xs : list A), (fold_left derive xs fail = fail).
 Proof.
 simpl.
 intros.
@@ -225,7 +225,7 @@ induction xs.
   apply IHxs.
 Qed.
 
-Lemma nullable_fold : forall (xs : list X) (r s: regex X), (nullable (fold_left derive xs (or r s))) = (orb (nullable (fold_left derive xs r)) (nullable (fold_left derive xs s))).
+Lemma nullable_fold : forall (xs : list A) (r s: regex A), (nullable (fold_left derive xs (or r s))) = (orb (nullable (fold_left derive xs r)) (nullable (fold_left derive xs s))).
 Proof.
 induction xs.
 - intros.
@@ -237,7 +237,7 @@ induction xs.
 Qed.
 
 (* r.fail = fail *)
-Theorem concat_fail_r' : forall (xs: list X) (r: regex X),
+Theorem concat_fail_r' : forall (xs: list A) (r: regex A),
   matchesb (concat r fail) xs = matchesb fail xs.
 Proof.
 unfold matchesb.
@@ -260,7 +260,7 @@ induction xs.
 Qed.
 
 (* empty.r = r *)
-Theorem concat_empty : forall (xs: list X) (r: regex X),
+Theorem concat_empty : forall (xs: list A) (r: regex A),
   matchesb (concat empty r) xs = matchesb r xs.
 Proof.
   induction xs; intros; simpl_matchesb.
@@ -273,7 +273,7 @@ Proof.
 Qed.
 
 (* r.empty = r *)
-Theorem concat_empty2: forall (xs: list X) (r: regex X),
+Theorem concat_empty2: forall (xs: list A) (r: regex A),
   matchesb (concat r empty) xs = matchesb r xs.
 Proof.
   induction xs; intros; simpl_matchesb.
@@ -289,7 +289,7 @@ Proof.
 Qed.
 
 (* r|r = r *)
-Theorem or_idemp : forall (xs: list X) (r1 r2: regex X) (p: compare_regex r1 r2 = Eq),
+Theorem or_idemp : forall (xs: list A) (r1 r2: regex A) (p: compare_regex r1 r2 = Eq),
   matchesb (or r1 r2) xs = matchesb r1 xs.
 Proof.
 unfold matchesb.
@@ -306,7 +306,7 @@ induction xs.
 Qed.
 
 (* r|s = s|r *)
-Theorem or_comm : forall (xs: list X) (r s: regex X),
+Theorem or_comm : forall (xs: list A) (r s: regex A),
   matchesb (or r s) xs = matchesb (or s r) xs.
 Proof.
 unfold matchesb.
@@ -319,7 +319,7 @@ induction xs.
 Qed.
 
 (* (r|s)|t = r|(s|t) *)
-Theorem or_assoc : forall (xs: list X) (r s t: regex X),
+Theorem or_assoc : forall (xs: list A) (r s t: regex A),
   matchesb (or r (or s t)) xs = matchesb (or (or r s) t) xs.
 Proof.
 unfold matchesb.
@@ -332,14 +332,14 @@ induction xs.
 Qed.
 
 (* not(fail)|r = not(fail) *)
-Theorem or_not_fail : forall (xs: list X) (r: regex X),
+Theorem or_not_fail : forall (xs: list A) (r: regex A),
   matchesb (or (not fail) r) xs = matchesb (not fail) xs.
 Proof.
   induction xs; intros; simpl_matchesb; trivial.
 Qed.
 
 (* fail|r = r *)
-Theorem or_id : forall (xs: list X) (r: regex X),
+Theorem or_id : forall (xs: list A) (r: regex A),
   matchesb (or r fail) xs = matchesb r xs.
 Proof.
 unfold matchesb.
@@ -352,13 +352,13 @@ induction xs.
 Qed.
 
 (* star(star(r)) = star(r) *)
-Theorem star_star : forall (xs: list X) (r: regex X),
+Theorem star_star : forall (xs: list A) (r: regex A),
   matchesb (star (star r)) xs = matchesb (star r) xs.
 (* TODO: Good First Issue *)
 Admitted.
 
 (* (empty)* = empty *)
-Theorem star_empty : forall (xs: list X),
+Theorem star_empty : forall (xs: list A),
   matchesb (star empty) xs = matchesb empty xs.
 Proof.
   induction xs; intros; simpl_matchesb.
@@ -368,7 +368,7 @@ Proof.
 Qed.
 
 (* (fail)* = empty *)
-Theorem fail_star : forall (xs: list X),
+Theorem fail_star : forall (xs: list A),
   matchesb (star fail) xs = matchesb empty xs.
 Proof.
 unfold matchesb.
@@ -380,7 +380,7 @@ induction xs.
 Qed.
 
 (* not(not(r)) = r *)
-Theorem not_not : forall (xs: list X) (r: regex X),
+Theorem not_not : forall (xs: list A) (r: regex A),
   matchesb (not (not r)) xs = matchesb r xs.
 Proof.
   induction xs; intros; simpl_matchesb.
@@ -389,7 +389,7 @@ Proof.
   - apply IHxs.
 Qed.
 
-Theorem not_fail_is_terminating : forall (xs: list X),
+Theorem not_fail_is_terminating : forall (xs: list A),
   matchesb (not fail) xs = true.
 Proof.
   induction xs; intros; simpl_matchesb.

@@ -17,53 +17,53 @@ Require Import comparable.
 
 Section Reorder.
 
-(* X is an generic value *)
-Variable X: Set.
+(* A is an generic value *)
+Variable A: Set.
 
-(* X has a compare function which returns comparison *)
-Variable HasCompareFunction: comparable X.
+(* A has a compare function which returns comparison *)
+Variable HasCompareFunction: comparable A.
 
-(* X has an operator
+(* A has an operator
    Examples of the operator are:
    - addition
    - multiplication
    - and
    - or
 *)
-Variable Op: X -> X -> X.
+Variable Op: A -> A -> A.
 
-(* X has an identity value *)
-Variable Identity: X.
+(* A has an identity value *)
+Variable Identity: A.
 Parameter proof_id
-    : forall (x: X)
+    : forall (x: A)
     , Op x Identity = x.
 
 (* The operator is associative *)
 Parameter proof_assoc
-    : forall (x y z: X)
+    : forall (x y z: A)
     , (Op (Op x y) z) = (Op x (Op y z)).
 
 (* The operator is commutative *)
 Parameter proof_comm
-    : forall (x y: X)
+    : forall (x y: A)
     , Op x y = Op y x.
 
 (* eval_list evaluates the list using Op *)
-Fixpoint eval_list (xs: list X) : X :=
+Fixpoint eval_list (xs: list A) : A :=
     match xs with
     | nil => Identity
     | (x' :: xs') => Op x' (eval_list xs')
     end.
 
 (* eval_list_swap swaps the evaluation order *)
-Fixpoint eval_list_swap (xs: list X) : X :=
+Fixpoint eval_list_swap (xs: list A) : A :=
     match xs with
     | nil => Identity
     | (x' :: xs') => Op (eval_list_swap xs') x'
     end.
 
 (* insert is a helper function for sort *)
-Fixpoint insert (x: X) (xs: list X) : list X :=
+Fixpoint insert (x: A) (xs: list A) : list A :=
     match xs with
     | nil => x :: nil
     | y::ys => match compare x y with
@@ -74,21 +74,21 @@ Fixpoint insert (x: X) (xs: list X) : list X :=
     end.
 
 (* sort is a helper function for eval_list_sort *)
-Fixpoint sort (xs: list X) : list X :=
+Fixpoint sort (xs: list A) : list A :=
     match xs with
     | nil => nil
     | (x'::xs') => insert x' (sort xs')
     end.
 
 (* eval_list_sort first sorts a list before evaluating it *)
-Definition eval_list_sort (xs: list X) : X :=
+Definition eval_list_sort (xs: list A) : A :=
     eval_list (sort xs).
 
 (* eval_list_swap_is_correct shows that
    eval_list_swap is equivalent to eval_list
 *)
 Theorem eval_list_swap_is_correct
-    : forall (xs: list X)
+    : forall (xs: list A)
     , eval_list xs = eval_list_swap xs.
 Proof.
 intros.
@@ -103,7 +103,7 @@ Qed.
 
 (* eval_list_and_insert is an incremental lemma for eval_list_sort_is_correct *)
 Lemma eval_list_and_insert
-  : forall (x: X) (xs: list X)
+  : forall (x: A) (xs: list A)
   , eval_list (x::xs) = eval_list (insert x xs).
 Proof.
   induction xs as [| y ys IH].
@@ -130,7 +130,7 @@ Qed.
    eval_list_sort is equivalent to eval_list
 *)
 Theorem eval_list_sort_is_correct
-  : forall (xs: list X)
+  : forall (xs: list A)
   , eval_list xs = eval_list_sort xs.
 Proof.
   induction xs.
@@ -149,7 +149,7 @@ Qed.
 (* eval_list_and_insert' is an alternative proof for eval_list_and_insert,
    which an incremental lemma for eval_list_sort_is_correct' *)
 Lemma eval_list_and_insert'
-  : forall (x: X) (xs: list X)
+  : forall (x: A) (xs: list A)
   , eval_list (x::xs) = eval_list (insert x xs).
 Proof.
 induction xs.
@@ -194,7 +194,7 @@ Qed.
    which shows that eval_list_sort is equivalent to eval_list
 *)
 Theorem eval_list_sort_is_correct'
-  : forall (xs: list X)
+  : forall (xs: list A)
   , eval_list xs = eval_list_sort xs.
 Proof.
 induction xs.
@@ -231,21 +231,21 @@ Inductive tree (A: Set) :=
     | bin : tree A -> tree A -> tree A.
    
 (* eval_tree evaluates the tree using Op *)
-Fixpoint eval_tree (tx: tree X) : X :=
+Fixpoint eval_tree (tx: tree A) : A :=
     match tx with
     | value v => v
     | bin l r => Op (eval_tree l) (eval_tree r)
     end.
 
 (* eval_tree_swap swaps the evaluation order *)
-Fixpoint eval_tree_swap (tx: tree X) : X :=
+Fixpoint eval_tree_swap (tx: tree A) : A :=
     match tx with
     | value v => v
     | bin l r => Op (eval_tree_swap r) (eval_tree_swap l)
     end.
 
 (* to_list converts a tree to a list *)
-Fixpoint to_list (tx: tree X) : list X :=
+Fixpoint to_list (tx: tree A) : list A :=
     match tx with
     | value v => v :: nil
     | bin l r => to_list l ++ to_list r
@@ -254,7 +254,7 @@ Fixpoint to_list (tx: tree X) : list X :=
 (* to_tree converts a list to a tree.
    The empty list results in a tree with an identity element.
 *)
-Fixpoint to_tree (xs: list X) : tree X :=
+Fixpoint to_tree (xs: list A) : tree A :=
     match xs with
     | nil => value Identity
     | (x::nil) => value x
@@ -262,7 +262,7 @@ Fixpoint to_tree (xs: list X) : tree X :=
     end.
 
 (* eval_tree_sort first sorts a tree before evaluating it *)
-Definition eval_tree_sort (tx: tree X) : X :=
+Definition eval_tree_sort (tx: tree A) : A :=
     eval_tree (to_tree (sort (to_list tx))).
 
 (* eval_list_concatenation is a helper lemma for
@@ -270,7 +270,7 @@ Definition eval_tree_sort (tx: tree X) : X :=
    eval_tree_sort_is_correct
 *)
 Lemma eval_list_concatenation
-  : forall (xs ys : list X)
+  : forall (xs ys : list A)
   , eval_list (xs ++ ys) = Op (eval_list xs) (eval_list ys).
 Proof.
   induction xs.
@@ -291,7 +291,7 @@ Qed.
    eval_tree_sort_is_correct
 *)
 Lemma eval_tree_factorizes_through_eval_list
-  : forall (xs: tree X)
+  : forall (xs: tree A)
   , eval_tree xs = eval_list (to_list xs).
 Proof.
   induction xs.
@@ -311,7 +311,7 @@ Qed.
 
 (* to_list_to_tree is a helper lemma for eval_tree_sort_is_correct *)
 Lemma to_list_to_tree
-  : forall (xs : list X)
+  : forall (xs : list A)
   , eval_list (to_list (to_tree xs)) = eval_list xs.
 Proof.
   induction xs.
@@ -343,7 +343,7 @@ Qed.
    eval_tree_swap is equivalent to eval_tree
 *)
 Theorem eval_tree_swap_is_correct
-    : forall (xs: tree X)
+    : forall (xs: tree A)
     , eval_tree xs = eval_tree_swap xs.
 Proof.
 intros.
@@ -361,7 +361,7 @@ Qed.
    eval_tree_sort is equivalent to eval_tree
 *)
 Theorem eval_tree_sort_is_correct
-    : forall (xs: tree X)
+    : forall (xs: tree A)
     , eval_tree xs = eval_tree_sort xs.
 Proof.
   intros xs.
@@ -380,7 +380,7 @@ Qed.
    eval_tree_sort_is_correct'
 *)
 Lemma eval_list_concatenation'
-  : forall (xs ys : list X)
+  : forall (xs ys : list A)
   , eval_list (xs ++ ys) = Op (eval_list xs) (eval_list ys).
 Proof.
 induction xs.
@@ -400,7 +400,7 @@ Qed.
    eval_tree_sort_is_correct'
 *)
 Lemma eval_tree_factorizes_through_eval_list'
-  : forall (xs: tree X)
+  : forall (xs: tree A)
   , eval_tree xs = eval_list (to_list xs).
 Proof.
 induction xs.
@@ -416,7 +416,7 @@ Qed.
 
 (* to_list_to_tree' is a helper lemma for eval_tree_sort_is_correct' *)
 Lemma to_list_to_tree'
-  : forall (xs : list X)
+  : forall (xs : list A)
   , eval_list (to_list (to_tree xs)) = eval_list xs.
 Proof.
 induction xs.
@@ -462,7 +462,7 @@ Qed.
    eval_tree_sort is equivalent to eval_tree
 *)
 Theorem eval_tree_sort_is_correct'
-    : forall (xs: tree X)
+    : forall (xs: tree A)
     , eval_tree xs = eval_tree_sort xs.
 Proof.
 intros.
@@ -501,21 +501,21 @@ Qed.
 (* to_tree_id converts a list to a tree.
    The final element in the tree is always the Identity element.
 *)
-Fixpoint to_tree_id (xs: list X) : tree X :=
+Fixpoint to_tree_id (xs: list A) : tree A :=
   match xs with
   | nil => value Identity
   | (x'::xs') => bin (value x') (to_tree xs')
   end.
 
 (* eval_tree_sort_id first sorts a tree before evaluating it *)
-Definition eval_tree_sort_id (tx: tree X) : X :=
+Definition eval_tree_sort_id (tx: tree A) : A :=
     eval_tree (to_tree_id (sort (to_list tx))).
 
 (* eval_tree_sort_id_is_correct shows that
    eval_tree_sort is equivalent to eval_tree
 *)
 Theorem eval_tree_sort_id_is_correct
-    : forall (xs: tree X)
+    : forall (xs: tree A)
     , eval_tree xs = eval_tree_sort_id xs.
 Proof.
 (* TODO: Good First Issue *)

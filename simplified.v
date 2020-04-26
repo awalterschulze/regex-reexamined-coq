@@ -7,7 +7,7 @@ Require Import nullable.
 Require Import regex.
 
 (* simplified is a property that a regex's ors are somewhat simplified *)
-Fixpoint simplified {X: Type} {tc: comparable X} (r: regex X) : Prop :=
+Fixpoint simplified {A: Type} {cmp: comparable A} (r: regex A) : Prop :=
   match r with
   | fail => True
   | empty => True
@@ -40,7 +40,7 @@ or
     - x3
     - x4
 *)
-Lemma test_simplified_or_all_left_in_order : forall {X: Type} {tc: comparable X} (x1 x2 x3 x4: X)
+Lemma test_simplified_or_all_left_in_order : forall {A: Type} {cmp: comparable A} (x1 x2 x3 x4: A)
   (p12: compare x1 x2 = Lt)
   (p23: compare x2 x3 = Lt)
   (p34: compare x3 x4 = Lt),
@@ -61,15 +61,15 @@ or
     - x1
 *)
 Lemma test_simplified_or_all_left_out_of_order : forall
-  {X: Type}
-  {tc: comparable X}
-  (x1 x2 x3 x4: X)
+  {A: Type}
+  {cmp: comparable A}
+  (x1 x2 x3 x4: A)
   (p12: compare x1 x2 = Lt)
   (p23: compare x2 x3 = Lt)
   (p34: compare x3 x4 = Lt),
   simplified (or (char x1) (or (char x3) (or (char x2) (char x4)))) -> False.
 Proof.
-intros x tc.
+intros x cmp.
 intros x1 x2 x3 x4.
 intros p12 p23 p34.
 simpl.
@@ -89,13 +89,13 @@ or
     - x3
     - x4
 *)
-Lemma test_simplified_or_symmetric: forall {X: Type} {tc: comparable X} (x1 x2 x3 x4: X)
+Lemma test_simplified_or_symmetric: forall {A: Type} {cmp: comparable A} (x1 x2 x3 x4: A)
   (p12: compare x1 x2 = Lt)
   (p23: compare x2 x3 = Lt)
   (p34: compare x3 x4 = Lt),
   simplified (or (or (char x1) (char x2)) (or (char x3) (char x4))) -> False.
 Proof.
-intros x tc.
+intros x cmp.
 intros x1 x2 x3 x4 p12 p23 p34.
 simpl.
 firstorder.
