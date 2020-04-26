@@ -25,4 +25,9 @@ build:
 	coqc main.v
 
 clean:
-	(rm *.vo || true && rm *.glob || true && rm *.aux || true && rm *.vok || true && rm *.vos || true)
+	( rm *.vo \
+	; rm *.glob \
+	; rm .*.aux \
+	; rm *.vok \
+	; rm *.vos \
+	|| true)
