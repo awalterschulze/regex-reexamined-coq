@@ -354,7 +354,7 @@ Qed.
 (* star(star(r)) = star(r) *)
 Theorem star_star : forall (xs: list A) (r: regex A),
   matchesb (star (star r)) xs = matchesb (star r) xs.
-(* TODO: Good First Issue *)
+(* TODO: Help Wanted *)
 Admitted.
 
 (* (empty)* = empty *)

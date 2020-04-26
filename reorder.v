@@ -519,6 +519,6 @@ Theorem eval_tree_sort_id_is_correct
     , eval_tree xs = eval_tree_sort_id xs.
 Proof.
 (* TODO: Good First Issue *)
-Admitted.
+Abort.
 
 End Reorder.

@@ -172,7 +172,7 @@ Fixpoint merged_or {A: Type} {cmp: comparable A} (r: regex A) : Prop :=
 Theorem merged_or_upholds: forall {A: Type} {cmp: comparable A} (r s: regex A) (mr: merged_or r) (ms: merged_or s),
   merged_or (merge_or r s).
 (* TODO: Help Wanted *)
-Admitted.
+Abort.
 
 Theorem merged_or_is_recursive: forall
   {A: Type}
@@ -180,7 +180,7 @@ Theorem merged_or_is_recursive: forall
   (r s: regex A),
 merged_or (or r s) -> merged_or r /\ merged_or s.
 (* TODO: Good First Issue *)
-Admitted.
+Abort.
 
 (* fail|r = r *)
 Theorem merge_or_id: forall

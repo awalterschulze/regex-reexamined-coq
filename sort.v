@@ -139,13 +139,13 @@ split.
 (* TODO: Good First Issue
    Finish this Proof
 *)
-Admitted.
+Abort.
 
 Theorem is_sorted'_and_is_sorted''_are_equivalent : forall {A: Type} {cmp: comparable A} (xs: list A),
   is_sorted' xs <-> is_sorted'' xs.
 Proof.
 (* TODO: Good First Issue *)
-Admitted.
+Abort.
 
 (* insert_sort is a helper function for sort *)
 Fixpoint insert_sort {A: Type} {cmp: comparable A} (xs: list A) (x: A) : list A :=
