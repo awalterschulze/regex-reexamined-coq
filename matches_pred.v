@@ -64,4 +64,4 @@ Theorem matches_prop_describes_matches_impl:
    then matches_prop can be used in proofs,
    rather than induction on xs and matchesb.
 *)
-Admitted.
+Abort.
