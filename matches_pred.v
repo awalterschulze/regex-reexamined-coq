@@ -7,6 +7,7 @@ Require Import regex.
 
 Reserved Notation "xs =~ r" (at level 80).
 
+Unset Positivity Checking.
 Inductive matches_prop {A: Type} {cmp: comparable A} : regex A -> (list A) ->  Prop :=
   | empty_matches :
     [] =~ empty
@@ -36,9 +37,10 @@ Inductive matches_prop {A: Type} {cmp: comparable A} : regex A -> (list A) ->  P
     (* --------- *)
     (xs ++ ys) =~ concat r s
 
-  (* | not_matches (r : regex A) (xs : list A):
-    TODO: Help Wanted
-  *)
+  | not_matches (r : regex A) (xs : list A):
+    ~(xs =~ r) ->
+    (* --------- *)
+    xs =~ not r
 
   | star_matches_nil (r : regex A):
     [] =~ star r
@@ -50,6 +52,7 @@ Inductive matches_prop {A: Type} {cmp: comparable A} : regex A -> (list A) ->  P
     (xs ++ ys) =~ star r
 
   where "xs =~ r" := (matches_prop r xs).
+Set Positivity Checking.
 
 Theorem matches_prop_describes_matches_impl: 
   forall
