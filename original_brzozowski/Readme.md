@@ -13,7 +13,8 @@ The included paper has some modifications, to help it easier to read and use, th
     + section 6
   - rephrased A_k as Sigma_k, to make it clear that Sigma_k is the input alphabet
   - renamings of variables
-  - some extra explanations
+  - extra explanations and clarifications
+  - added todos as exercises
 
 This markdown is then rerendered to pdf using pandoc [here](./Derivatives%20of%20Regular%20Expressions%20-%20Janusz%20A%20Brzozowski.pdf)
 
