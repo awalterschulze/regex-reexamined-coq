@@ -58,6 +58,7 @@ $$
 We define another operation on a set $R$ of sequences, yielding a new set of sequences called a derivative of $R$.
 
 **Definition 3.1.** Given a set $R$ of sequences and a finite sequence $s$, the derivative of $R$ with respect to $s$ is denoted by $D_s R$ and is $D_s R = \{t | s.t \in R \}$.
+
 The notion of derivative of a set (under different names) was introduced previously {10, 14, 15}, but was not applied to regular expressions. We now present an algorithm for finding derivatives of regular expressions. We shall need to know when a regular expression contains $\lambda$. For this purpose we make the following definition.
 
 **Definition 3.2.** Given any set $R$ of sequences we define $\delta(R)$ to be
