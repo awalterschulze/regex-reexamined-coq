@@ -22,6 +22,8 @@ build:
 	coqc simplified.v
 	coqc simple.v
 
+	coqc inductive_predicate_experiment.v
+
 	coqc main.v
 
 clean:
