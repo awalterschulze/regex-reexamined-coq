@@ -44,7 +44,7 @@ Proof.
 (* TODO *)
 Admitted.
 
-Lemma nat_proof_compare_lt_assoc
+Lemma nat_proof_compare_lt_trans
   : forall (x y z: nat)
            (p: nat_compare x y = Lt)
            (q: nat_compare y z = Lt)
@@ -53,7 +53,7 @@ Proof.
 (* TODO *)
 Admitted.
 
-Lemma nat_proof_compare_gt_assoc
+Lemma nat_proof_compare_gt_trans
   : forall (x y z: nat)
            (p: nat_compare x y = Gt)
            (q: nat_compare y z = Gt)
@@ -67,8 +67,8 @@ Instance comparable_nat : comparable nat :=
   ; proof_compare_eq_is_equal := nat_proof_compare_eq_is_equal
   ; proof_compare_eq_reflex := nat_proof_compare_eq_reflex
   ; proof_compare_eq_trans := nat_proof_compare_eq_trans
-  ; proof_compare_lt_assoc := nat_proof_compare_lt_assoc
-  ; proof_compare_gt_assoc := nat_proof_compare_gt_assoc
+  ; proof_compare_lt_trans := nat_proof_compare_lt_trans
+  ; proof_compare_gt_trans := nat_proof_compare_gt_trans
   }.
 
 (* test_compare_list simply tests whether nat can be used

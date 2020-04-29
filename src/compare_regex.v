@@ -106,7 +106,7 @@ Proof.
 (* TODO: Good First Issue *)
 Admitted.
 
-Lemma regex_proof_compare_lt_assoc
+Lemma regex_proof_compare_lt_trans
     : forall {A: Type}
              {cmp: comparable A}
              (x y z: regex A)
@@ -117,7 +117,7 @@ Proof.
 (* TODO: Good First Issue *)
 Admitted.
 
-Lemma regex_proof_compare_gt_assoc
+Lemma regex_proof_compare_gt_trans
     : forall {A: Type}
              {cmp: comparable A}
              (x y z: regex A)
@@ -133,8 +133,8 @@ Instance comparable_regex {A: Type} {cmp: comparable A} : comparable (regex A) :
   ; proof_compare_eq_is_equal := regex_proof_compare_eq_is_equal
   ; proof_compare_eq_reflex := regex_proof_compare_eq_reflex
   ; proof_compare_eq_trans := regex_proof_compare_eq_trans
-  ; proof_compare_lt_assoc := regex_proof_compare_lt_assoc
-  ; proof_compare_gt_assoc := regex_proof_compare_gt_assoc
+  ; proof_compare_lt_trans := regex_proof_compare_lt_trans
+  ; proof_compare_gt_trans := regex_proof_compare_gt_trans
   }.
 
 Theorem compare_regex_is_compare: forall

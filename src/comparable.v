@@ -18,12 +18,12 @@ Class comparable (A : Type) :=
              (p: compare x y = Eq)
              (q: compare y z = Eq)
     , compare x z = Eq
-  ; proof_compare_lt_assoc
+  ; proof_compare_lt_trans
     : forall (x y z: A)
              (p: compare x y = Lt)
              (q: compare y z = Lt)
     , compare x z = Lt
-  ; proof_compare_gt_assoc
+  ; proof_compare_gt_trans
     : forall (x y z: A)
              (p: compare x y = Gt)
              (q: compare y z = Gt)
@@ -109,12 +109,12 @@ induction_on_compare.
 - reflexivity.
 - symmetry in Heqc.
   symmetry in p.
-  remember (proof_compare_lt_assoc x1 x2 x1 Heqc p).
+  remember (proof_compare_lt_trans x1 x2 x1 Heqc p).
   rewrite <- e.
   apply proof_compare_eq_reflex.
 - symmetry in Heqc.
   symmetry in p.
-  remember (proof_compare_gt_assoc x1 x2 x1 Heqc p).
+  remember (proof_compare_gt_trans x1 x2 x1 Heqc p).
   rewrite <- e.
   apply proof_compare_eq_reflex.
 Qed.
@@ -128,7 +128,7 @@ Theorem compare_lt_not_symm_1
   , False.
 Proof.
 intros.
-assert (p1 := proof_compare_lt_assoc x1 x2 x1 c12 c21).
+assert (p1 := proof_compare_lt_trans x1 x2 x1 c12 c21).
 assert (p2 := proof_compare_eq_reflex x1).
 rewrite p1 in p2.
 discriminate.
@@ -181,7 +181,7 @@ induction iH.
   rewrite HeqiH in p.
   discriminate.
 - symmetry in HeqiH.
-  assert (a := proof_compare_lt_assoc x1 x2 x1 p HeqiH).
+  assert (a := proof_compare_lt_trans x1 x2 x1 p HeqiH).
   rewrite proof_compare_eq_reflex in a.
   discriminate.
 - reflexivity.
@@ -201,7 +201,7 @@ Proof.
     discriminate.
   - trivial.
   - symmetry in Heqc.
-    set (a := proof_compare_gt_assoc x1 x2 x1 p Heqc).
+    set (a := proof_compare_gt_trans x1 x2 x1 p Heqc).
     rewrite proof_compare_eq_reflex in a.
     discriminate.
 Qed.
