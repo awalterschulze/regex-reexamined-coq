@@ -221,3 +221,18 @@ Fixpoint comparable_list {A: Type} {cmp: comparable A} (xs: list A) (ys: list A)
           end
       end
   end.
+
+
+Definition compare_leq {A: Type} {cmp: comparable A} (x y: A) : Prop :=
+  (compare x y = Eq) \/ (compare x y = Lt).
+
+Lemma compare_leq_trans {A: Type} {cmp: comparable A} (x y z: A) :
+  (compare_leq x y) -> (compare_leq y z) -> (compare_leq x z).
+Proof.
+  intros.
+  unfold compare_leq in *.
+  Hint Resolve 
+  match goal with
+  | P: context [compare ?x ?y] |- _ => destruct (compare x y)
+  end; auto.
+
