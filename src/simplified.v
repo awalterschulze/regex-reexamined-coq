@@ -74,7 +74,7 @@ intros x1 x2 x3 x4.
 intros p12 p23 p34.
 simpl.
 firstorder.
-assert (p := proof_compare_lt_assoc x2 x3 x2 p23 H7).
+assert (p := proof_compare_lt_trans x2 x3 x2 p23 H7).
 rewrite proof_compare_eq_reflex in p.
 discriminate.
 Qed.
