@@ -31,7 +31,8 @@ Class comparable (A : Type) :=
   }.
 
 (* compare_to_eq turns an hypothesis:
-  `Eq = compare x y` into:
+  `Eq = compare x y` or `compare x y = Eq` into:
+into:
   `x = y`
   and then tries to rewrite with it.
 *)
@@ -39,6 +40,10 @@ Ltac compare_to_eq :=
   match goal with
   | [ H_Eq_Compare : Eq = ?Compare |- _ ] =>
     symmetry in H_Eq_Compare;
+    let Heq := fresh "Heq"
+    in apply proof_compare_eq_is_equal in H_Eq_Compare as Heq;
+       try (rewrite Heq)
+  | [ H_Eq_Compare : ?Compare = Eq |- _ ] =>
     let Heq := fresh "Heq"
     in apply proof_compare_eq_is_equal in H_Eq_Compare as Heq;
        try (rewrite Heq)
@@ -231,8 +236,13 @@ Lemma compare_leq_trans {A: Type} {cmp: comparable A} (x y z: A) :
 Proof.
   intros.
   unfold compare_leq in *.
-  Hint Resolve 
-  match goal with
-  | P: context [compare ?x ?y] |- _ => destruct (compare x y)
-  end; auto.
+  Hint Resolve proof_compare_lt_trans.
+  Hint Resolve proof_compare_eq_trans.
 
+  destruct H; destruct H0;
+    try ((left; apply proof_compare_eq_trans with (y0 := y); assumption)
+         || (right; apply proof_compare_lt_trans with (y0 := y); assumption));
+    try (compare_to_eq; subst);
+    try (left; assumption);
+    try (right; assumption).
+Qed.
