@@ -3,6 +3,9 @@ Set Asymmetric Patterns.
 
 Require Import List.
 
+Require Import Psatz.
+Require Import Lia.
+
 Require Import comparable.
 
 (* TODO:
@@ -51,7 +54,6 @@ Proof.
   destruct H; rewrite H; trivial.
 Qed.
 
-
 Inductive is_sorted'' {X: Set} {tc: comparable X} : list X -> Prop :=
   | empty_sorted'' : is_sorted'' nil
   | singleton_sorted'' : forall x, is_sorted'' (x :: nil)
@@ -71,6 +73,7 @@ Inductive is_sorted'' {X: Set} {tc: comparable X} : list X -> Prop :=
       -> is_sorted'' (x :: xs)
 .
 
+
 Lemma tail_of_is_sorted_is_sorted:
   forall {X: Set}
   {tc: comparable X}
@@ -80,6 +83,20 @@ Lemma tail_of_is_sorted_is_sorted:
 Proof.
   intros.
   inversion H; subst; (constructor || assumption).
+Qed.
+
+Lemma first_two_of_is_sorted_are_sorted:
+  forall {X: Set}
+  {tc: comparable X}
+  (x y: X)
+  (xs: list X),
+  is_sorted (x :: y :: xs) -> compare_leq x y.
+Proof.
+  intros.
+  unfold compare_leq.
+  inversion H.
+  apply or_comm.
+  assumption.
 Qed.
 
 Lemma tail_of_is_sortedb_is_sortedb:
@@ -359,8 +376,12 @@ Section indices.
     match goal with
     | P: context [length (?x :: ?xs)]  |- _ => rewrite reduce_list_lengths_by_one in P
     | P: context [length nil]  |- _ => rewrite length_nil in P
+    | |- context [length (?x :: ?xs)] => rewrite reduce_list_lengths_by_one
+    | |- context [length nil] => rewrite length_nil
     end.
 
+  Local Ltac resolve_compare_leq :=
+    unfold compare_leq in *; try assumption; try apply or_comm; try assumption.
 
   Theorem is_sorted_via_indices (xs: list X):
     (is_sorted xs) <->
@@ -368,8 +389,9 @@ Section indices.
         let (i0, _) := i in
         let (j0, _) := j in
         (i0 < j0) ->
-        (compare (get xs i) (get xs j) = Lt) \/
-        (compare (get xs i) (get xs j) = Eq)).
+        (compare_leq
+           (get xs i)
+           (get xs j))).
   Proof.
     split.
     - induction xs as [|x0 xs'].
@@ -386,10 +408,14 @@ Section indices.
           | [ H: is_sorted (?x :: ?xs) |- _ ] => set (tail_of_is_sorted_is_sorted H)
         end.
 
-        destruct i0 as [| i0minus1].
 
+        set (xj := get (x0 :: xs') (exist _ j0 pfj)).
+        set (xi := get (x0 :: xs') (exist _ i0 pfi)).
+
+        destruct i0 as [| i0minus1].
         * (* base case: use that x0 is leq the next element,
            an by the induction hypothesis, that next element is leq the j-th element *)
+
           destruct xs' as [| x1 xs''].
           -- exfalso. (* xs' cannot be nil, bc 0 = i < j < length xs *)
              repeat (reduce_list_lengths).
@@ -399,64 +425,125 @@ Section indices.
              subst.
              apply (PeanoNat.Nat.lt_irrefl 0).
              assumption.
-          -- assert ()
+          -- assert (compare_leq xi x1).
+             apply first_two_of_is_sorted_are_sorted with (xs := xs'').
+             assumption.
+
+             Print pred.
+             assert (j0 = S (pred j0)).
+             destruct j0; lia.
+
+             destruct (pred j0) as [| j0minus2].
+
+             ++ assert (xj = x1).
+                unfold xj.
+                subst.
+                unfold get.
+                reflexivity.
+
+                rewrite H3.
+                resolve_compare_leq.
+
+             ++ assert (compare_leq x1 xj).
+
+                (* this follows from induction hypothesis, but it is a bit of work to set up *)
+                assert (0 < length (x1 :: xs'')) as pf0.
+                reduce_list_lengths. lia.
+
+                subst.
+                specialize IHxs' with
+                            (i := (exist (fun n => n < length (x1 :: xs'')) 0 pf0))
+                            (j := (exist (fun n => n < length (x1 :: xs''))(S j0minus2)
+                                         (get_recursion_helper_dec pfj))).
+
+                assert (0 < (S j0minus2)) as Hlt.
+                lia.
+
+                Check (tail_of_is_sorted_is_sorted H).
+                apply (IHxs' (tail_of_is_sorted_is_sorted H) Hlt).
+
+                apply compare_leq_trans with (y := x1); assumption.
+
+        * destruct j0 as [| j0minus1 ].
+          lia. (* deals with the case j0 = 0 (contradiction) *)
+
+          destruct j0minus1 as [| j0minus2 ].
+          lia. (* deals with the case j0 = 1 (contradiction) *)
+
+          set (pfiminus1 := get_recursion_helper_dec pfi).
+          set (pfjminus1 := get_recursion_helper_dec pfj).
+
+          assert (i0minus1 < S j0minus2) as Hlt.
+          lia.
+
+          set (IH := IHxs'
+                 (tail_of_is_sorted_is_sorted H)
+                 (exist _ i0minus1 pfiminus1)
+                 (exist _ (S j0minus2) pfjminus1)
+              Hlt).
+
+          assert (xi = get xs' (exist (fun n : nat => n < length xs') i0minus1 pfiminus1)) as xi_from_tail.
+          subst xi.
+          apply get_from_tail.
 
 
+          assert (xj = get xs' (exist (fun n : nat => n < length xs') (S j0minus2) pfjminus1)) as xj_from_tail.
+          subst xj.
+          apply get_from_tail.
 
+          rewrite xi_from_tail.
+          rewrite xj_from_tail.
+          assumption.
 
+    - intros.
+      induction xs as [| x0 xs'].
+      + constructor.
+      + destruct xs' as [| x1 xs''].
+        * constructor.
+        * assert (0 < length (x0 :: x1 :: xs'')) as pf0.
+          reduce_list_lengths. lia.
 
+          assert (1 < length (x0 :: x1 :: xs'')) as pf1.
+          repeat reduce_list_lengths. lia.
 
+          assert (x0 = get (x0 :: x1 :: xs'') (exist _ 0 pf0)) as Eqx0.
+          unfold get. reflexivity.
 
+          assert (x1 = get (x0 :: x1 :: xs'') (exist _ 1 pf1)) as Eqx1.
+          unfold get. reflexivity.
 
-             apply PeanoNat.Nat.lt_trans with (m := j0).
-             lia.
-             reduce_list_lengths.
-             reduce_list_lengths.
-             reduce_list_lengths.
-             rewrite reduce_list_lengths_by_one in pfi.
+          assert (compare_leq x0 x1) as Hfirsttwo.
+          rewrite Eqx0.
+          rewrite Eqx1.
+          assert (0 < 1) as zerosmallerone. lia.
+          set (H (exist _ 0 pf0) (exist _ 1 pf1) zerosmallerone).
+          assumption.
 
-             reduce_list_lengths.
+          (* now we need to use the induction hypothesis, so we need to prove the hypothesis about indices *)
+          assert (is_sorted (x1::xs'')).
+          apply IHxs'.
+          intros.
+          destruct i as [i0 pfi].
+          destruct j as [j0 pfj].
+          intro Hlt.
+          (* this follows from H *)
+          Check Lt.lt_S_n.
 
+          pose (H
+                 (exist _ (S i0) (get_recursion_helper_inc x0 (x1 :: xs'') pfi))
+                 (exist _ (S j0) (get_recursion_helper_inc x0 (x1 :: xs'') pfj))
+                 (Lt.lt_n_S i0 j0 Hlt)) as Hasdfasdf.
 
+          rewrite <- (get_from_tail (* (x1::xs'') x0 i0 *)
+                                 pfi (get_recursion_helper_inc x0 (x1::xs'') pfi)).
+          rewrite <- (get_from_tail (* (x1::xs'') x0 i0 *)
+                                 pfj (get_recursion_helper_inc x0 (x1::xs'') pfj)).
+          assumption.
 
-             nat_smaller_than_length_nil.
-
-          unfold get.
-
-        rewrite get_from_tail with (x := x0) (xs := xs').
-
-        destruct 
-
-
-
-
-
-
-        match goal with
-        | [ P : _ < length nil |- _ ] => rewrite (length_nil) in P
-        | [ P : ?x < 0 |- _ ] => apply PeanoNat.Nat.nlt_0_r with (n := x)
-        end.
-        match goal with
-        | [ P : _ < length nil |- _ ] => rewrite (length_nil) in P
-        | [ P : ?x < 0 |- _ ] => apply PeanoNat.Nat.nlt_0_r with (n := x)
-        end.
-        match goal
-        auto.
-        apply PeanoNat.Nat.nlt_0_r with (n := j0).
-        assumption.
-        assumption.
-
-        match goal with
-        | [ P : _ < length nil |- _ ] => replace (length nil) with 0 in P
-        end.
-        Locate "<".
-
-        auto.
-        intro.
-        unfold get.
-        auto.
-
-
+          constructor.
+          resolve_compare_leq.
+          assumption.
+  Qed.
 
 End indices.
 
@@ -488,9 +575,4 @@ Fixpoint sort {X: Set} {tc: comparable X} (xs: list X) : list X :=
 Theorem sort_sorts: forall {X: Set} {tc: comparable X} (xs: list X),
   is_sorted (sort xs).
 Proof.
-induction xs.
-- simpl. trivial.
-- simpl. apply insert_sort_sorts. assumption.
-Qed.
-
-
+  Abort.
