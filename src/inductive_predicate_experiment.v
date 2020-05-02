@@ -63,28 +63,18 @@ Theorem concat_assoc:
     l =~ (concat (concat r s) t) ->
     l =~ (concat r (concat s t)).
 Proof.
+  Ltac breakdown :=
+    repeat match goal with
+           | [ H: _ /\ _ |- _ ] => destruct H
+           | [ H: exists _, _ |- _ ] => destruct H
+           end.
+
   intros.
   apply concatP in H.
-  elim H; clear H.
-  intros xs_ys H0.
-  elim H0; clear H0.
-  intros zs H1.
-  elim H1; clear H1.
-  intros.
-  elim H0; clear H0.
-  intros.
+  breakdown.
   rewrite H.
   apply concatP in H0.
-  elim H0; clear H0.
-  intros xs H0.
-  elim H0; clear H0.
-  intros ys H0.
-  elim H0; clear H0.
-  intros.
-  elim H2; clear H2.
-  intros.
-  (* TODO clean up above *)
-
+  breakdown.
 
   subst.
   rewrite <- app_assoc.
