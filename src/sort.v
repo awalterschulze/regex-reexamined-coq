@@ -339,6 +339,9 @@ Section indices.
         assumption.
   Defined.
 
+  (* Maybe it would have been better to just use nth_error together
+  with some tactics that prove that the bounds are correct. *)
+
   Lemma get_from_tail:
     forall (xs : list X) (x: X)
            (i : nat)
