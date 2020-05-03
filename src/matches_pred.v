@@ -51,7 +51,7 @@ Inductive matches_prop {A: Type} {cmp: comparable A} : regex A -> (list A) ->  P
     (* --------- *)
     (xs ++ ys) =~ star r
 
-with not_matches_pred {A: Type} {cmp: comparable A}: regex A -> list A -> Prop :=
+with not_matches_prop {A: Type} {cmp: comparable A}: regex A -> list A -> Prop :=
   | fail_not_matches (xs: list A):
     (* --------- *)
     xs !=~ fail
@@ -101,7 +101,7 @@ with not_matches_pred {A: Type} {cmp: comparable A}: regex A -> list A -> Prop :
     (* --------- *)
     xs !=~ star r
 
-where "xs =~ r" := (matches_prop r xs) and "xs !=~ r" := (not_matches_pred r xs).
+where "xs =~ r" := (matches_prop r xs) and "xs !=~ r" := (not_matches_prop r xs).
 
 Theorem matches_prop_describes_matches_impl: 
   forall
