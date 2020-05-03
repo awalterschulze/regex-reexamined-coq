@@ -30,7 +30,7 @@ Inductive regex :=
     | nor : regex -> regex -> regex
     .
 
-Definition not (r: regex) : regex :=
+Definition complement (r: regex) : regex :=
     nor r r.
 
 Definition and (r s: regex) : regex :=
@@ -41,10 +41,10 @@ Definition or (r s: regex) : regex :=
 
 (* See https://en.wikipedia.org/wiki/Exclusive_or *)
 Definition xor (r s: regex) : regex :=
-    or (and r (not s)) (and (not r) s).
+    or (and r (complement s)) (and (complement r) s).
 
 Definition I: regex :=
-    not (emptyset).
+    complement (emptyset).
 
 (*  A regular expression represents a set of sequences. 
     We define the following operations on sets of sequences: 
@@ -61,12 +61,12 @@ Inductive is_member: regex -> string -> Prop :=
         (Sometimes the dot is omitted for convenience. Also, since the operation is associative we omit parentheses.)
     *)
     | is_member_concat (p q: regex) (s: string):
-        (exists 
-            (p': string)
-            (q': string),
-            is_member p p' /\
-            is_member q q' /\
-            s = p' ++ q'
+        (exists
+            (p_s: string)
+            (q_s: string)
+            (pq_s: p_s ++ q_s = s),
+            is_member p p_s /\
+            is_member q q_s
         ) ->
         is_member (concat p q) s
     (*
@@ -102,7 +102,7 @@ Inductive is_member: regex -> string -> Prop :=
     *)
     | is_member_not (p: regex) (s: string):
         not_member p s ->
-        is_member (not p) s
+        is_member (complement p) s
 (* 
     See how even and odd are defined in:
     http://www.cs.umd.edu/class/fall2019/cmsc631/res/IndPrinciples.html 
@@ -122,11 +122,11 @@ with not_member: regex -> string -> Prop :=
         not_member (symbol a) s
     | not_member_concat (p q: regex) (s: string):
         (forall
-            (p': string)
-            (q': string),
-            s <> p' ++ q' \/
-            not_member p p' \/
-            not_member q q'
+            (p_s: string)
+            (q_s: string)
+            (pq_s: p_s ++ q_s = s),
+            not_member p p_s \/
+            not_member q q_s
         ) ->
         not_member (concat p q) s
     | not_member_star (p: regex) (s: string):
@@ -135,7 +135,7 @@ with not_member: regex -> string -> Prop :=
         not_member (star p) s
     | not_member_not (p: regex) (s: string):
         is_member p s ->
-        not_member (not p) s
+        not_member (complement p) s
     | not_member_intersection_l (p q: regex) (s: string):
         not_member p s ->
         not_member (and p q) s
@@ -160,8 +160,8 @@ Proof.
 (* TODO: Help Wanted *)
 Abort.
 
-Lemma not_is_member_and_not_member : forall (r: regex) (s: string),
-    is_member r s -> not_member r s -> False.
+Lemma is_member_false_not_member : forall (r: regex) (s: string),
+    (is_member r s -> False) -> not_member r s.
 Proof.
 (* TODO: Help Wanted *)
 Abort.
@@ -172,8 +172,29 @@ Proof.
 (* TODO: Help Wanted *)
 Admitted.
 
+Lemma not_member_is_member_false : forall (r: regex) (s: string),
+    not_member r s -> is_member r s -> False.
+Proof.
+(* TODO: Help Wanted *)
+Admitted.
+
+Lemma is_member_not_member_false : forall (r: regex) (s: string),
+    is_member r s -> not_member r s -> False.
+Proof.
+(* TODO: Help Wanted *)
+Admitted.
+
+Lemma is_member_emptyset_false: 
+    forall (p: string),
+    is_member emptyset p -> False.
+Proof.
+intro p.
+apply not_member_is_member_false.
+apply not_member_empty_set.
+Qed.
+
 Lemma not_member_is_is_member_not : forall (r: regex) (s: string),
-    not_member r s -> is_member (not r) s.
+    not_member r s -> is_member (complement r) s.
 Proof.
 intros.
 apply is_member_not.
@@ -181,7 +202,7 @@ apply H.
 Qed.
 
 Lemma is_member_not_is_not_member : forall (r: regex) (s: string),
-    is_member (not r) s -> not_member r s.
+    is_member (complement r) s -> not_member r s.
 Proof.
 (* TODO: Help Wanted *)
 Abort.
@@ -195,11 +216,13 @@ Proof.
   apply (is_member_concat lambda r s).
   exists [].
   exists s.
+  cbn.
+  assert (s = s).
+  reflexivity.
+  exists H0.
   split.
   + apply is_member_lambda.
-  + split.
-    * apply H.
-    * cbn. reflexivity.
+  + apply H.
 Qed.
 
 Theorem collapse_concat_lambda_l: forall (r: regex) (s: string),
@@ -233,54 +256,305 @@ Definition x0 := symbol a0.
 Definition xI111I := concat I (concat x1 (concat x1 (concat x1 I))).
 Definition xI01 := concat I (concat x0 x1).
 Definition x11star := concat x1 (star x1).
-Definition exampleR := and xI111I (not (or xI01 x11star)).
+Definition exampleR := and xI111I (complement (or xI01 x11star)).
 
-Theorem test_exampleR_1110_member : is_member exampleR ([a1] ++ [a1] ++ [a1] ++ [a0]).
+Lemma test_member_xI01_101:
+    is_member xI01 ([a1] ++ [a0] ++ [a1]).
+Proof.
+unfold xI01.
+apply is_member_concat.
+exists [a1].
+exists ([a0] ++ [a1]).
+split.
+- constructor.
+- split.
+  + constructor. constructor.
+  + constructor.
+    * exists [a0]. exists [a1].
+      assert ([a0] ++ [a1] = [a0] ++ [a1]).
+      reflexivity.
+      exists H.
+      split.
+      constructor.
+      constructor.
+Qed.
+
+Lemma test_not_member_xI01_101_false:
+    not_member xI01 ([a1] ++ [a0] ++ [a1]) -> False.
+Proof.
+apply is_member_not_member_false.
+apply test_member_xI01_101.
+Qed.
+
+Lemma test_not_member_xI01_empty:
+    not_member xI01 [].
+Proof.
+constructor.
+intros.
+remember (app_eq_nil p_s q_s pq_s).
+destruct a.
+right.
+apply not_member_concat.
+intros.
+rewrite e0 in pq_s0.
+remember (app_eq_nil p_s0 q_s0 pq_s0).
+destruct a.
+rewrite e1.
+rewrite e2.
+left.
+constructor.
+discriminate.
+Qed.
+
+Lemma app_eq_unit_2 : forall (A: Type) (xs ys: list A) (x y: A),
+    xs ++ ys = [x;y] <->
+    (xs = [] /\ ys = [x;y])
+    \/ (xs = [x] /\ ys = [y])
+    \/ (xs = [x;y] /\ ys = []).
+Proof.
+Admitted.
+
+Local Ltac breakdown :=
+    repeat match goal with
+            | [ H: _ \/ _ |- _ ] =>
+                destruct H
+            | [ H: _ /\ _ |- _ ] =>
+                destruct H
+            | [ H: ?X ++ ?Y = ?XS ++ ?YS |- _ ] =>
+                cbn in H
+            | [ H: ?XS ++ ?YS = [?X;?Y] |- _ ] =>
+                idtac X;
+                apply (app_eq_unit_2 alphabet XS YS X Y) in H
+           end.
+
+Lemma test_not_member_xI01_10:
+    not_member xI01 ([a1] ++ [a0]).
+Proof.
+unfold xI01.
+apply not_member_concat.
+intros p' q' H_p_app_q.
+right.
+constructor.
+intros p0 q0 H_p0_app_q0.
+rewrite <- H_p0_app_q0 in H_p_app_q.
+breakdown.
+- left.
+  constructor.
+  rewrite H0.
+  discriminate.
+- left.
+  constructor.
+  rewrite H0.
+  discriminate.
+- left.
+  constructor.
+  rewrite H0.
+  discriminate.
+- apply app_eq_unit in H0.
+  breakdown.
+  + left.
+    constructor.
+    rewrite H0.
+    discriminate.
+  + right.
+    constructor.
+    rewrite H1.
+    discriminate.
+- apply app_eq_nil in H0.
+  breakdown.
+  left.
+  constructor.
+  rewrite H0.
+  discriminate.
+Qed.
+
+Lemma fst1: forall (A: Type) (x: A) (y: A) (xs: list A) (ys: list A),
+    x :: xs = [y] ++ ys ->
+    x = y /\ xs = ys.
+Admitted.
+
+Lemma fst2: forall (A: Type) (x: A) (y: A) (xy: x <> y) (xs ys zs: list A),
+    xs ++ ys = x :: zs ->
+    xs <> [y].
+Admitted.
+
+Lemma three: forall (A: Type) (x y z: A),
+    [x; y; z] = [x; y] ++ [z].
+Admitted.
+
+Lemma last1: forall (A: Type) (x y: A) (xy: x <> y) (xs ys zs xs': list A),
+    xs ++ ys ++ zs = xs' ++ [x] ->
+    zs <> [y].
+Admitted.
+
+Lemma test_not_member_xI01_1110:
+    not_member xI01 ([a1] ++ [a1] ++ [a1] ++ [a0]).
+Proof.
+unfold xI01.
+apply not_member_concat.
+intros.
+destruct p_s.
+- destruct q_s.
+  + left. cbn. discriminate.
+  + right.
+    apply not_member_concat.
+    intros.
+    left.
+    constructor.
+    cbn in pq_s.
+    rewrite pq_s in pq_s0.
+    breakdown.
+    apply fst1 in pq_s.
+    assert (a1 <> a0) as a10. discriminate.
+    apply (fst2 alphabet a1 a0 a10) in pq_s0.
+    exact pq_s0.
+- cbn in pq_s.
+  apply fst1 in pq_s.
+  destruct pq_s.
+  right.
+  apply not_member_concat.
+  intros.
+  rewrite <- pq_s in H0.
+  right.
+  constructor.
+  assert (a0 <> a1) as a01. discriminate.
+  rewrite three in H0.
+  apply (last1 alphabet a0 a1 a01) in H0.
+  exact H0.
+Qed.
+
+Lemma combo4: forall (A: Type) (x y: A) (xs ys: list A),
+    xs ++ ys = [x;x;x;y] ->
+    (xs = [] /\ ys = [x;x;x;y])
+    \/ (xs = [x] /\ ys = [x;x;y])
+    \/ (xs = [x;x] /\ ys = [x;y])
+    \/ (xs = [x;x;x] /\ ys = [y])
+    \/ (xs = [x;x;x;y] /\ ys = []).
+Admitted.
+
+Lemma combo3: forall (A: Type) (x y: A) (xs ys: list A),
+    xs ++ ys = [x;x;y] ->
+    (xs = [] /\ ys = [x;x;y])
+    \/ (xs = [x] /\ ys = [x;y])
+    \/ (xs = [x;x] /\ ys = [y])
+    \/ (xs = [x;x;y] /\ ys = []).
+Admitted.
+
+Lemma test_not_member_x11star_0: 
+    not_member x11star ([a0]).
+Proof.
+constructor.
+intros.
+apply app_eq_unit in pq_s.
+breakdown.
+- left.
+  rewrite H.
+  constructor.
+  discriminate.
+- left.
+  rewrite H.
+  constructor.
+  discriminate.
+Qed.
+
+Lemma test_not_member_x11star_10: 
+    not_member x11star ([a1] ++ [a0]).
+Proof.
+constructor.
+intros.
+cbn in pq_s.
+apply app_eq_unit_2 in pq_s.
+breakdown.
+- left. rewrite H. constructor. discriminate.
+- right. constructor.
+  + rewrite H0. discriminate.
+  + rewrite H0. apply test_not_member_x11star_0.
+- left. rewrite H. constructor. discriminate.
+Qed.  
+
+Lemma test_not_member_x11star_110: 
+    not_member x11star ([a1] ++ [a1] ++ [a0]).
+Proof.
+constructor.
+intros.
+cbn in pq_s.
+apply combo3 in pq_s.
+breakdown.
+- left. rewrite H. constructor. discriminate.
+- right. constructor.
+  + rewrite H0. discriminate.
+  + rewrite H0. apply test_not_member_x11star_10.
+- left. rewrite H. constructor. discriminate.
+- left. rewrite H. constructor. discriminate.
+Qed.
+
+Lemma test_not_member_x11star_1110: 
+    not_member x11star ([a1] ++ [a1] ++ [a1] ++ [a0]).
+Proof.
+unfold x11star.
+apply not_member_concat.
+intros.
+apply combo4 in pq_s.
+breakdown.
+- left. apply not_member_symbol. rewrite H. discriminate.
+- right. constructor.
+  + rewrite H0. discriminate.
+  + rewrite H0. apply test_not_member_x11star_110.
+- left. apply not_member_symbol. rewrite H. discriminate.
+- left. apply not_member_symbol. rewrite H. discriminate.
+- left. apply not_member_symbol. rewrite H. discriminate.
+Qed.
+
+Lemma test_member_xI111I_1110: 
+    is_member xI111I ([a1] ++ [a1] ++ [a1] ++ [a0]).
+Proof.
+unfold xI111I.
+rewrite <- app_nil_l.
+apply is_member_concat.
+exists [].
+exists ([a1] ++ [a1] ++ [a1] ++ [a0]).
+unfold I.
+split.
+reflexivity.
+split.
+apply is_member_not.
+apply not_member_empty_set.
+apply is_member_concat.
+exists [a1].
+exists ([a1] ++ [a1] ++ [a0]).
+split.
+reflexivity.
+split.
+apply is_member_symbol.
+apply is_member_concat.
+exists [a1].
+exists ([a1] ++ [a0]).
+split.
+reflexivity.
+split.
+apply is_member_symbol.
+apply is_member_concat.
+exists [a1].
+exists [a0].
+split.
+reflexivity.
+split.
+apply is_member_symbol.
+apply is_member_not.
+apply not_member_empty_set.
+Qed.
+
+Theorem test_exampleR_1110_member: 
+    is_member exampleR ([a1] ++ [a1] ++ [a1] ++ [a0]).
 Proof.
 unfold exampleR.
 apply is_member_intersection.
-- unfold xI111I.
-  rewrite <- app_nil_l.
-  apply is_member_concat.
-  exists [].
-  exists ([a1] ++ [a1] ++ [a1] ++ [a0]).
-  unfold I.
-  split.
-  apply is_member_not.
-  apply not_member_empty_set.
-  split.
-  apply is_member_concat.
-  exists [a1].
-  exists ([a1] ++ [a1] ++ [a0]).
-  split.
-  apply is_member_symbol.
-  split.
-  apply is_member_concat.
-  exists [a1].
-  exists ([a1] ++ [a0]).
-  split.
-  apply is_member_symbol.
-  split.
-  apply is_member_concat.
-  exists [a1].
-  exists [a0].
-  split.
-  apply is_member_symbol.
-  split.
-  apply is_member_not.
-  apply not_member_empty_set.
-  reflexivity.
-  reflexivity.
-  reflexivity.
-  reflexivity.
-- unfold xI01.
-  unfold x11star.
-  unfold I.
-  apply is_member_not.
-  apply not_member_not.
-  apply is_member_nor.
-(* TODO: Help Wanted *)
-Abort.
+- apply test_member_xI111I_1110.
+- apply is_member_not.
+  apply not_member_union.
+  + apply test_not_member_xI01_1110.
+  + apply test_not_member_x11star_1110. 
+Qed.
 
 Theorem test_exampleR_111_not_member : is_member exampleR [a1; a1; a1].
 Proof.
@@ -469,14 +743,14 @@ Abort.
 
 Theorem delta_not_emptyset: forall (r: regex),
     delta r lambda ->
-    delta (not r) emptyset.
+    delta (complement r) emptyset.
 Proof.
 (* TODO: Help Wanted *)
 Abort.
 
 Theorem delta_not_lambda: forall (r: regex),
     delta r emptyset ->
-    delta (not r) lambda.
+    delta (complement r) lambda.
 Proof.
 (* TODO: Help Wanted *)
 Abort.
@@ -546,12 +820,6 @@ Theorem lambda_only_empty: forall (x: alphabet) (xs: string),
     is_member lambda (x :: xs) -> False.
 Proof.
 intros.
-Admitted.
-
-Theorem is_member_not_member_false: forall (r: regex) (s: string),
-    is_member r s -> not_member r s -> False.
-Proof.
-(* TODO: Help Wanted *)
 Admitted.
 
 (*
