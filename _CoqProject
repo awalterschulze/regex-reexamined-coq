@@ -1,0 +1,27 @@
+-R src ""
+src/orb_simple.v
+
+src/comparable.v
+src/sort.v
+src/dup.v
+src/compare_nat.v
+src/reorder.v
+
+src/regex.v
+src/size.v
+src/nullable.v
+src/compare_regex.v
+src/reduce_orb.v
+
+src/derive_def.v
+src/matches_pred.v
+src/setoid.v
+src/derive.v
+src/smart_or.v
+src/smart.v
+src/simplified.v
+src/simple.v
+
+src/inductive_predicate_experiment.v
+
+src/main.v
