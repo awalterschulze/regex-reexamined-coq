@@ -6,6 +6,7 @@ Require Import derive_def.
 Require Import regex.
 
 Reserved Notation "xs =~ r" (at level 80).
+Reserved Notation "xs !=~ r" (at level 80).
 
 Inductive matches_prop {A: Type} {cmp: comparable A} : regex A -> (list A) ->  Prop :=
   | empty_matches :
@@ -36,9 +37,10 @@ Inductive matches_prop {A: Type} {cmp: comparable A} : regex A -> (list A) ->  P
     (* --------- *)
     (xs ++ ys) =~ concat r s
 
-  (* | not_matches (r : regex A) (xs : list A):
-    TODO: Help Wanted
-  *)
+  | not_matches (r : regex A) (xs : list A):
+    xs !=~ r ->
+    (* --------- *)
+    xs =~ not r
 
   | star_matches_nil (r : regex A):
     [] =~ star r
@@ -49,7 +51,57 @@ Inductive matches_prop {A: Type} {cmp: comparable A} : regex A -> (list A) ->  P
     (* --------- *)
     (xs ++ ys) =~ star r
 
-  where "xs =~ r" := (matches_prop r xs).
+with not_matches_pred {A: Type} {cmp: comparable A}: regex A -> list A -> Prop :=
+  | fail_not_matches (xs: list A):
+    (* --------- *)
+    xs !=~ fail
+
+  | empty_not_matches (xs: list A):
+    (xs <> []) ->
+    (* --------- *)
+    xs !=~ empty
+
+  | char_not_matches (a: A) (xs: list A):
+    (xs <> [a]) ->
+    (* --------- *)
+    xs !=~ (char a)
+
+  | or_not_matches (r s: regex A) (xs: list A):
+    xs !=~ r ->
+    xs !=~ s ->
+    (* --------- *)
+    xs !=~ or r s
+
+  | and_not_matches_l (r s: regex A) (xs: list A):
+    xs !=~ r ->
+    (* --------- *)
+    xs !=~ and r s
+
+  | and_not_matches_r (r s: regex A) (xs: list A):
+    xs !=~ s ->
+    xs !=~ and r s
+
+  | concat_not_matches (r s: regex A) (xs: list A):
+    forall
+      (rs ss: list A),
+      xs <> rs ++ ss \/
+      rs !=~ r \/
+      ss !=~ s ->
+    (* --------- *)
+      xs !=~ concat r s
+
+  | not_not_matches (r: regex A) (xs: list A):
+    xs =~ r ->
+    (* --------- *)
+    xs !=~ not r
+
+  | star_not_matches (r: regex A) (xs: list A):
+    xs <> [] ->
+    xs !=~ concat r (star r) ->
+    (* --------- *)
+    xs !=~ star r
+
+where "xs =~ r" := (matches_prop r xs) and "xs !=~ r" := (not_matches_pred r xs).
 
 Theorem matches_prop_describes_matches_impl: 
   forall
