@@ -84,10 +84,6 @@ Inductive is_member: regex -> string -> Prop :=
         Of course, all the laws of Boolean algebra apply.
         the *intersection* $P \& Q$,
     *)
-    | is_member_nor (p q: regex) (s: string):
-        not_member p s ->
-        not_member q s ->
-        is_member (nor p q) s
     | is_member_intersection (p q: regex) (s: string):
         is_member p s ->
         is_member q s ->
@@ -104,14 +100,6 @@ Inductive is_member: regex -> string -> Prop :=
     (*
          the modulo-two sum (exclusive OR) $P \oplus Q$, etc.
     *)
-    | is_member_xor_l (p q: regex) (s: string):
-        is_member p s ->
-        not_member q s ->
-        is_member (xor p q) s
-    | is_member_xor_r (p q: regex) (s: string):
-        not_member p s ->
-        is_member q s ->
-        is_member (xor p q) s
     | is_member_not (p: regex) (s: string):
         not_member p s ->
         is_member (not p) s
@@ -126,9 +114,39 @@ with not_member: regex -> string -> Prop :=
     *)
     | not_member_empty_set (s: string):
         not_member emptyset s
+    | not_member_lambda (s: string):
+        (s <> []) ->
+        not_member lambda s
+    | not_member_symbol (a: alphabet) (s: string):
+        (s <> [a]) ->
+        not_member (symbol a) s
+    | not_member_concat (p q: regex) (s: string):
+        (forall
+            (p': string)
+            (q': string),
+            s <> p' ++ q' \/
+            not_member p p' \/
+            not_member q q'
+        ) ->
+        not_member (concat p q) s
+    | not_member_star (p: regex) (s: string):
+        (s <> []) ->
+        not_member (concat p (star p)) s ->
+        not_member (star p) s
     | not_member_not (p: regex) (s: string):
         is_member p s ->
-        not_member (not p) s.
+        not_member (not p) s
+    | not_member_intersection_l (p q: regex) (s: string):
+        not_member p s ->
+        not_member (and p q) s
+    | not_member_intersection_r (p q: regex) (s: string):
+        not_member q s ->
+        not_member (and p q) s
+    | not_member_union (p q: regex) (s: string):
+        not_member p s ->
+        not_member q s ->
+        not_member (or p q) s
+    .
 
 Lemma is_member_or_not_member : forall (r: regex) (s: string),
     (is_member r s) \/ (not_member r s).
