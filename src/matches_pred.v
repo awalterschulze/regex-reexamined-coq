@@ -81,14 +81,10 @@ with not_matches_prop {A: Type} {cmp: comparable A}: regex A -> list A -> Prop :
     xs !=~ s ->
     xs !=~ and r s
 
-  | concat_not_matches (r s: regex A) (xs: list A):
-    forall
-      (rs ss: list A),
-      xs <> rs ++ ss \/
-      rs !=~ r \/
-      ss !=~ s ->
+  | concat_not_matches (r s: regex A) (xs ys: list A):
+    xs !=~ r \/ ys !=~ s ->
     (* --------- *)
-      xs !=~ concat r s
+    (xs ++ ys) !=~ concat r s
 
   | not_not_matches (r: regex A) (xs: list A):
     xs =~ r ->
