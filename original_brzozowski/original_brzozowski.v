@@ -148,6 +148,12 @@ Proof.
 (* TODO: Help Wanted *)
 Abort.
 
+Lemma not_member_false_is_member : forall (r: regex) (s: string),
+    (not_member r s -> False) -> is_member r s.
+Proof.
+(* TODO: Help Wanted *)
+Admitted.
+
 Lemma not_member_is_is_member_not : forall (r: regex) (s: string),
     not_member r s -> is_member (not r) s.
 Proof.
@@ -470,15 +476,11 @@ Abort.
 *)
 Inductive derivative: regex -> string -> regex -> Prop :=
     | is_derivative (r: regex) (s: string) (dr: regex):
-        (exists 
-            (t: string),
-            is_member dr t /\
-            is_member r (s++t)
-        ) ->
-        derivative r s dr
-    | emptyset_derivative (r: regex) (s: string):
-        not_member r s ->
-        derivative r s emptyset
+        (exists (dr: regex),
+            forall (t: string)
+                   (m: is_member r (s ++ t)),
+            is_member dr t
+        ) -> derivative r s dr
     .
 
 (*
@@ -497,6 +499,16 @@ Inductive derivative: regex -> string -> regex -> Prop :=
     $$
 *)
 
+Lemma list_app_concat : forall {A: Type} (x: A) (xs: list A),
+    x :: xs = [x] ++ xs.
+Proof.
+reflexivity.
+Qed.
+
+Lemma concat_lambda_lambda: forall (xs: string),
+    is_member (concat lambda lambda) xs -> is_member lambda xs.
+Admitted.
+
 (*
     \text{(3.4)}&\ D_a a &=&\ \lambda
 *)
@@ -505,12 +517,24 @@ Theorem derivative_a: forall (a: alphabet),
 Proof.
 intros.
 constructor.
-exists [].
-rewrite app_nil_r.
-split.
+exists lambda.
+intros.
+induction t.
 - apply is_member_lambda.
-- apply is_member_symbol.
-Qed.
+- rewrite list_app_concat.
+Abort.
+
+Theorem lambda_only_empty: forall (x: alphabet) (xs: string),
+    is_member lambda (x :: xs) -> False.
+Proof.
+intros.
+Admitted.
+
+Theorem is_member_not_member_false: forall (r: regex) (s: string),
+    is_member r s -> not_member r s -> False.
+Proof.
+(* TODO: Help Wanted *)
+Admitted.
 
 (*
     \text{(3.5)}&\ D_a b &=&\ \emptyset,\ \text{for}\ 
@@ -521,14 +545,30 @@ Qed.
 Theorem derivative_lambda_symbol: forall (a: alphabet),
     derivative lambda [a] emptyset.
 Proof.
-(* TODO: Help Wanted *)
-Abort.
+intros.
+constructor.
+exists emptyset.
+induction t.
+- intros.
+  apply lambda_only_empty in m.
+  contradiction.
+- intros.
+  apply lambda_only_empty in m.
+  contradiction.
+Qed.
 
 Theorem derivative_emptyset_symbol: forall (a: alphabet),
     derivative emptyset [a] emptyset.
 Proof.
-(* TODO: Help Wanted *)
-Abort.
+intros.
+constructor.
+exists emptyset.
+intros.
+remember (is_member_not_member_false emptyset ([a] ++ t) m).
+remember (not_member_empty_set ([a] ++ t)).
+remember (f n).
+contradiction.
+Qed.
 
 Theorem derivative_b: forall (a: alphabet) (b: alphabet) (n: ~ (b = a)),
     derivative (symbol b) [a] emptyset.
