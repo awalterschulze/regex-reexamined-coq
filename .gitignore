@@ -6,3 +6,4 @@
 *.vok
 *.vos
 \#*.v\#
+/.Makefile.d
