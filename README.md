@@ -8,10 +8,15 @@ In this repo we try to prove some things that are mentioned in the paper as a wa
 
 ## Setup
 
-1. Install Coq
-2. Remember to set coq in your PATH. For example, in your `~/.bash_profile` add `PATH="/Applications/CoqIDE_8.10.2.app/Contents/Resources/bin/:${PATH}"` and run `$ source ~/.bash_profile`.
+1. Install Coq 8.11.1
+2. Remember to set coq in your PATH. For example, in your `~/.bash_profile` add `PATH="/Applications/CoqIDE_8.11.1.app/Contents/Resources/bin/:${PATH}"` and run `$ source ~/.bash_profile`.
 3. Run make in this folder.
 
 ## Contributing
 
 Please read the [contributing guidelines](https://github.com/awalterschulze/regex-reexamined-coq/blob/master/CONTRIBUTING.md).  They are short and shouldn't be surprising.
+
+## Streaming
+
+  - We stream our pair programming sessions most Saturday 14:00 - 19:00 London time on [Twitch](https://www.twitch.tv/awalterschulze).
+  - The schedule is posted as meetups events on [meetup.com](https://www.meetup.com/London-TyDD/)
