@@ -63,6 +63,42 @@ Theorem concat_assoc:
     l =~ (concat (concat r s) t) ->
     l =~ (concat r (concat s t)).
 Proof.
+  intros.
+  apply concatP in H.
+  elim H; clear H.
+  intros xs_ys H0.
+  elim H0; clear H0.
+  intros zs H1.
+  elim H1; clear H1.
+  intros.
+  elim H0; clear H0.
+  intros.
+  rewrite H.
+  apply concatP in H0.
+  elim H0; clear H0.
+  intros xs H0.
+  elim H0; clear H0.
+  intros ys H0.
+  elim H0; clear H0.
+  intros.
+  elim H2; clear H2.
+  intros.
+  (* TODO clean up above *)
+
+
+  subst.
+  rewrite <- app_assoc.
+
+  apply concat_matches.
+  - assumption.
+  - apply concat_matches; assumption.
+Qed.
+
+Theorem concat_assoc':
+  forall {A : Type} {cmp : comparable A} (l : list A) (r s t: regex A),
+    l =~ (concat (concat r s) t) ->
+    l =~ (concat r (concat s t)).
+Proof.
   Ltac breakdown :=
     repeat match goal with
            | [ H: _ /\ _ |- _ ] => destruct H
