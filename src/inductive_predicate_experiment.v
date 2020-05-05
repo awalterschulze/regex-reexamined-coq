@@ -94,6 +94,32 @@ Proof.
   - apply concat_matches; assumption.
 Qed.
 
+Theorem concat_assoc':
+  forall {A : Type} {cmp : comparable A} (l : list A) (r s t: regex A),
+    l =~ (concat (concat r s) t) ->
+    l =~ (concat r (concat s t)).
+Proof.
+  Ltac breakdown :=
+    repeat match goal with
+           | [ H: _ /\ _ |- _ ] => destruct H
+           | [ H: exists _, _ |- _ ] => destruct H
+           end.
+
+  intros.
+  apply concatP in H.
+  breakdown.
+  rewrite H.
+  apply concatP in H0.
+  breakdown.
+
+  subst.
+  rewrite <- app_assoc.
+
+  apply concat_matches.
+  - assumption.
+  - apply concat_matches; assumption.
+Qed.
+
 Theorem orP:
   forall {A : Type} {cmp : comparable A} (xs : list A) (r s : regex A),
     xs =~ or r s ->
