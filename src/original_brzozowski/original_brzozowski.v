@@ -38,12 +38,12 @@ Inductive regex :=
   (* We can use nor to express f, 
      Since any Boolean function can be expressed using a finite number of sums and complements
      See https://en.wikipedia.org/wiki/Logical_NOR
-        P | Q | P `nor` Q
-        -----------------
-        T	| T	|   F
-        T	| F	|   F
-        F	| T	|   F
-        F	| F | 	T
+     P | Q | P `nor` Q
+     -----------------
+     T | T | F
+     T | F | F
+     F | T | F
+     F | F | T
   *)
   | nor : regex -> regex -> regex
   .
