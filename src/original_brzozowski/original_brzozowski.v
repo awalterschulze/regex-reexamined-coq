@@ -30,9 +30,9 @@ Definition string := (list alphabet).
 *)
 
 Inductive regex :=
-  | symbol : alphabet -> regex
-  | lambda : regex
   | emptyset : regex
+  | lambda : regex
+  | symbol : alphabet -> regex
   | concat : regex -> regex -> regex
   | star : regex -> regex
   (* We can use nor to express f, 
@@ -310,9 +310,9 @@ Theorem is_member_or_not_member : forall (r: regex) (s: string),
     (is_member r s) \/ (not_member r s).
 Proof.
 induction r.
-- apply is_member_or_not_member_symbol.
-- apply is_member_or_not_member_lambda.
 - apply is_member_or_not_member_emptyset.
+- apply is_member_or_not_member_lambda.
+- apply is_member_or_not_member_symbol.
 (*
 - apply is_member_or_not_member_concat.
 - apply is_member_or_not_member_star.
