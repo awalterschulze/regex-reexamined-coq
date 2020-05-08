@@ -37,9 +37,6 @@ induction r, s; simpl; try easy.
     simpl in Heqc.
     rewrite <- Heqc.
     firstorder.
-    (* Locate "<>". *)
-    unfold Logic.not.
-    discriminate.
   + simpl.
     firstorder.
     unfold Logic.not.
