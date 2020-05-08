@@ -8,26 +8,21 @@ Require Import Lia.
 
 Require Import comparable.
 
-(* TODO:
-  - change Admitted to Abort
-  - rename X to A and tc to cmp
-  *)
-
 (* is_sorted is a property that says whether a list is sorted *)
-Inductive is_sorted {X: Set} {tc: comparable X} : list X -> Prop :=
+Inductive is_sorted {A: Set} {tc: comparable A} : list A -> Prop :=
   | empty_sorted : is_sorted nil
-  | singleton_sorted (x: X) : is_sorted (x :: nil)
+  | singleton_sorted (x: A) : is_sorted (x :: nil)
   | tail_sorted
-    (x: X)
-    (y: X)
+    (x: A)
+    (y: A)
     (c : compare x y = Lt \/ compare x y = Eq)
-    (xs: list X)
+    (xs: list A)
     (s: is_sorted (y :: xs))
     : is_sorted (x :: y :: xs)
 .
 
-(* This is not really a bool... *)
-Fixpoint is_sortedb {X: Set} {tc: comparable X} (xs: list X) : Prop :=
+(* This is not really a bool... should it be? *)
+Fixpoint is_sortedb {A: Set} {tc: comparable A} (xs: list A) : Prop :=
   match xs with
   | nil => True
   | (x'::xs') => match xs' with
@@ -41,10 +36,10 @@ Fixpoint is_sortedb {X: Set} {tc: comparable X} (xs: list X) : Prop :=
   end.
 
 Lemma is_sortedb_induction_step
-  {X: Set}
-  {tc: comparable X}
-  (x x' : X)
-  (xs: list X):
+  {A: Set}
+  {tc: comparable A}
+  (x x' : A)
+  (xs: list A):
   ((compare x x' = Lt) \/ (compare x x' = Eq)) ->
   (is_sortedb (x'::xs)) ->
   is_sortedb (x::x'::xs).
@@ -54,19 +49,19 @@ Proof.
   destruct H; rewrite H; trivial.
 Qed.
 
-Inductive is_sorted'' {X: Set} {tc: comparable X} : list X -> Prop :=
+Inductive is_sorted'' {A: Set} {tc: comparable A} : list A -> Prop :=
   | empty_sorted'' : is_sorted'' nil
   | singleton_sorted'' : forall x, is_sorted'' (x :: nil)
   | lessthan_sorted''
-    : forall (x: X) (xs: list X),
-      (exists (y: X) (ys: list X),
+    : forall (x: A) (xs: list A),
+      (exists (y: A) (ys: list A),
       xs = (y :: ys)
       /\ compare x y = Lt)
       /\ is_sorted'' xs
       -> is_sorted'' (x :: xs)
   | equal_sorted''
-    : forall (x: X) (xs: list X),
-      (exists (y: X) (ys: list X),
+    : forall (x: A) (xs: list A),
+      (exists (y: A) (ys: list A),
       xs = (y :: ys)
       /\ compare x y = Eq)
       /\ is_sorted'' xs
@@ -75,10 +70,10 @@ Inductive is_sorted'' {X: Set} {tc: comparable X} : list X -> Prop :=
 
 
 Lemma tail_of_is_sorted_is_sorted:
-  forall {X: Set}
-  {tc: comparable X}
-  (x: X)
-  (xs: list X),
+  forall {A: Set}
+  {tc: comparable A}
+  (x: A)
+  (xs: list A),
   is_sorted (x :: xs) -> is_sorted xs.
 Proof.
   intros.
@@ -86,10 +81,10 @@ Proof.
 Qed.
 
 Lemma first_two_of_is_sorted_are_sorted:
-  forall {X: Set}
-  {tc: comparable X}
-  (x y: X)
-  (xs: list X),
+  forall {A: Set}
+  {tc: comparable A}
+  (x y: A)
+  (xs: list A),
   is_sorted (x :: y :: xs) -> compare_leq x y.
 Proof.
   intros.
@@ -100,26 +95,26 @@ Proof.
 Qed.
 
 Lemma tail_of_is_sortedb_is_sortedb:
-  forall {X: Set}
-  {tc: comparable X}
-  (x: X)
-  (xs: list X),
+  forall {A: Set}
+  {tc: comparable A}
+  (x: A)
+  (xs: list A),
   is_sortedb (x :: xs) -> is_sortedb xs.
 Proof.
 (* TODO: Good First Issue *)
-Admitted.
+Abort.
 
 Lemma tail_of_is_sorted''_is_sorted'':
-  forall {X: Set}
-  {tc: comparable X}
-  (x: X)
-  (xs: list X),
+  forall {A: Set}
+  {tc: comparable A}
+  (x: A)
+  (xs: list A),
   is_sorted'' (x :: xs) -> is_sorted'' xs.
 Proof.
 (* TODO: Good First Issue *)
-Admitted.
+Abort.
 
-Lemma list_inductive_equality: forall {X: Set} {tc: comparable X} (x y: X) (xs ys: list X),
+Lemma list_inductive_equality: forall {A: Set} {tc: comparable A} (x y: A) (xs ys: list A),
     ( (x::xs) = (y::ys)) <-> (x = y /\ (xs = ys)).
 Proof.
   intros. split.
@@ -138,57 +133,91 @@ Proof.
     destruct H. subst. trivial.
 Qed.
 
-
-(* I don't know if we can use the definition of is_sortedb in this way. *)
-
-(* This follows the ideas (and some of the notation) from Ch. 15 of CPDT *)
-Inductive partial (P: Prop) : Set :=
-| Proved : P -> partial P
-| Uncertain : partial P.
-
-Notation "[ P ]" := (partial P).
-
-(* comparison -> [is_sorted xs] *)
-
-Section reflection.
-  Context {X: Set}.
-  Context {tc: comparable X}.
+(* This tactic turns a hypothesis of the form
+        (?x :: ?xs) = (?y :: ?ys)
+   into two hypotheses
+         x = y     and     xs = ys
+*)
+Local Ltac destruct_list_equality :=
+  repeat match goal with
+         | [H: (?x :: ?xs) = (?y :: ?ys) |- _] => rewrite list_inductive_equality in H; destruct H
+         end.
 
 
-  (* This is a certified decision procedure (as in Ch. 15 in [CPDT]). It is essentially
-   the same as our definition of is_sortedb, except that instead of giving True or False
-   as the end result, the end result is a dependent type, which shows that it is correct. *)
-  Definition check_is_sorted: forall (xs: list X), [is_sorted xs].
-    Hint Constructors is_sorted. (* TODO: deprecated *)
+Section certified_decision_procedure.
+  Context {A: Set}.
+  Context {tc: comparable A}.
 
-    (* The essence of the statement below is as simple as is_sortedb. The only thing that makes it look
-     more complicated is that we need to use the "convoy trick" (see [CPDT]) twice. *)
-    refine (fix F (xs : list X): [is_sorted xs] :=
-              match xs return [is_sorted xs] with
-              | nil => Proved _
+  (* This is a certified decision procedure (as in Ch. 15 in [CPDT]). It is
+   essentially the same as our definition of is_sortedb, except that instead of
+   giving True or False as the end result, the end result is a dependent type,
+   which shows that it is correct. *)
+
+  Definition is_sorted_dec:
+    forall (xs: list A), {is_sorted xs} + {~(is_sorted xs)}.
+    Hint Constructors is_sorted: sorted_db.
+
+    (* This tactic derives a contradiction of we know that the tail of a sorted
+     list is not sorted. *)
+    Local Ltac is_sorted_contradiction_via_tail :=
+      match goal with
+      | [H: is_sorted (?x0 :: ?xs) , Hcon: ~(is_sorted ?xs)  |- False ]
+        => apply Hcon; apply tail_of_is_sorted_is_sorted with (x := x0); exact H
+      end.
+
+    (* If there is a pair of hypotheses
+          compare ?x0 ?x1 = Gt   and   compare ?x0 ?x1 = Lt (or = Eq)
+       then this tactic derives a contradiction.
+     *)
+    Local Ltac contradiction_from_compares :=
+      exfalso;
+      match goal with
+      | [ H1: compare ?x0 ?x1 = Gt , H2: compare ?x0 ?x1 = Lt |- _ ]
+        => assert (Gt = Lt); try (rewrite <- H1; rewrite <- H2; reflexivity); discriminate
+      | [ H1: compare ?x0 ?x1 = Gt , H2: compare ?x0 ?x1 = Eq |- _ ]
+        => assert (Gt = Eq); try (rewrite <- H1; rewrite <- H2; reflexivity); discriminate
+      end.
+
+    (*
+The essence of the statement below is as simple as is_sortedb, but there are two
+complicating factors:
+
+1. We need to use the "convoy trick" (see [CPDT]) twice, to carry over data from
+the match statements.
+
+2. We need to supply a proof.
+     *)
+    refine (fix F (xs : list A): {is_sorted xs} + {~(is_sorted xs)} :=
+              match xs return {is_sorted xs} + {~(is_sorted xs)} with
+              | nil => left _
               | (x0::xs') =>
-                (match xs' as l return (xs' = l) -> [is_sorted (x0::xs')] with
-                  | nil => (fun _ => Proved _)
+                (match xs' as l return (xs' = l) -> {is_sorted (x0::xs')} + {~(is_sorted (x0::xs'))}  with
+                  | nil => (fun _ => left _)
                   | (x1::xs'') =>
                     (fun l0 =>
                     (let comp := (compare x0 x1) in
-                     (match comp as H return (compare x0 x1 = H) -> [is_sorted (x0::xs')] with
-                      | Gt => (fun _ => Uncertain _)
+                     (match comp as H return (compare x0 x1 = H) -> {is_sorted (x0::xs')} + {~(is_sorted (x0::xs'))} with
+                      | Gt => (fun _ => right _)
                       | _ => (fun Hcomp =>
                                 if (F xs')
-                                then Proved _
-                                else Uncertain _)
+                                then left _
+                                else right _)
                       end) _))
                   end) _
-              end); subst; constructor; auto.
+              end);
+      try (subst; constructor; auto with sorted_db);
+      try (intro; is_sorted_contradiction_via_tail).
+    - intro. inversion H; subst.
+      + discriminate.
+      + destruct c; subst; destruct_list_equality; subst; contradiction_from_compares.
   Defined.
-End reflection.
+End certified_decision_procedure.
 
 Section lemmas.
-  Context {X: Set}.
-  Context {tc: comparable X}.
+  Context {A: Set}.
+  Context {tc: comparable A}.
 
-  Lemma is_sortedb_reverse_direction (x y : X) (xs : list X):
+  Lemma is_sortedb_reverse_direction (x y : A) (xs : list A):
     is_sortedb (x::y::xs) ->
     (compare x y = Lt \/ compare x y = Eq) /\ (is_sortedb (y::xs)).
   Proof.
@@ -204,7 +233,7 @@ Section lemmas.
   Qed.
 End lemmas.
 
-Theorem is_sorted_and_is_sortedb_are_equivalent : forall {X: Set} {tc: comparable X} (xs: list X),
+Theorem is_sorted_and_is_sortedb_are_equivalent : forall {A: Set} {tc: comparable A} (xs: list A),
   is_sorted xs <-> is_sortedb xs.
 Proof.
 Hint Unfold is_sortedb. (* TODO: deprecated *)
@@ -228,17 +257,17 @@ split.
       constructor; auto.
 Qed.
 
-Theorem is_sortedb_and_is_sorted''_are_equivalent : forall {X: Set} {tc: comparable X} (xs: list X),
+Theorem is_sortedb_and_is_sorted''_are_equivalent : forall {A: Set} {tc: comparable A} (xs: list A),
   is_sortedb xs <-> is_sorted'' xs.
 Proof.
 (* TODO: Good First Issue *)
-Admitted.
+Abort.
 
 Section indices.
-  Context {X: Set}.
-  Context {tc: comparable X}.
+  Context {A: Set}.
+  Context {tc: comparable A}.
 
-  Lemma get_recursion_helper (n : nat) (x : X) (xs : list X):
+  Lemma get_recursion_helper (n : nat) (x : A) (xs : list A):
     (S n < length (x :: xs)) <-> (n < length xs).
   Proof.
     intros. split; (apply Lt.lt_S_n || apply Lt.lt_n_S); auto.
@@ -257,11 +286,11 @@ Section indices.
     but with additional proofs attached
    *)
 
-  Definition get_recursion_helper_dec (n : nat) (x : X) (xs : list X):
+  Definition get_recursion_helper_dec (n : nat) (x : A) (xs : list A):
     (S n < length (x :: xs)) -> (n < length xs) :=
     fun (H : S n < length (x :: xs)) => Lt.lt_S_n n (length xs) H.
 
-  Definition get_recursion_helper_inc (n : nat) (x : X) (xs : list X):
+  Definition get_recursion_helper_inc (n : nat) (x : A) (xs : list A):
     (n < length xs) -> (S n < length (x :: xs)) :=
     fun (H : n < length (xs)) => Lt.lt_n_S n (length xs) H.
 
@@ -287,7 +316,7 @@ Section indices.
 
 
   Lemma reduce_list_lengths_by_one:
-    forall (x: X) (xs: list X),
+    forall (x: A) (xs: list A),
       length (x :: xs) = S (length xs).
   Proof. auto. Qed.
 
@@ -310,7 +339,7 @@ Section indices.
   Local Ltac resolve_compare_leq :=
     unfold compare_leq in *; try assumption; try apply or_comm; try assumption.
 
-  (* Definition get_recursion_helper_dec_exist {x : X} {xs : list X}: *)
+  (* Definition get_recursion_helper_dec_exist {x : A} {xs : list A}: *)
   (*   { n : nat | S n < length (x :: xs)} -> { n : nat | n < length xs }. *)
   (* Proof. *)
   (*   intro ipf. *)
@@ -328,7 +357,7 @@ Section indices.
   (* apply get_recursion_helper. Qed. *)
 
 
-  Fixpoint get (xs: list X): { n: nat | n < (length xs)} -> X.
+  Fixpoint get (xs: list A): { n: nat | n < (length xs)} -> A.
     intros. destruct H as [n pf].
     destruct xs as [| x0 xs'] eqn:?.
     - (* xs cannot be empty *)
@@ -342,7 +371,7 @@ Section indices.
   Defined.
 
   (* Alternative definition, using std lib *)
-  Definition get' (xs: list X): { n: nat | n < (length xs)} -> X.
+  Definition get' (xs: list A): { n: nat | n < (length xs)} -> A.
     intro H. destruct H as [n pf].
     destruct (nth_error xs n) eqn:?.
     - exact x.
@@ -356,7 +385,7 @@ Section indices.
       * replace (length nil) with 0 in pf.
         apply (PeanoNat.Nat.nlt_0_r n). assumption.
         auto.
-      * set (@nth_error_nth' X (x0::xs') n x0).
+      * set (@nth_error_nth' A (x0::xs') n x0).
         rewrite e in Heqo.
         discriminate Heqo.
         assumption.
@@ -366,7 +395,7 @@ Section indices.
   with some tactics that prove that the bounds are correct. *)
 
   Lemma get_from_tail:
-    forall (xs : list X) (x: X)
+    forall (xs : list A) (x: A)
            (i : nat)
            (pf: i < length xs)
            (pf': (S i) < length (x::xs)),
@@ -393,7 +422,7 @@ Section indices.
 
 
   Lemma get_proof_irrelevance:
-    forall (xs: list X)
+    forall (xs: list A)
            (i: nat)
            (pf: i < length xs)
            (pf': i < length xs),
@@ -410,7 +439,7 @@ Section indices.
   Qed.
 
   Lemma get_app:
-    forall (xs ys : list X)
+    forall (xs ys : list A)
            (i : nat)
            (pf: i < length xs)
            (pf': i < length (xs ++ ys)),
@@ -434,7 +463,7 @@ Section indices.
   Qed.
 
   Lemma get_app':
-    forall (xs ys : list X)
+    forall (xs ys : list A)
            (i : nat)
            (assum: i >= length xs)
            (pf: (i - length xs) < length ys)
@@ -472,7 +501,7 @@ Section indices.
         lia.
   Qed.
 
-  Theorem is_sorted_via_indices (xs: list X):
+  Theorem is_sorted_via_indices (xs: list A):
     (is_sorted xs) <->
     (forall (i j: {n : nat | n < (length xs)}),
         let (i0, _) := i in
@@ -637,7 +666,7 @@ Section indices.
 End indices.
 
 (* insert_sort is a helper function for sort *)
-Fixpoint insert_sort {X: Set} {tc: comparable X} (xs: list X) (x: X) : list X :=
+Fixpoint insert_sort {A: Set} {tc: comparable A} (xs: list A) (x: A) : list A :=
   match xs with
   | nil => x :: nil
   | (x'::xs') => match compare x x' with
@@ -648,20 +677,20 @@ Fixpoint insert_sort {X: Set} {tc: comparable X} (xs: list X) (x: X) : list X :=
   end.
 
 (* insert_sort_sorts is a helper lemma for sort_sorts *)
-Lemma insert_sort_sorts: forall {X: Set} {tc: comparable X} (xs: list X) (x: X) {s: is_sorted xs},
+Lemma insert_sort_sorts: forall {A: Set} {tc: comparable A} (xs: list A) (x: A) {s: is_sorted xs},
   is_sorted (insert_sort xs x).
 Proof.
 (* TODO: Good First Issue *)
-Admitted.
+Abort.
 
 (* sort is a helper function for eval_list_sort *)
-Fixpoint sort {X: Set} {tc: comparable X} (xs: list X) : list X :=
+Fixpoint sort {A: Set} {tc: comparable A} (xs: list A) : list A :=
   match xs with
   | nil => nil
   | (x'::xs') => insert_sort (sort xs') x'
   end.
 
-Theorem sort_sorts: forall {X: Set} {tc: comparable X} (xs: list X),
+Theorem sort_sorts: forall {A: Set} {tc: comparable A} (xs: list A),
   is_sorted (sort xs).
 Proof.
-  Abort.
+Abort.
