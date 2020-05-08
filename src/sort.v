@@ -9,7 +9,7 @@ Require Import Lia.
 Require Import comparable.
 
 (* is_sorted is a property that says whether a list is sorted *)
-Inductive is_sorted {A: Type} {tc: comparable A} : list A -> Prop :=
+Inductive is_sorted {A: Type} {cmp: comparable A} : list A -> Prop :=
   | empty_sorted : is_sorted nil
   | singleton_sorted (x: A) : is_sorted (x :: nil)
   | tail_sorted
@@ -22,7 +22,7 @@ Inductive is_sorted {A: Type} {tc: comparable A} : list A -> Prop :=
 .
 
 (* This is not really a bool... should it be? *)
-Fixpoint is_sortedb {A: Type} {tc: comparable A} (xs: list A) : Prop :=
+Fixpoint is_sortedb {A: Type} {cmp: comparable A} (xs: list A) : Prop :=
   match xs with
   | nil => True
   | (x'::xs') => match xs' with
@@ -37,7 +37,7 @@ Fixpoint is_sortedb {A: Type} {tc: comparable A} (xs: list A) : Prop :=
 
 Lemma is_sortedb_induction_step
   {A: Type}
-  {tc: comparable A}
+  {cmp: comparable A}
   (x x' : A)
   (xs: list A):
   ((compare x x' = Lt) \/ (compare x x' = Eq)) ->
@@ -49,7 +49,7 @@ Proof.
   destruct H; rewrite H; trivial.
 Qed.
 
-Inductive is_sorted'' {A: Type} {tc: comparable A} : list A -> Prop :=
+Inductive is_sorted'' {A: Type} {cmp: comparable A} : list A -> Prop :=
   | empty_sorted'' : is_sorted'' nil
   | singleton_sorted'' : forall x, is_sorted'' (x :: nil)
   | lessthan_sorted''
@@ -71,7 +71,7 @@ Inductive is_sorted'' {A: Type} {tc: comparable A} : list A -> Prop :=
 
 Lemma tail_of_is_sorted_is_sorted:
   forall {A: Type}
-  {tc: comparable A}
+  {cmp: comparable A}
   (x: A)
   (xs: list A),
   is_sorted (x :: xs) -> is_sorted xs.
@@ -82,7 +82,7 @@ Qed.
 
 Lemma first_two_of_is_sorted_are_sorted:
   forall {A: Type}
-  {tc: comparable A}
+  {cmp: comparable A}
   (x y: A)
   (xs: list A),
   is_sorted (x :: y :: xs) -> compare_leq x y.
@@ -96,7 +96,7 @@ Qed.
 
 Lemma tail_of_is_sortedb_is_sortedb:
   forall {A: Type}
-  {tc: comparable A}
+  {cmp: comparable A}
   (x: A)
   (xs: list A),
   is_sortedb (x :: xs) -> is_sortedb xs.
@@ -106,7 +106,7 @@ Abort.
 
 Lemma tail_of_is_sorted''_is_sorted'':
   forall {A: Type}
-  {tc: comparable A}
+  {cmp: comparable A}
   (x: A)
   (xs: list A),
   is_sorted'' (x :: xs) -> is_sorted'' xs.
@@ -114,7 +114,7 @@ Proof.
 (* TODO: Good First Issue *)
 Abort.
 
-Lemma list_inductive_equality: forall {A: Type} {tc: comparable A} (x y: A) (xs ys: list A),
+Lemma list_inductive_equality: forall {A: Type} {cmp: comparable A} (x y: A) (xs ys: list A),
     ( (x::xs) = (y::ys)) <-> (x = y /\ (xs = ys)).
 Proof.
   intros. split.
@@ -146,7 +146,7 @@ Local Ltac destruct_list_equality :=
 
 Section certified_decision_procedure.
   Context {A: Type}.
-  Context {tc: comparable A}.
+  Context {cmp: comparable A}.
 
   (* This is a certified decision procedure (as in Ch. 15 in [CPDT]). It is
    essentially the same as our definition of is_sortedb, except that instead of
@@ -215,7 +215,7 @@ End certified_decision_procedure.
 
 Section lemmas.
   Context {A: Type}.
-  Context {tc: comparable A}.
+  Context {cmp: comparable A}.
 
   Lemma is_sortedb_reverse_direction (x y : A) (xs : list A):
     is_sortedb (x::y::xs) ->
@@ -233,7 +233,7 @@ Section lemmas.
   Qed.
 End lemmas.
 
-Theorem is_sorted_and_is_sortedb_are_equivalent : forall {A: Type} {tc: comparable A} (xs: list A),
+Theorem is_sorted_and_is_sortedb_are_equivalent : forall {A: Type} {cmp: comparable A} (xs: list A),
   is_sorted xs <-> is_sortedb xs.
 Proof.
 Hint Unfold is_sortedb. (* TODO: deprecated *)
@@ -257,7 +257,7 @@ split.
       constructor; auto.
 Qed.
 
-Theorem is_sortedb_and_is_sorted''_are_equivalent : forall {A: Type} {tc: comparable A} (xs: list A),
+Theorem is_sortedb_and_is_sorted''_are_equivalent : forall {A: Type} {cmp: comparable A} (xs: list A),
   is_sortedb xs <-> is_sorted'' xs.
 Proof.
 (* TODO: Good First Issue *)
@@ -265,7 +265,7 @@ Abort.
 
 Section indices.
   Context {A: Type}.
-  Context {tc: comparable A}.
+  Context {cmp: comparable A}.
 
   Lemma get_recursion_helper (n : nat) (x : A) (xs : list A):
     (S n < length (x :: xs)) <-> (n < length xs).
@@ -645,7 +645,7 @@ Section indices.
 End indices.
 
 (* insert_sort is a helper function for sort *)
-Fixpoint insert_sort {A: Type} {tc: comparable A} (xs: list A) (x: A) : list A :=
+Fixpoint insert_sort {A: Type} {cmp: comparable A} (xs: list A) (x: A) : list A :=
   match xs with
   | nil => x :: nil
   | (x'::xs') => match compare x x' with
@@ -656,20 +656,20 @@ Fixpoint insert_sort {A: Type} {tc: comparable A} (xs: list A) (x: A) : list A :
   end.
 
 (* insert_sort_sorts is a helper lemma for sort_sorts *)
-Lemma insert_sort_sorts: forall {A: Type} {tc: comparable A} (xs: list A) (x: A) {s: is_sorted xs},
+Lemma insert_sort_sorts: forall {A: Type} {cmp: comparable A} (xs: list A) (x: A) {s: is_sorted xs},
   is_sorted (insert_sort xs x).
 Proof.
 (* TODO: Good First Issue *)
 Abort.
 
 (* sort is a helper function for eval_list_sort *)
-Fixpoint sort {A: Type} {tc: comparable A} (xs: list A) : list A :=
+Fixpoint sort {A: Type} {cmp: comparable A} (xs: list A) : list A :=
   match xs with
   | nil => nil
   | (x'::xs') => insert_sort (sort xs') x'
   end.
 
-Theorem sort_sorts: forall {A: Type} {tc: comparable A} (xs: list A),
+Theorem sort_sorts: forall {A: Type} {cmp: comparable A} (xs: list A),
   is_sorted (sort xs).
 Proof.
 Abort.
