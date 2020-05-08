@@ -472,47 +472,6 @@ Section indices.
         lia.
   Qed.
 
-
-  (*     erewrite get_from_tail with (x := x0) (xs := (xs' ++ ys)). *)
-
-
-  (*     get_proof_recursion_helpers_rewrite. *)
-  (*     Check (i - length xs'). *)
-
-  (*     intros. *)
-  (*     cbn in *. *)
-  (*     assert (i - 0 = i). *)
-  (*     lia. *)
-  (*     unfold get. *)
-  (*     cbn. *)
-  (*     trivial. *)
-  (*     reflexivity. *)
-  (*     exfalso. *)
-  (*     nat_smaller_than_length_nil. *)
-  (*   - destruct i as [| iminus1]. *)
-  (*     + unfold get. trivial. *)
-  (*     + *)
-  (*       replace ((x0 :: xs') ++ ys) with (x0 :: (xs' ++ ys)). *)
-  (*       2: { exact eq_refl. } *)
-  (*       intros. *)
-
-  (*       Local Ltac get_proof_recursion_helpers := *)
-  (*         match goal with *)
-  (*         | H: (S ?n < length (?x :: ?xs)) |- _ *)
-  (*           => assert_if_not_exist (n < length(xs)); try exact (@get_recursion_helper_dec n x xs H) *)
-  (*         end. *)
-
-  (*       (* All you need to do here is rewrite get_from_tail in two places, and *)
-  (*       then apply the induction hypothesis. *) *)
-
-  (*       repeat get_proof_recursion_helpers. *)
-  (*       unshelve erewrite get_from_tail. assumption. *)
-  (*       unshelve erewrite get_from_tail. assumption. *)
-
-  (*       apply IHxs'. *)
-  (* Qed. *)
-
-
   Theorem is_sorted_via_indices (xs: list X):
     (is_sorted xs) <->
     (forall (i j: {n : nat | n < (length xs)}),
