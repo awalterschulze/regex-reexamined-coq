@@ -234,15 +234,9 @@ Proof.
 (* TODO: Good First Issue *)
 Admitted.
 
-Print sig.
-Print sigT.
-
 Section indices.
   Context {X: Set}.
   Context {tc: comparable X}.
-
-  Print hd.
-  Print List.
 
   Lemma get_recursion_helper (n : nat) (x : X) (xs : list X):
     (S n < length (x :: xs)) <-> (n < length xs).
@@ -271,13 +265,31 @@ Section indices.
     (n < length xs) -> (S n < length (x :: xs)) :=
     fun (H : n < length (xs)) => Lt.lt_n_S n (length xs) H.
 
-  Print Lt.lt_n_S.
+  Local Ltac not_exist_hyp t :=
+    match goal with
+    | H1:t |- _ => fail 2
+    end || idtac.
+
+  Local Ltac assert_if_not_exist H :=
+    not_exist_hyp H; assert H.
+
+  Local Ltac get_proof_recursion_helpers :=
+    match goal with
+    | H: (S ?n < length (?x :: ?xs)) |- _
+      => assert_if_not_exist (n < length(xs)); try exact (@get_recursion_helper_dec n x xs H)
+    end.
 
   Lemma length_nil {Y: Set}:
     (@length Y nil) = 0.
   Proof.
     auto.
   Qed.
+
+
+  Lemma reduce_list_lengths_by_one:
+    forall (x: X) (xs: list X),
+      length (x :: xs) = S (length xs).
+  Proof. auto. Qed.
 
   Local Ltac nat_smaller_than_length_nil :=
         (* The below just derives a contradiction when there is a nat n with n < length nil *)
@@ -286,6 +298,17 @@ Section indices.
                 | [ P : _ < length nil |- _ ] => rewrite (length_nil) in P
                 | [ P : ?x < 0 |- _ ] => apply PeanoNat.Nat.nlt_0_r with (n := x)
         end); assumption.
+
+  Local Ltac reduce_list_lengths :=
+    match goal with
+    | P: context [length (?x :: ?xs)]  |- _ => rewrite reduce_list_lengths_by_one in P
+    | P: context [length nil]  |- _ => rewrite length_nil in P
+    | |- context [length (?x :: ?xs)] => rewrite reduce_list_lengths_by_one
+    | |- context [length nil] => rewrite length_nil
+    end.
+
+  Local Ltac resolve_compare_leq :=
+    unfold compare_leq in *; try assumption; try apply or_comm; try assumption.
 
   (* Definition get_recursion_helper_dec_exist {x : X} {xs : list X}: *)
   (*   { n : nat | S n < length (x :: xs)} -> { n : nat | n < length xs }. *)
@@ -304,9 +327,9 @@ Section indices.
 
   (* apply get_recursion_helper. Qed. *)
 
+
   Fixpoint get (xs: list X): { n: nat | n < (length xs)} -> X.
     intros. destruct H as [n pf].
-
     destruct xs as [| x0 xs'] eqn:?.
     - (* xs cannot be empty *)
       exfalso.
@@ -361,30 +384,134 @@ Section indices.
         unfold get.
         fold (get xs' (exist _ iminus1 (get_recursion_helper_dec pf))).
         fold (get (x0::xs') (exist _ (S iminus1) (get_recursion_helper_dec pf'))).
-
-        specialize IHxs' with
-            (x := x)
-            (i := iminus1)
-            (pf := (get_recursion_helper_dec pf))
-            (pf' := (get_recursion_helper_dec pf')).
-        assumption.
+        apply IHxs'.
   Qed.
 
-  Lemma reduce_list_lengths_by_one:
-    forall (x: X) (xs: list X),
-      length (x :: xs) = S (length xs).
-  Proof. auto. Qed.
+  Local Ltac get_proof_recursion_helpers_rewrite :=
+    repeat get_proof_recursion_helpers;
+    repeat (unshelve erewrite get_from_tail; try assumption).
 
-  Ltac reduce_list_lengths :=
-    match goal with
-    | P: context [length (?x :: ?xs)]  |- _ => rewrite reduce_list_lengths_by_one in P
-    | P: context [length nil]  |- _ => rewrite length_nil in P
-    | |- context [length (?x :: ?xs)] => rewrite reduce_list_lengths_by_one
-    | |- context [length nil] => rewrite length_nil
-    end.
 
-  Local Ltac resolve_compare_leq :=
-    unfold compare_leq in *; try assumption; try apply or_comm; try assumption.
+  Lemma get_proof_irrelevance:
+    forall (xs: list X)
+           (i: nat)
+           (pf: i < length xs)
+           (pf': i < length xs),
+      get xs (exist _ i pf) =
+      get xs (exist _ i pf').
+  Proof.
+    induction xs.
+    - intros. exfalso. nat_smaller_than_length_nil.
+    - destruct i.
+      + unfold get. reflexivity.
+      + intros.
+        get_proof_recursion_helpers_rewrite.
+        apply IHxs.
+  Qed.
+
+  Lemma get_app:
+    forall (xs ys : list X)
+           (i : nat)
+           (pf: i < length xs)
+           (pf': i < length (xs ++ ys)),
+      (get (xs ++ ys) (exist _ i pf'))
+      = (get xs (exist _ i pf)).
+  Proof.
+    induction xs as [| x0 xs'].
+    - intros. exfalso.
+      nat_smaller_than_length_nil.
+    - destruct i as [| iminus1].
+      + unfold get. trivial.
+      +
+        replace ((x0 :: xs') ++ ys) with (x0 :: (xs' ++ ys)).
+        2: { exact eq_refl. }
+        intros.
+
+        (* All you need to do here is rewrite get_from_tail in two places, and
+        then apply the induction hypothesis. *)
+        get_proof_recursion_helpers_rewrite.
+        apply IHxs'.
+  Qed.
+
+  Lemma get_app':
+    forall (xs ys : list X)
+           (i : nat)
+           (assum: i >= length xs)
+           (pf: (i - length xs) < length ys)
+           (pf': i < length (xs ++ ys)),
+      (get (xs ++ ys) (exist _ i pf'))
+      = (get ys (exist _ (i - length xs) pf)).
+  Proof.
+    induction xs as [| x0 xs'].
+    - cbn.
+      intro.
+      intro.
+      replace (i - 0) with i.
+      2: { lia. }
+
+      intros.
+      apply get_proof_irrelevance.
+
+    -
+      intros ys i.
+      replace ((x0 :: xs') ++ ys) with (x0 :: (xs' ++ ys)).
+      2: { exact eq_refl. }
+
+      intros.
+
+      destruct i.
+      + exfalso.
+        cbn in assum.
+        lia.
+
+      + get_proof_recursion_helpers_rewrite.
+
+        cbn.
+        apply IHxs'.
+        cbn in assum.
+        lia.
+  Qed.
+
+
+  (*     erewrite get_from_tail with (x := x0) (xs := (xs' ++ ys)). *)
+
+
+  (*     get_proof_recursion_helpers_rewrite. *)
+  (*     Check (i - length xs'). *)
+
+  (*     intros. *)
+  (*     cbn in *. *)
+  (*     assert (i - 0 = i). *)
+  (*     lia. *)
+  (*     unfold get. *)
+  (*     cbn. *)
+  (*     trivial. *)
+  (*     reflexivity. *)
+  (*     exfalso. *)
+  (*     nat_smaller_than_length_nil. *)
+  (*   - destruct i as [| iminus1]. *)
+  (*     + unfold get. trivial. *)
+  (*     + *)
+  (*       replace ((x0 :: xs') ++ ys) with (x0 :: (xs' ++ ys)). *)
+  (*       2: { exact eq_refl. } *)
+  (*       intros. *)
+
+  (*       Local Ltac get_proof_recursion_helpers := *)
+  (*         match goal with *)
+  (*         | H: (S ?n < length (?x :: ?xs)) |- _ *)
+  (*           => assert_if_not_exist (n < length(xs)); try exact (@get_recursion_helper_dec n x xs H) *)
+  (*         end. *)
+
+  (*       (* All you need to do here is rewrite get_from_tail in two places, and *)
+  (*       then apply the induction hypothesis. *) *)
+
+  (*       repeat get_proof_recursion_helpers. *)
+  (*       unshelve erewrite get_from_tail. assumption. *)
+  (*       unshelve erewrite get_from_tail. assumption. *)
+
+  (*       apply IHxs'. *)
+  (* Qed. *)
+
 
   Theorem is_sorted_via_indices (xs: list X):
     (is_sorted xs) <->
