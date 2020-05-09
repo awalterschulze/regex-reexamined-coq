@@ -7,3 +7,4 @@
 *.vos
 \#*.v\#
 /.Makefile.d
+/Makefile.conf
