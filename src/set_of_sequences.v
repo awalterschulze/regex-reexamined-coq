@@ -7,6 +7,10 @@ Require Import nullable.
 Require Import regex.
 Require Import derive_def.
 
+(*
+  A set of sequences is interpreted as a value of `list A -> Prop`
+  where the sequence `list A` is in the set if the value on the sequence is `True`.
+*)
 Definition set_of_sequences {A: Type} {cmp: comparable A} := list A -> Prop.
 
 Notation "xs \in R" := (R xs) (at level 80).
