@@ -21,6 +21,7 @@ src/smart_or.v
 src/smart.v
 src/simplified.v
 src/simple.v
+src/set_of_sequences.v
 
 src/inductive_predicate_experiment.v
 
