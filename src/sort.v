@@ -138,10 +138,28 @@ Qed.
    into two hypotheses
          x = y     and     xs = ys
 *)
-Local Ltac destruct_list_equality :=
+(* TODO: should this be moved somewhere else? Maybe make a library of tactics? *)
+Ltac destruct_list_equality :=
   repeat match goal with
          | [H: (?x :: ?xs) = (?y :: ?ys) |- _] => rewrite list_inductive_equality in H; destruct H
          end.
+
+
+(* If there is a pair of hypotheses
+          compare ?x0 ?x1 = Gt   and   compare ?x0 ?x1 = Lt (or = Eq)
+       then this tactic derives a contradiction.
+ *)
+(* TODO: move to library? *)
+Ltac contradiction_from_compares :=
+  match goal with
+  | [ H1: compare ?x0 ?x1 = Gt , H2: compare ?x0 ?x1 = Lt |- _ ]
+    => exfalso; assert (Gt = Lt); try (rewrite <- H1; rewrite <- H2; reflexivity); discriminate
+  | [ H1: compare ?x0 ?x1 = Gt , H2: compare ?x0 ?x1 = Eq |- _ ]
+    => exfalso; assert (Gt = Eq); try (rewrite <- H1; rewrite <- H2; reflexivity); discriminate
+
+  | [ H1: compare ?x0 ?x1 = Eq , H2: compare ?x0 ?x1 = Lt |- _ ]
+    => exfalso; assert (Eq = Lt); try (rewrite <- H1; rewrite <- H2; reflexivity); discriminate
+  end.
 
 
 Section certified_decision_procedure.
@@ -165,18 +183,7 @@ Section certified_decision_procedure.
         => apply Hcon; apply tail_of_is_sorted_is_sorted with (x := x0); exact H
       end.
 
-    (* If there is a pair of hypotheses
-          compare ?x0 ?x1 = Gt   and   compare ?x0 ?x1 = Lt (or = Eq)
-       then this tactic derives a contradiction.
-     *)
-    Local Ltac contradiction_from_compares :=
-      exfalso;
-      match goal with
-      | [ H1: compare ?x0 ?x1 = Gt , H2: compare ?x0 ?x1 = Lt |- _ ]
-        => assert (Gt = Lt); try (rewrite <- H1; rewrite <- H2; reflexivity); discriminate
-      | [ H1: compare ?x0 ?x1 = Gt , H2: compare ?x0 ?x1 = Eq |- _ ]
-        => assert (Gt = Eq); try (rewrite <- H1; rewrite <- H2; reflexivity); discriminate
-      end.
+
 
     Hint Unfold compare_leq: sorted_db.
 
