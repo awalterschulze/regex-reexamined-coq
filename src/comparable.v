@@ -246,3 +246,17 @@ Proof.
     try (left; assumption);
     try (right; assumption).
 Qed.
+
+Lemma compare_eq_dec {A: Type} {cmp: comparable A} (x y : A):
+  {x = y} + {x <> y}.
+Proof.
+  destruct (compare x y) eqn:Heqc;
+    try (right;
+         unfold not; intro;
+         subst;
+         rewrite proof_compare_eq_reflex in Heqc;
+         discriminate).
+  - compare_to_eq.
+    left.
+    reflexivity.
+Qed.
