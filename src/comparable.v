@@ -245,6 +245,18 @@ Proof.
     try (right; assumption).
 Qed.
 
+Lemma compare_lt_leq_trans {A: Type} {cmp: comparable A} (x y z: A) :
+  (compare x y = Lt)
+    -> (compare_leq y z)
+    -> (compare x z = Lt).
+Proof.
+  intros H1 H2.
+  destruct H2 as [H2 | H2].
+  - compare_to_eq.
+    subst. assumption.
+  - apply proof_compare_lt_trans with (y0 := y); assumption.
+Qed.
+
 Lemma compare_leq_reflex {A: Type} {cmp: comparable A} (x : A) :
   (compare_leq x x).
 Proof.
