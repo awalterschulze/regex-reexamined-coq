@@ -236,8 +236,6 @@ Lemma compare_leq_trans {A: Type} {cmp: comparable A} (x y z: A) :
 Proof.
   intros.
   unfold compare_leq in *.
-  Hint Resolve proof_compare_lt_trans.
-  Hint Resolve proof_compare_eq_trans.
 
   destruct H; destruct H0;
     try ((left; apply proof_compare_eq_trans with (y0 := y); assumption)
@@ -245,6 +243,15 @@ Proof.
     try (compare_to_eq; subst);
     try (left; assumption);
     try (right; assumption).
+Qed.
+
+Lemma compare_leq_reflex {A: Type} {cmp: comparable A} (x : A) :
+  (compare_leq x x).
+Proof.
+  intros.
+  unfold compare_leq.
+  left.
+  apply proof_compare_eq_reflex.
 Qed.
 
 Lemma compare_eq_dec {A: Type} {cmp: comparable A} (x y : A):
