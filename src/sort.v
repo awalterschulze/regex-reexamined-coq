@@ -240,6 +240,42 @@ Section lemmas.
     - fold (is_sortedb (y::xs)) in H.
       destruct (compare x y); (assumption || contradiction).
   Qed.
+
+  Lemma is_sorted_first_element_smallest (xs: list A) (default: A):
+    is_sorted (xs) ->
+    (forall (a: A),
+        In a xs -> compare_leq (hd default xs) a).
+  Proof.
+    induction xs as [| x0 xs'].
+    - intros Hsort a Hin.
+      unfold In in Hin. contradiction.
+    - intros Hsort a Hin.
+
+      destruct xs' as [| x1 xs''].
+      + cbn.
+        cbn in Hin.
+        destruct Hin.
+        * subst. unfold compare_leq.
+          left. apply proof_compare_eq_reflex.
+        * contradiction.
+
+      + cbn.
+        cbn in Hin.
+
+        destruct Hin as [Hin | [Hin | Hin]]; try subst.
+        * apply compare_leq_reflex.
+        * apply first_two_of_is_sorted_are_sorted with (xs := xs'').
+          assumption.
+        * (* proof is going to be: x0 leq x1, x1 leq x2 *)
+          apply compare_leq_trans with (y := x1).
+          -- apply first_two_of_is_sorted_are_sorted with (xs := xs'').
+             assumption.
+          -- apply IHxs'.
+             apply tail_of_is_sorted_is_sorted with (x := x0).
+             assumption.
+             unfold In in *.
+             right. assumption.
+  Qed.
 End lemmas.
 
 Theorem is_sorted_and_is_sortedb_are_equivalent : forall {A: Type} {cmp: comparable A} (xs: list A),
