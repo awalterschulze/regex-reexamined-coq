@@ -1,9 +1,8 @@
 Require Import List.
 Import ListNotations.
-Require Import Bool.
 
 Require Import comparable.
-Require Import nullable.
+Require Import compare_nat.
 Require Import regex.
 Require Import derive_def.
 
@@ -21,10 +20,8 @@ Reserved Notation "xs \in * R" (at level 80).
 
 Inductive matching_sequences_for_star {A: Type} {cmd: comparable A} (R: set_of_sequences): set_of_sequences :=
 | star_matches_nil : [] \in *R
-| star_matches_concat : forall xs ys,
-    xs \in R ->
-    ys \in *R ->
-    xs ++ ys \in *R
+| star_matches_concat : forall zs,
+    (exists xs ys, xs ++ ys = zs -> xs \in R /\ ys \in *R) -> zs \in *R
 where "xs \in * R" := ((matching_sequences_for_star R) xs).
 
 Fixpoint matching_sequences_for_regex {A: Type} {cmp: comparable A} (r: regex A): set_of_sequences :=
@@ -34,7 +31,7 @@ Fixpoint matching_sequences_for_regex {A: Type} {cmp: comparable A} (r: regex A)
   | char a => { xs | xs = [a] }
   | or r1 r2 => { xs | xs \in |r1| \/ xs \in |r2| }
   | and r1 r2 => { xs | xs \in |r1| /\ xs \in |r2| }
-  | concat r1 r2 => { xs | exists ys zs, xs = ys ++ xs /\ ys \in |r1| /\ zs \in |r2| }
+  | concat r1 r2 => { xs | exists ys zs, xs = ys ++ zs /\ ys \in |r1| /\ zs \in |r2| }
   | not r1 => { xs | ~ (xs \in |r1|) }
   | star r1 => { xs | xs \in *|r1| }
   end
@@ -45,4 +42,53 @@ Definition derive_sequence {A: Type} {cmd: comparable A} (a: A) (R: set_of_seque
 
 Theorem derive_is_derivative {A: Type} {cmd: comparable A} (a: A) (r: regex A):
   forall (xs: list A), xs \in |derive r a| <-> xs \in derive_sequence a (|r|).
-Admitted.
+Abort.
+
+Lemma not_not : [1] \in |not (not (char 1))|.
+Proof.
+  unfold  matching_sequences_for_regex.
+  unfold Logic.not.
+  intros.
+  remember (H eq_refl).
+  assumption.
+Qed.
+
+Lemma two_not_in : ~ ([2] \in |not (not (char 1))|).
+Proof.
+  unfold  matching_sequences_for_regex.
+  unfold Logic.not.
+  intros.
+  apply H.
+  intros.
+  discriminate.
+Qed.
+
+Lemma concat_one : [1;2] \in |concat (char 1) (char 2)|.
+Proof.
+  unfold  matching_sequences_for_regex.
+  exists [1].
+  exists [2].
+  repeat split; reflexivity.
+Qed.
+
+Lemma concat_two : ~([1;2;3] \in |concat (char 1) (char 2)|).
+Proof.
+  unfold  matching_sequences_for_regex.
+  unfold Logic.not.
+  intros.
+  destruct H as [x [y [l1 [l2 l3]]]].
+  subst.
+  discriminate.
+Qed.
+
+Lemma star_one : [1] \in |star (char 1)|.
+Proof.
+  unfold  matching_sequences_for_regex.
+  constructor.
+  exists [1].
+  exists [].
+  intros.
+  constructor.
+  - reflexivity.
+  - constructor.
+Qed.
