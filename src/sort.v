@@ -15,7 +15,7 @@ Inductive is_sorted {A: Type} {cmp: comparable A} : list A -> Prop :=
   | tail_sorted
     (x: A)
     (y: A)
-    (c : compare x y = Lt \/ compare x y = Eq)
+    (c : compare_leq x y)
     (xs: list A)
     (s: is_sorted (y :: xs))
     : is_sorted (x :: y :: xs)
@@ -40,7 +40,7 @@ Lemma is_sortedb_induction_step
   {cmp: comparable A}
   (x x' : A)
   (xs: list A):
-  ((compare x x' = Lt) \/ (compare x x' = Eq)) ->
+  (compare_leq x x') ->
   (is_sortedb (x'::xs)) ->
   is_sortedb (x::x'::xs).
 Proof.
@@ -88,9 +88,7 @@ Lemma first_two_of_is_sorted_are_sorted:
   is_sorted (x :: y :: xs) -> compare_leq x y.
 Proof.
   intros.
-  unfold compare_leq.
   inversion H.
-  apply or_comm.
   assumption.
 Qed.
 
@@ -178,6 +176,8 @@ Section certified_decision_procedure.
         => assert (Gt = Eq); try (rewrite <- H1; rewrite <- H2; reflexivity); discriminate
       end.
 
+    Hint Unfold compare_leq: sorted_db.
+
     (*
 The essence of the statement below is as simple as is_sortedb, but there are two
 complicating factors:
@@ -207,7 +207,7 @@ the match statements.
               end);
       try (subst; constructor; auto with sorted_db);
       try (intro; is_sorted_contradiction_via_tail).
-    - intro. inversion H; subst.
+    - intro H. inversion H; subst.
       + discriminate.
       + destruct c; subst; destruct_list_equality; subst; contradiction_from_compares.
   Defined.
@@ -219,14 +219,14 @@ Section lemmas.
 
   Lemma is_sortedb_reverse_direction (x y : A) (xs : list A):
     is_sortedb (x::y::xs) ->
-    (compare x y = Lt \/ compare x y = Eq) /\ (is_sortedb (y::xs)).
+    (compare_leq x y) /\ (is_sortedb (y::xs)).
   Proof.
     intros.
     unfold is_sortedb in H.
     split.
     - destruct (compare x y) eqn:Hcomp.
-      + apply or_intror. reflexivity.
-      + apply or_introl. reflexivity.
+      + apply or_introl. assumption.
+      + apply or_intror. assumption.
       + contradiction.
     - fold (is_sortedb (y::xs)) in H.
       destruct (compare x y); (assumption || contradiction).
