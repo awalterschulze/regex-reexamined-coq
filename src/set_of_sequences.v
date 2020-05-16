@@ -44,7 +44,7 @@ Theorem derive_is_derivative {A: Type} {cmd: comparable A} (a: A) (r: regex A):
   forall (xs: list A), xs \in |derive r a| <-> xs \in derive_sequence a (|r|).
 Abort.
 
-Lemma not_not : [1] \in |not (not (char 1))|.
+Example test_not_not_char : [1] \in |not (not (char 1))|.
 Proof.
   unfold  matching_sequences_for_regex.
   unfold Logic.not.
@@ -53,7 +53,7 @@ Proof.
   assumption.
 Qed.
 
-Lemma two_not_in : ~ ([2] \in |not (not (char 1))|).
+Example test_two_not_not_in_char_one : ~ ([2] \in |not (not (char 1))|).
 Proof.
   unfold  matching_sequences_for_regex.
   unfold Logic.not.
@@ -63,7 +63,7 @@ Proof.
   discriminate.
 Qed.
 
-Lemma concat_one : [1;2] \in |concat (char 1) (char 2)|.
+Example test_list_in_concat_one : [1;2] \in |concat (char 1) (char 2)|.
 Proof.
   unfold  matching_sequences_for_regex.
   exists [1].
@@ -71,7 +71,7 @@ Proof.
   repeat split; reflexivity.
 Qed.
 
-Lemma concat_two : ~([1;2;3] \in |concat (char 1) (char 2)|).
+Example test_list_not_in_concat_one_two : ~([1;2;3] \in |concat (char 1) (char 2)|).
 Proof.
   unfold  matching_sequences_for_regex.
   unfold Logic.not.
@@ -81,7 +81,7 @@ Proof.
   discriminate.
 Qed.
 
-Lemma star_one : [1] \in |star (char 1)|.
+Example test_one_in_star_char_one : [1] \in |star (char 1)|.
 Proof.
   unfold  matching_sequences_for_regex.
   constructor.
