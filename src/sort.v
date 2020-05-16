@@ -238,15 +238,15 @@ End lemmas.
 Theorem is_sorted_and_is_sortedb_are_equivalent : forall {A: Type} {cmp: comparable A} (xs: list A),
   is_sorted xs <-> is_sortedb xs.
 Proof.
-Hint Unfold is_sortedb. (* TODO: deprecated *)
-Hint Resolve is_sortedb_induction_step.
+Hint Unfold is_sortedb: sorted_db. (* TODO: deprecated *)
+Hint Resolve is_sortedb_induction_step: sorted_db.
 
 split.
-- induction xs as [(*nil*)| x0 xs' IH]; auto.
+- induction xs as [(*nil*)| x0 xs' IH]; auto with sorted_db.
   intros.
   try (match goal with
        | [ H: is_sorted ?xs |- _] => inversion H
-       end); subst; auto.
+       end); subst; auto with sorted_db.
 
 - induction xs as [| x0 xs'].
   + intros.
@@ -256,7 +256,7 @@ split.
     * constructor.
     * set (Hsort := is_sortedb_reverse_direction _ _ _ H).
       destruct Hsort as [Hcomp Hsublist].
-      constructor; auto.
+      constructor; auto with sorted_db.
 Qed.
 
 Theorem is_sortedb_and_is_sorted''_are_equivalent : forall {A: Type} {cmp: comparable A} (xs: list A),
