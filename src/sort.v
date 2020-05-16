@@ -99,7 +99,9 @@ Lemma tail_of_is_sortedb_is_sortedb:
   (xs: list A),
   is_sortedb (x :: xs) -> is_sortedb xs.
 Proof.
-(* TODO: Good First Issue *)
+(* TODO: Good First Issue
+By Admitting this we previously let a bug slip through
+ *)
 Abort.
 
 Lemma tail_of_is_sorted''_is_sorted'':
