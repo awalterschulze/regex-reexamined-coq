@@ -296,6 +296,9 @@ Section indices.
     (n < length xs) -> (S n < length (x :: xs)) :=
     fun (H : n < length (xs)) => Lt.lt_n_S n (length xs) H.
 
+  (* This tactic adds the hypothesis t only if there is not already a hypothesis
+  of type t in the context. Copied from
+  https://github.com/coq/coq/wiki/TacticExts#assert-if-necessary *)
   Local Ltac not_exist_hyp t :=
     match goal with
     | H1:t |- _ => fail 2
