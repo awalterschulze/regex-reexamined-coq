@@ -279,3 +279,19 @@ Proof.
     left.
     reflexivity.
 Qed.
+
+(* If there is a pair of hypotheses
+          compare ?x0 ?x1 = Gt   and   compare ?x0 ?x1 = Lt (or = Eq)
+       then this tactic derives a contradiction.
+ *)
+Ltac contradiction_from_compares :=
+  match goal with
+  | [ H1: compare ?x0 ?x1 = Gt , H2: compare ?x0 ?x1 = Lt |- _ ]
+    => exfalso; assert (Gt = Lt); try (rewrite <- H1; rewrite <- H2; reflexivity); discriminate
+  | [ H1: compare ?x0 ?x1 = Gt , H2: compare ?x0 ?x1 = Eq |- _ ]
+    => exfalso; assert (Gt = Eq); try (rewrite <- H1; rewrite <- H2; reflexivity); discriminate
+  | [ H1: compare ?x0 ?x1 = Eq , H2: compare ?x0 ?x1 = Lt |- _ ]
+    => exfalso; assert (Eq = Lt); try (rewrite <- H1; rewrite <- H2; reflexivity); discriminate
+  | [ H1: compare_leq ?x0 ?x1, H2: compare ?x0 ?x1 = Gt |- _ ]
+    => destruct H1; contradiction_from_compares
+  end.
