@@ -36,7 +36,7 @@ It should express that the tree is sorted and duplicates have been removed.
 (* TODO: Help Wanted
 Use the previous defined property `is_merge_or` to prove:
 ```
-merge_or_is_correct: forall {A: Type} {cmp: comparable A} 
+merge_or_is_correct: forall {A: Type} {cmp: comparable A}
   (r s: regex A) (is_merge_or r) (is_merge_or s),
   is_merge_or (merge_or r s)
 ```
@@ -482,8 +482,13 @@ Qed.
   (r + s) + t = r + (s + t)
   r + fail = r
 *)
-Definition smart_or' {A: Type} {cmp: comparable A} (r s: regex A) : regex A :=
-  to_tree_or (remove_duplicates_from_sorted (fold_left insert_sort (to_list_or r) (to_list_or s))).
+(*
+  I've commented this definition out, because it now requires a proof that the
+  result of (fold_left ....) is sorted, and I don't think we've proven that yet.
+ *)
+
+(* Definition smart_or' {A: Type} {cmp: comparable A} (r s: regex A) : regex A :=
+   to_tree_or (remove_duplicates_from_sorted_list (fold_left insert_sort (to_list_or r) (to_list_or s))). *)
 
 (*
 merge_or_program merges two regexes.
