@@ -312,4 +312,8 @@ Section remove_duplicates_from_sorted.
       remember (first_two_of_is_sorted_are_sorted Hsort).
       contradiction_from_compares.
   Qed.
+
+  (* A convenience function that extracts the list from the above sigma type. *)
+  Definition remove_duplicates_from_sorted_list (ls : list A) (Hsort: is_sorted ls): list A
+    := (proj1_sig (sig_of_sig2 (remove_duplicates_from_sorted Hsort))).
 End remove_duplicates_from_sorted.
