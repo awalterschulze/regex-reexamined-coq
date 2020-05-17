@@ -156,9 +156,10 @@ Ltac contradiction_from_compares :=
     => exfalso; assert (Gt = Lt); try (rewrite <- H1; rewrite <- H2; reflexivity); discriminate
   | [ H1: compare ?x0 ?x1 = Gt , H2: compare ?x0 ?x1 = Eq |- _ ]
     => exfalso; assert (Gt = Eq); try (rewrite <- H1; rewrite <- H2; reflexivity); discriminate
-
   | [ H1: compare ?x0 ?x1 = Eq , H2: compare ?x0 ?x1 = Lt |- _ ]
     => exfalso; assert (Eq = Lt); try (rewrite <- H1; rewrite <- H2; reflexivity); discriminate
+  | [ H1: compare_leq ?x0 ?x1, H2: compare ?x0 ?x1 = Gt |- _ ]
+    => destruct H1; contradiction_from_compares
   end.
 
 

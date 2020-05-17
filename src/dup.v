@@ -8,15 +8,18 @@ Require Import comparable.
 Require Import sort.
 
 Section inductive_predicate_strictly_sorted.
-  (* Being strictly sorted can be defined in two equivalent ways:
-1. being sorted and having no duplicates; or
-2. every element in the list is strictly smaller than the next.
+  (* The following two properties of lists are equivalent:
+     1. being sorted and having no duplicates; and
+     2. being strictly sorted, i.e., every element is strictly smaller than the next.
+
+     I think the second is easier to capture in an inductive predicate (it's
+     almost the same as our definition of is_sorted), so that's what I'll use.
    *)
 
   Context {A: Type}.
   Context {cmp: comparable A}.
 
-  Inductive is_strictly_sorted : list A -> Prop :=
+  Inductive is_strictly_sorted: list A -> Prop :=
   | empty_strictly_sorted : is_strictly_sorted nil
   | singleton_strictly_sorted (x : A) : is_strictly_sorted [x]
   | tail_strictly_sorted (x y : A) (xs : list A):
@@ -49,7 +52,7 @@ Section inductive_predicate_strictly_sorted.
     - constructor.
     - extract_info_from_strictly_sorted.
       + constructor.
-      + constructor. left. assumption.
+      + constructor. right. assumption.
         apply IHls. assumption.
   Qed.
 
@@ -110,6 +113,15 @@ Section inductive_predicate_strictly_sorted.
 End inductive_predicate_strictly_sorted.
 
 Section remove_duplicates_from_sorted.
+  (*
+    The main definition of this section is remove_duplicates_from_sorted, which
+    is a verified decision procedure that removes all duplicates from a sorted
+    list.
+
+    To fully specify this in the type system, we first define list_set_eq, which
+    is a type that represents the proposition that two lists are equal as sets
+    (i.e., they have exactly the same elements).
+  *)
   Context {A: Type}.
   Context {cmp: comparable A}.
 
@@ -171,7 +183,8 @@ Section remove_duplicates_from_sorted.
     split.
     - intro.
       auto using H, H0 with list_set_db.
-      (* QUESTION: how can the above auto statement fail to just apply the hints I told it to apply? *)
+      (* QUESTION: how can the above auto statement fail to just apply the hints
+      I told it to apply? *)
       apply H0.
       apply H.
       assumption.
@@ -201,149 +214,102 @@ Section remove_duplicates_from_sorted.
         apply H. assumption.
   Qed.
 
-  (* The result has to satisfy two properties:
-1. It is strictly sorted.
-2. As a set, it is equal to the input.
-   *)
-  Fixpoint remove_duplicates_from_sorted (ls : list A):
-    is_sorted ls ->
-    { lres : list A | is_strictly_sorted lres & list_set_eq ls lres }.
-    intros.
-    destruct ls as [| a0 ls'] eqn:?.
-    - subst.
-      refine (exist2 _ _ [] _ _).
-      + constructor.
-      + apply list_set_eq_refl.
-    - assert (is_sorted ls') as Hls'sorted.
-      apply tail_of_is_sorted_is_sorted with (x := a0).
+  (* A verified decision procedure to remove all duplicate elements from a list
+   that is sorted. The type tells you: given an input list ls, it returns a
+   strictly sorted list (hence, without any duplicates) that is equal to the
+   original list ls as set. *)
+  Definition remove_duplicates_from_sorted: forall (ls : list A),
+    is_sorted ls -> { lres : list A | is_strictly_sorted lres & list_set_eq ls lres }.
+    intros ls0 Hsort0.
+
+    refine
+      ((fix F (ls : list A) (Hsort : is_sorted ls) :
+          { lres : list A | is_strictly_sorted lres & list_set_eq ls lres } :=
+          let
+            restype := ({ lres : list A | is_strictly_sorted lres & list_set_eq ls lres })
+          in
+          match ls as l return ((ls = l) -> restype) with
+          | nil =>
+            (fun H => (exist2 _ _ (* these two arguments are the propositions on A; they are not implicit
+                                  arguments, but I think Coq can infer it from the context*)
+                              nil (* the actual element *)
+                              empty_strictly_sorted (* proof for the first proposition (strictly sorted) *)
+                              _ (* proof for the second proposition (equal as lists) *)
+            ))
+          | (x :: ls') =>
+            (fun H =>
+               (match ls' as l return (ls' = l) -> restype with
+                | nil => (fun H' => (exist2 _ _ (x::nil) _ _))
+                | (y :: ls'') =>
+                  (fun H' =>
+                     (match (compare x y) as cmp
+                            return (compare x y = cmp -> restype) with
+                      | Gt => (fun Hcomp => False_rect _ _)
+                      | Eq =>
+                        let recres := (F ls' _) in
+                        let (recres_list, recres_sorted, recres_listeq) := recres in
+                        (fun Hcomp =>
+                           (exist2 _ _
+                                   recres_list
+                                   recres_sorted
+                                   _))
+                      | Lt =>
+                        let recres := (F ls' _) in
+                        let (recres_list, recres_sorted, recres_listeq) := recres in
+                        (fun Hcomp =>
+                           (exist2 _ _
+                                   (x :: recres_list)
+                                   _
+                                   _))
+                      end) eq_refl)
+                end) eq_refl)
+          end eq_refl (* this eq_refl provides the proof for (ls = l) (see match statement) *)
+       ) ls0 Hsort0).
+    - subst. apply list_set_eq_refl.
+    - constructor.
+    - subst. apply list_set_eq_refl.
+
+    - (* Case Eq *)
+      Unshelve.
+      2: {
+        subst. apply (tail_of_is_sorted_is_sorted Hsort).
+      }
+      apply list_set_eq_trans with (ys := ls').
+      subst.
+      compare_to_eq.
+      apply list_set_eq_symm.
+      apply list_set_eq_step.
+      assumption.
+      subst. apply (tail_of_is_sorted_is_sorted Hsort).
+
+    - (* Case Lt, proof of strictly *)
+      (* This proof is actually quite elaborate to prove in Coq.
+       The idea is:
+       - recres_list has the same elements as ls'
+       - x is smaller than everything in ls'
+         (because it is smaller than the first element fo ls', and ls' is sorted)
+       - hence, x is smaller than everything in recres_list
+       *)
+      destruct recres_list as [| x1 reclist'] eqn:?; constructor.
+      apply compare_lt_leq_trans with (y0 := y).
+      assumption.
+      replace y with (hd y ls').
+      apply is_sorted_first_element_smallest.
+      subst. apply tail_of_is_sorted_is_sorted with (x0 := x).
+      assumption.
+      apply recres_listeq.
+      cbn. auto.
+      subst. cbn. reflexivity.
       assumption.
 
-      pose (remove_duplicates_from_sorted ls' Hls'sorted) as res.
+    - (* Case Lt, proof of list equality *)
+      subst.
+      apply list_set_eq_ind_step.
+      assumption.
 
-      destruct ls' as [| a1 ls''] eqn:?.
-
-      + refine (exist2 _ _ ls _ _).
-        subst. constructor. subst.
-        apply list_set_eq_refl.
-      + destruct (compare a0 a1) eqn:?.
-        * (* Case: a0 = a1 *)
-          refine (exist2 _ _
-                         (proj1_sig (sig_of_sig2 res))
-                         (proj2_sig (sig_of_sig2 res))
-                         _).
-
-          apply list_set_eq_trans with
-              (xs := (a0 :: a1 :: ls''))
-              (ys := ls')
-              (zs := (proj1_sig (sig_of_sig2 res))).
-          subst. compare_to_eq. subst.
-          apply list_set_eq_symm.
-          apply list_set_eq_step with (a := a1)
-                                      (xs := (ls'')).
-
-          subst.
-          exact (proj3_sig res).
-
-        * (* Case: a0 < a1 *)
-          set (res_list :=
-                 (proj1_sig (sig_of_sig2 res))).
-
-          refine (exist2 _ _
-                         (a0 :: res_list)
-                         _ _).
-
-          -- (* proof of strictly sorted *)
-             destruct res_list as [| res0 res_list' ] eqn:?; try constructor.
-             subst.
-
-             assert (compare_leq a1 res0).
-             (* Will use: a1 in  (a1 :: ls''), which is sorted;
-              res0 is also in there *)
-             assert (In res0 (a1 :: ls'')).
-             apply (proj3_sig res).
-             replace (proj1_sig (sig_of_sig2 res)) with res_list.
-             rewrite Heql1.
-             cbn. auto. auto.
-
-             replace a1 with (hd a1 (a1 :: ls'')).
-             apply is_sorted_first_element_smallest.
-             apply tail_of_is_sorted_is_sorted with (x := a0).
-             assumption.
-
-             assumption.
-             auto.
-
-             (* now use transitivity *)
-             apply compare_lt_leq_trans with (y := a1);
-             assumption.
-
-             subst.
-             rewrite <- Heql1.
-             exact (proj2_sig (sig_of_sig2 res)).
-
-          -- (* proof of list equality *)
-            (* idea of proof: both have a0; and the rest
-            of the list is equal by recursion. *)
-            apply list_set_eq_ind_step.
-            unfold res_list.
-            subst.
-            exact (proj3_sig res).
-
-        * (* Case a0 > a1; contradiction *)
-          exfalso.
-          remember (first_two_of_is_sorted_are_sorted H) as Hcontrad.
-          destruct Hcontrad; contradiction_from_compares.
-  Defined.
-
-
-
-
-
-  (* The type of this function does not entirely specify the function: the
-     result may be a strictly sorted list, but there is nothing that says it is
-     the same as ls, but with duplicates removed. *)
-  Fixpoint remove_duplicates_from_sorted (ls : list A):
-      is_sorted ls -> {ls' : list A | is_strictly_sorted ls'}.
-    intro.
-    (* Probably need to do convoy trick here again. *)
-    (* refine (match ls with *)
-    (*           | nil => (exist _ nil empty_strictly_sorted) *)
-    (*           | (x0 :: xs') *)
-    (*             => match xs' with *)
-    (*                | nil => (exist _ [x0] (singleton_strictly_sorted x0)) *)
-    (*                | (x1 :: xs'') => *)
-    (*                  match compare x0 x1 with *)
-    (*                  | Eq => remove_duplicates_from_sorted xs' (tail_of_is_sorted_is_sorted H) *)
-    (*                  | _ => x0 :: (remove_duplicates_from_sorted xs' (tail_of_is_sorted_is_sorted H)) *)
-    (*                  end *)
-    (*                end *)
-    (*         end). *)
-  Abort.
+    - (* Case Gt, proof of contradiction *)
+      subst.
+      remember (first_two_of_is_sorted_are_sorted Hsort).
+      contradiction_from_compares.
+  Qed.
 End remove_duplicates_from_sorted.
-
-(* remove_duplicates_from_sorted removes duplicates from a sorted list *)
-Fixpoint remove_duplicates_from_sorted {A: Type} {cmp: comparable A} (xs: list A): list A :=
-  match xs with
-  | nil => nil
-  | (x'::xs') => match xs' with
-    | nil => xs
-    | (x''::xs'') =>
-      match compare x' x'' with
-      | Eq => remove_duplicates_from_sorted xs'
-      | _ => x'::(remove_duplicates_from_sorted xs')
-      end
-    end
-  end.
-
-(* remove_duplicates_from_sorted_is_sorted shows that a sorted list with its duplicates removed is still sorted *)
-Theorem remove_duplicates_from_sorted_is_sorted:
-  forall {A: Type} {cmp: comparable A} (xs: list A) {s: is_sorted xs},
-  is_sorted (remove_duplicates_from_sorted xs).
-Proof.
-(* TODO: Good First Issue *)
-Abort.
-
-(* TODO: Help Wanted
-Define more theorems to prove that remove_duplicates is correct 
-*)
-
