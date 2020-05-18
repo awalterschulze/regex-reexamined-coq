@@ -12,10 +12,10 @@ Require Import comparable.
 
 Definition nat_compare := Nat.compare.
 
-Lemma nat_proof_compare_eq_is_equal
-  : forall (x y: nat) 
-           (p: nat_compare x y = Eq)
-  , x = y.
+Lemma nat_proof_compare_eq_is_equal:
+  forall (x y: nat)
+         (p: nat_compare x y = Eq),
+    x = y.
 Proof.
 induction x, y.
 - compute. trivial.
@@ -24,6 +24,26 @@ induction x, y.
 - simpl.
   intros.
   remember (IHx y p).
+  rewrite e.
+  reflexivity.
+Qed.
+
+Lemma nat_proof_compare_eq_is_equal' x y:
+  nat_compare x y = Eq ->
+  x = y.
+Proof.
+(* Because of how the lemma is stated, `x' and `y' are already introduced into
+   the context, causing our inductive hypothesis to become too weak to solve the
+   goal. `generalize dependent y' returns `y' to the goal and makes sure any
+   dependent terms are updated. *)
+generalize dependent y.
+induction x, y.
+- compute. trivial.
+- compute. intros. discriminate.
+- compute. intros. discriminate.
+- simpl.
+  intros.
+  remember (IHx y H).
   rewrite e.
   reflexivity.
 Qed.
