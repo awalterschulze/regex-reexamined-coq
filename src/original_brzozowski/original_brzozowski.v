@@ -8,9 +8,15 @@ Inductive alphabet := a1 | a0.
 Lemma alphabet_disjoint: forall (x y: alphabet),
   x = y \/ x <> y.
 Proof.
-(* TODO: Help Wanted 
-   Is there a simpler way to proof this, than going through all cases?
+(* This is the exact usecase for decide equality tactic.
+   It only when the type of x and y is a simple inductive type.
 *)
+decide equality.
+Qed.
+
+Lemma alphabet_disjoint': forall (x y: alphabet),
+  x = y \/ x <> y.
+Proof.
 destruct x, y.
 - left. reflexivity.
 - right. discriminate.
@@ -64,7 +70,11 @@ Definition xor (r s: regex) : regex :=
 Definition I: regex :=
   complement (emptyset).
 
-(*  A regular expression represents a set of sequences. 
+(*  A regular expression represents a set of sequences. *)
+
+Definition set_of_sequences := string -> Prop.
+
+(*
     We define the following operations on sets of sequences: 
     If $P$ and $Q$ are two sets of sequences of symbols from our alphabet, $\Sigma_k$, we have:
 *)
