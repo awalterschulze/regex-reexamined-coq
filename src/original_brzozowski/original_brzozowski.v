@@ -8,8 +8,8 @@ Inductive alphabet := a1 | a0.
 Lemma alphabet_disjoint: forall (x y: alphabet),
   x = y \/ x <> y.
 Proof.
-(* This is the exact usecase for decide equality tactic.
-   It only when the type of x and y is a simple inductive type.
+(* This is the exact usecase for the decide equality tactic.
+   It only works when the type of x and y is a simple inductive type.
 *)
 decide equality.
 Qed.
