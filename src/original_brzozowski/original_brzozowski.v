@@ -70,11 +70,7 @@ Definition xor (r s: regex) : regex :=
 Definition I: regex :=
   complement (emptyset).
 
-(*  A regular expression represents a set of sequences. *)
-
-Definition set_of_sequences := string -> Prop.
-
-(*
+(*  A regular expression represents a set of sequences.
     We define the following operations on sets of sequences: 
     If $P$ and $Q$ are two sets of sequences of symbols from our alphabet, $\Sigma_k$, we have:
 *)
