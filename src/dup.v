@@ -56,6 +56,9 @@ Section inductive_predicate_strictly_sorted.
         apply IHls. assumption.
   Qed.
 
+  (* If (x :: xs) is strictly sorted, then xs is also strictly sorted.
+     This tactic uses that fact to derive a contradiction if possible.
+   *)
   Local Ltac is_strictly_sorted_contradiction_via_tail :=
     match goal with
     | [ H: is_strictly_sorted (?x0 :: ?xs),
@@ -71,6 +74,9 @@ Section inductive_predicate_strictly_sorted.
          apply is_strictly_sorted_tail with (ls := (x0 :: xs));
          assumption
     end.
+  (* TODO: Good First Issue *)
+  (* Change this tactic so that it also works with sorted lists,
+     not only strictly sorted lists. *)
 
   Definition is_strictly_sorted_dec: forall (ls :list A),
       {is_strictly_sorted ls} + {~(is_strictly_sorted ls)}.
@@ -125,17 +131,23 @@ Section remove_duplicates_from_sorted.
   Context {A: Type}.
   Context {cmp: comparable A}.
 
-  (* HELP WANTED: isn't there some library that more or less does this?
+  (* TODO: Help Wanted: isn't there some library that more or less does this?
    The ones I found don't seem to have a notation of equality of sets. *)
   Definition list_set_eq (xs ys : list A): Prop :=
     forall (a : A), (In a xs) <-> (In a ys).
 
   Hint Unfold list_set_eq: list_set_db.
+
+  (* Hint Extern extends an auto database with a tactic.
+   You can specify a cost (the natural number 0 in this case) and a
+   pattern to apply the tactic to.
+   See https://coq.inria.fr/refman/proof-engine/tactics.html#coq:cmdv.hint-extern *)
   Hint Extern 0 (_ <-> _) => split : list_set_db.
 
   Lemma list_set_eq_refl (xs: list A):
     list_set_eq xs xs.
   Proof.
+
     auto with list_set_db.
   Qed.
 
@@ -144,17 +156,20 @@ Section remove_duplicates_from_sorted.
   Lemma list_set_eq_symm (xs ys: list A):
     list_set_eq xs ys <-> list_set_eq ys xs.
   Proof.
-    (* QUESTION: why can't auto do this? *)
-    split;
-      intro H;
-      unfold list_set_eq in *;
-      intro;
-      split; apply H.
+    easy.
+    (* Interesting note: auto doesn't solve this (even auto 10), but easy does. *)
   Qed.
 
   Lemma list_set_eq_step (a : A) (xs: list A):
     list_set_eq (a::xs) (a::(a::xs)).
   Proof.
+(* From the manual: "This tactic unfolds constants that were declared through a
+   Hint Unfold in the given databases."
+   https://coq.inria.fr/distrib/current/refman/proof-engine/tactics.html#coq:tacn.autounfold
+
+   In this case, I wanted to unfold list_set_eq. (We did `Hint Unfold list_set_eq:
+   list_set_db.` before.)
+ *)
     autounfold with list_set_db.
     intros.
     split.
@@ -183,8 +198,20 @@ Section remove_duplicates_from_sorted.
     split.
     - intro.
       auto using H, H0 with list_set_db.
-      (* QUESTION: how can the above auto statement fail to just apply the hints
-      I told it to apply? *)
+      (* TODO: Help Wanted
+         How can the above auto statement fail to just apply the hints
+         I told it to apply?
+         The Coq manual does say (https://coq.inria.fr/distrib/current/refman/proof-engine/tactics.html#automation):
+
+         "auto uses a weaker version of apply that is closer to simple apply so it
+         is expected that sometimes auto will fail even if applying manually one
+         of the hints would succeed."
+
+         And indeed, `simple apply H0` does not work. So maybe that is the reason?
+
+         But then that raises the question: how do we get it to work? Should be
+         possible.
+       *)
       apply H0.
       apply H.
       assumption.
@@ -230,8 +257,11 @@ Section remove_duplicates_from_sorted.
           in
           match ls as l return ((ls = l) -> restype) with
           | nil =>
-            (fun H => (exist2 _ _ (* these two arguments are the propositions on A; they are not implicit
-                                  arguments, but I think Coq can infer it from the context*)
+            (fun H => (exist2 _ _ (* These two holes correspond to the two propositions about (ls : list A)
+                                     that are part of the sigma type: the first proposition is is_strictly_sorted,
+                                     the second is the list_eq.
+                                     Even though they are not implicit arguments, Coq can infer them
+                                     from the context. *)
                               nil (* the actual element *)
                               empty_strictly_sorted (* proof for the first proposition (strictly sorted) *)
                               _ (* proof for the second proposition (equal as lists) *)
@@ -316,4 +346,34 @@ Section remove_duplicates_from_sorted.
   (* A convenience function that extracts the list from the above sigma type. *)
   Definition remove_duplicates_from_sorted_list (ls : list A) (Hsort: is_sorted ls): list A
     := (proj1_sig (sig_of_sig2 (remove_duplicates_from_sorted Hsort))).
+
+
+  (* remove_duplicates_from_sorted removes duplicates from a sorted list *)
+  (* This is an alternative to remove_duplicates_from_sorted.
+   The basic structure is the same, except that here the case
+      compare x' x'' = Gt
+   is treated differently: here we treat it the same as Lt, whereas
+   in the other we show that that case is contradictory.
+   *)
+  Fixpoint remove_duplicates_from_sorted' (xs: list A): list A :=
+    match xs with
+    | nil => nil
+    | (x'::xs') => match xs' with
+                   | nil => xs
+                   | (x''::xs'') =>
+                     match compare x' x'' with
+                     | Eq => remove_duplicates_from_sorted' xs'
+                     | _ => x'::(remove_duplicates_from_sorted' xs')
+                     end
+                   end
+    end.
+
+  Lemma remove_duplicates_from_sorted_both_are_same (xs: list A) (Hsort: is_sorted xs):
+    remove_duplicates_from_sorted' xs = remove_duplicates_from_sorted_list Hsort.
+    Proof.
+    (* TODO: Good First Issue *)
+    Abort.
+
+
+
 End remove_duplicates_from_sorted.

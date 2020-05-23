@@ -138,8 +138,9 @@ Qed.
    into two hypotheses
          x = y     and     xs = ys
 *)
-(* TODO: should this be moved somewhere else? Maybe make a library of tactics?
-Maybe a library of all kinds of list-related lemmas/tactics? *)
+(* TODO: Good First Issue
+move this to a library list.v
+That library should probably contain some other things spread throughout the code as well... *)
 Ltac destruct_list_equality :=
   repeat match goal with
          | [H: (?x :: ?xs) = (?y :: ?ys) |- _] => rewrite list_inductive_equality in H; destruct H
