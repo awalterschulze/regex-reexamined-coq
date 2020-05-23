@@ -132,6 +132,33 @@ Section remove_duplicates_from_sorted.
   Context {A: Type}.
   Context {cmp: comparable A}.
 
+  (* This lemma solves the bulk of oen of the cases of remove_duplicates_from_sorted.
+     Short description:
+     - we know x < y (with x, y of type A)
+     - ls is a strictly sorted list that starts with y (b/c as a set, it is
+       equal to something of the form (y :: ls'))
+     Therefore, (x :: ls) is strictly sorted.
+   *)
+  Lemma consing_smaller_than_smallest_to_strictly_sorted (ls ls' : list A) (x y : A):
+    compare x y = Lt ->
+    is_strictly_sorted ls ->
+    is_sorted (y :: ls') ->
+    list_set_eq (y :: ls') ls ->
+    is_strictly_sorted (x :: ls).
+  Proof.
+    intros Hcomp Hssortls Hsort Hseteq.
+    destruct ls eqn:?.
+    - constructor.
+    - constructor.
+      apply compare_lt_leq_trans with (y0 := y).
+      assumption.
+
+      apply is_sorted_first_element_smallest with (xs := (y :: ls')) (default := y).
+      assumption.
+      apply Hseteq.
+      unfold In. auto.
+      assumption.
+  Qed.
 
   (* A verified decision procedure to remove all duplicate elements from a list
    that is sorted. The type tells you: given an input list ls, it returns a
@@ -201,6 +228,7 @@ Section remove_duplicates_from_sorted.
       compare_to_eq.
       apply list_set_eq_symm.
       apply list_set_eq_step.
+
       assumption.
       subst. apply (tail_of_is_sorted_is_sorted Hsort).
 
@@ -212,17 +240,10 @@ Section remove_duplicates_from_sorted.
          (because it is smaller than the first element fo ls', and ls' is sorted)
        - hence, x is smaller than everything in recres_list
        *)
-      destruct recres_list as [| x1 reclist'] eqn:?; constructor.
-      apply compare_lt_leq_trans with (y0 := y).
-      assumption.
-      replace y with (hd y ls').
-      apply is_sorted_first_element_smallest.
-      subst. apply tail_of_is_sorted_is_sorted with (x0 := x).
-      assumption.
-      apply recres_listeq.
-      cbn. auto.
-      subst. cbn. reflexivity.
-      assumption.
+
+      apply consing_smaller_than_smallest_to_strictly_sorted with (y := y) (ls' := ls''); try assumption.
+      apply tail_of_is_sorted_is_sorted with (x0 := x). subst. assumption.
+      subst. assumption.
 
     - (* Case Lt, proof of list equality *)
       subst.
