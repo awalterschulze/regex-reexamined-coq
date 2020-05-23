@@ -5,6 +5,7 @@
 *.vo
 *.vok
 *.vos
+*.lia.cache
 \#*.v\#
 /.Makefile.d
 /Makefile.conf
