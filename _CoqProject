@@ -15,6 +15,7 @@ src/reduce_orb.v
 
 src/derive_def.v
 src/matches_pred.v
+src/matches_pred_proofs.v
 src/setoid.v
 src/derive.v
 src/smart_or.v
@@ -22,8 +23,6 @@ src/smart.v
 src/simplified.v
 src/simple.v
 src/set_of_sequences.v
-
-src/inductive_predicate_experiment.v
 
 src/main.v
 
