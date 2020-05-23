@@ -482,13 +482,15 @@ Qed.
   (r + s) + t = r + (s + t)
   r + fail = r
 *)
-(*
-  I've commented this definition out, because it now requires a proof that the
-  result of (fold_left ....) is sorted, and I don't think we've proven that yet.
- *)
+(* TODO: Help Wanted
 
-(* Definition smart_or' {A: Type} {cmp: comparable A} (r s: regex A) : regex A :=
-   to_tree_or (remove_duplicates_from_sorted_list (fold_left insert_sort (to_list_or r) (to_list_or s))). *)
+  I've commented the definition below out, because it now requires a proof that
+  the result of (fold_left ....) is sorted, and I don't think we've proven that
+  yet.
+
+Definition smart_or' {A: Type} {cmp: comparable A} (r s: regex A) : regex A :=
+  to_tree_or (remove_duplicates_from_sorted_list (fold_left insert_sort (to_list_or r) (to_list_or s))).
+ *)
 
 (*
 merge_or_program merges two regexes.
