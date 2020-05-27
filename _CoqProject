@@ -27,4 +27,4 @@ src/set_of_sequences.v
 
 src/main.v
 
-src/original_brzozowski/original_brzozowski.v
+src/Brzozowski/Brzozowski.v
