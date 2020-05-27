@@ -6,7 +6,7 @@ Require Import List.
 Require Import Psatz.
 Require Import Lia.
 
-Require Import comparable.
+Require Import CoqStock.comparable.
 
 (* is_sorted is a property that says whether a list is sorted *)
 Inductive is_sorted {A: Type} {cmp: comparable A} : list A -> Prop :=

@@ -1,7 +1,7 @@
 Require Import List.
 Require Import Bool.
 
-Require Import comparable.
+Require Import CoqStock.comparable.
 Require Import compare_regex.
 Require Export derive_def.
 Require Import nullable.

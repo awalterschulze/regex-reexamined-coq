@@ -3,7 +3,7 @@ Set Implicit Arguments.
 Require Export Relation_Definitions.
 Require Export Setoid.
 
-Require Import comparable.
+Require Import CoqStock.comparable.
 Require Import derive_def.
 Require Import nullable.
 Require Import orb_simple.

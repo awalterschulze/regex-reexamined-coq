@@ -4,7 +4,7 @@ Set Asymmetric Patterns.
 Require Import List.
 Import ListNotations.
 
-Require Import comparable.
+Require Import CoqStock.comparable.
 Require Import sort.
 Require Import list_set.
 

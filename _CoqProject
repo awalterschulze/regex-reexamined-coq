@@ -1,11 +1,13 @@
 -R src ""
 src/orb_simple.v
 
-src/comparable.v
+src/CoqStock/comparable.v
+
+src/compare_nat.v
 src/sort.v
 src/list_set.v
 src/dup.v
-src/compare_nat.v
+
 src/reorder.v
 
 src/regex.v

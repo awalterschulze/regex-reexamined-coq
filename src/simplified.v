@@ -1,7 +1,7 @@
 Set Implicit Arguments.
 Set Asymmetric Patterns.
 
-Require Import comparable.
+Require Import CoqStock.comparable.
 Require Import compare_regex.
 Require Import nullable.
 Require Import regex.
