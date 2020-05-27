@@ -41,3 +41,23 @@ A proof may be left out if:
 
  - you are lazy, for example maybe you see the proof will be similar to other proofs (this gives beginners an opportunity to also contribute).  In this case please add `(* TODO: Good First Issue *)`
  - you need help (this gives beginners who are up for a challenge, a chance to contribute). In this case please add `(* TODO: Help Wanted *)`
+
+### Tactics
+
+Tactics unlike proofs, definitions, etc. don't have any types.
+This means they lack some documentation and type checking.
+For this reason, we prefer that new tactics come with:
+  - some comments above that describe the tactic.
+  - some examples below that use the tactic.
+
+If you see a tactic that doesn't meet these requirements at the moment, consider it a Good First Issue.
+
+### Examples
+
+Examples are especially useful for checking that our tactics are working as predicted.
+
+Examples should use the `Example` keyword and the name should be prefixed with `example_`.
+
+```
+Example example_<my example name>:
+```
