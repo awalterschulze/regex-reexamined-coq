@@ -12,7 +12,7 @@ Require Import compare_regex.
 Require Import dup.
 Require Import derive.
 Require Import nullable.
-Require Import orb_simple.
+Require Import CoqStock.orb_simple.
 Require Import regex.
 Require Import size.
 Require Import sort.
