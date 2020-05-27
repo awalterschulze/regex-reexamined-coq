@@ -3,7 +3,7 @@ src/orb_simple.v
 
 src/comparable.v
 src/sort.v
-src/list_set.v
+src/CoqStock/list_set.v
 src/dup.v
 src/compare_nat.v
 src/reorder.v
