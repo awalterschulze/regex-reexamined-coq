@@ -12,7 +12,7 @@ src/regex.v
 src/size.v
 src/nullable.v
 src/compare_regex.v
-src/reduce_orb.v
+src/CoqStock/reduce_orb.v
 
 src/derive_def.v
 src/matches_pred.v
