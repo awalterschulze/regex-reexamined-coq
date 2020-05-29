@@ -1,5 +1,5 @@
 -R src ""
-src/orb_simple.v
+src/CoqStock/orb_simple.v
 
 src/CoqStock/comparable.v
 
