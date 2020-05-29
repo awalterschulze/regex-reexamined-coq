@@ -1,20 +1,22 @@
 -R src ""
+
 src/CoqStock/WreckIt.v
 
-src/orb_simple.v
+src/CoqStock/orb_simple.v
+src/CoqStock/comparable.v
 
-src/comparable.v
-src/sort.v
-src/list_set.v
-src/dup.v
 src/compare_nat.v
+src/sort.v
+src/CoqStock/list_set.v
+src/dup.v
+
 src/reorder.v
 
 src/regex.v
 src/size.v
 src/nullable.v
 src/compare_regex.v
-src/reduce_orb.v
+src/CoqStock/reduce_orb.v
 
 src/derive_def.v
 src/matches_pred.v

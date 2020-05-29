@@ -13,7 +13,7 @@ Set Implicit Arguments.
 Set Asymmetric Patterns.
 
 Require Import List.
-Require Import comparable.
+Require Import CoqStock.comparable.
 
 Section Reorder.
 
