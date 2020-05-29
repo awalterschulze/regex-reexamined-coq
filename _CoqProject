@@ -27,6 +27,8 @@ src/simplified.v
 src/simple.v
 src/set_of_sequences.v
 
+src/CoqStock/Untie.v
+
 src/main.v
 
 src/Brzozowski/Brzozowski.v
