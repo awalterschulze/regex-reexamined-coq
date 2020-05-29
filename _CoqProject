@@ -3,18 +3,17 @@
 src/CoqStock/orb_simple.v
 src/CoqStock/comparable.v
 
-src/compare_nat.v
-src/sort.v
+src/CoqStock/compare_nat.v
+src/CoqStock/sort.v
 src/CoqStock/list_set.v
-src/dup.v
-
-src/reorder.v
+src/CoqStock/dup.v
+src/CoqStock/reorder.v
+src/CoqStock/reduce_orb.v
 
 src/regex.v
 src/size.v
 src/nullable.v
 src/compare_regex.v
-src/CoqStock/reduce_orb.v
 
 src/derive_def.v
 src/matches_pred.v

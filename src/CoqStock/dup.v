@@ -5,7 +5,7 @@ Require Import List.
 Import ListNotations.
 
 Require Import CoqStock.comparable.
-Require Import sort.
+Require Import CoqStock.sort.
 Require Import CoqStock.list_set.
 
 Section inductive_predicate_strictly_sorted.

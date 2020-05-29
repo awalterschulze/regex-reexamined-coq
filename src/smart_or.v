@@ -9,13 +9,13 @@ Require Import Coq.Program.Program.
 
 Require Import CoqStock.comparable.
 Require Import compare_regex.
-Require Import dup.
+Require Import CoqStock.dup.
 Require Import derive.
 Require Import nullable.
 Require Import CoqStock.orb_simple.
 Require Import regex.
 Require Import size.
-Require Import sort.
+Require Import CoqStock.sort.
 
 (*
 Here we define smart_or and smart_or'.

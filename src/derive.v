@@ -7,7 +7,7 @@ Require Export derive_def.
 Require Import nullable.
 Require Import CoqStock.orb_simple.
 Require Import regex.
-Require Import reduce_orb.
+Require Import CoqStock.reduce_orb.
 Require Import setoid.
 
 Theorem fail_is_terminating : forall {A: Type} {cmp: comparable A} (xs: list A),
