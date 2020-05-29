@@ -8,7 +8,7 @@ Set Asymmetric Patterns.
 
 Require Import List.
 
-Require Import comparable.
+Require Import CoqStock.comparable.
 
 Definition nat_compare := Nat.compare.
 
