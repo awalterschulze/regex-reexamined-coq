@@ -4,9 +4,9 @@ Set Asymmetric Patterns.
 Require Import List.
 Import ListNotations.
 
-Require Import comparable.
+Require Import CoqStock.comparable.
 Require Import sort.
-Require Import list_set.
+Require Import CoqStock.list_set.
 
 Section inductive_predicate_strictly_sorted.
   (* The following two properties of lists are equivalent:

@@ -8,6 +8,10 @@ Set Asymmetric Patterns.
 From Coq Require Import Ring.
 Require Import Bool.
 
+(* bool_semi_ring creates a semi ring 
+   , using `or` and `and` boolean expressions 
+   that can be used with the `ring` tactic
+*)
 Lemma bool_semi_ring:
   semi_ring_theory false true orb andb (@eq bool).
 Proof.
@@ -38,49 +42,49 @@ Ltac orb_simple := repeat
   || rewrite orb_false_l
   ).
 
-Theorem test_tactic_or_cases_commutativity: forall (a b: bool),
+Example example_tactic_or_cases_commutativity: forall (a b: bool),
   a || b = b || a.
 Proof.
 intros.
 orb_simple.
 Qed.
 
-Theorem test_tactic_or_cases_idempotency_1: forall (a b: bool),
+Example example_tactic_or_cases_idempotency_1: forall (a b: bool),
   a || (a || b) = a || b.
 Proof.
 intros.
 orb_simple.
 Qed.
 
-Theorem test_tactic_or_cases_idempotency_2: forall (a b: bool),
+Example example_tactic_or_cases_idempotency_2: forall (a b: bool),
   a || b || a = a || b.
 Proof.
 intros.
 orb_simple.
 Qed.
 
-Theorem test_tactic_or_cases_associativity_1: forall (a b c: bool),
+Example example_tactic_or_cases_associativity_1: forall (a b c: bool),
   a || b || c = a || (b || c).
 Proof.
 intros.
 orb_simple.
 Qed.
 
-Theorem test_tactic_or_cases_associativity_2: forall (a b c: bool),
+Example example_tactic_or_cases_associativity_2: forall (a b c: bool),
   a || (b || c) = b || (a || c).
 Proof.
 intros.
 orb_simple.
 Qed.
 
-Theorem test_tactic_or_cases_3: forall (a b c: bool),
+Example example_tactic_or_cases_3: forall (a b c: bool),
   a || b || (a || c) = a || (b || c).
 Proof.
 intros.
 orb_simple.
 Qed.
 
-Theorem test_tactic_or_cases_4: forall (a b c d: bool),
+Example example_tactic_or_cases_4: forall (a b c d: bool),
   a  || b || (c || d ) =
   a  || d || (b || (c || d )).
 Proof.

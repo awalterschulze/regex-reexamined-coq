@@ -1,11 +1,11 @@
 Require Import List.
 Require Import Bool.
 
-Require Import comparable.
+Require Import CoqStock.comparable.
 Require Import compare_regex.
 Require Export derive_def.
 Require Import nullable.
-Require Import orb_simple.
+Require Import CoqStock.orb_simple.
 Require Import regex.
 Require Import reduce_orb.
 Require Import setoid.

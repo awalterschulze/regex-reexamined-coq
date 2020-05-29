@@ -18,8 +18,27 @@ Ltac reduce_orb_step :=
 
 Ltac reduce_orb := repeat (try reduce_orb_step).
 
+Example example_reduce_orb_step: forall (a b c: bool),
+  a || b || (c || b) = a || b || c.
+Proof.
+intros.
+reduce_orb_step.
+reduce_orb_step.
+reduce_orb_step.
+reduce_orb_step.
+reflexivity.
+Qed.
+
+Example example_reduce_orb: forall (a b c: bool),
+  a || b || (c || b) = a || b || c.
+Proof.
+intros.
+reduce_orb.
+reflexivity.
+Qed.
+
 (* TODO: Good First Issue
-   Add some examples of using reduce_orb_step, 
+   Add more examples of using reduce_orb_step, 
    by creating theorems that are proved using reduce_orb_step
-   The theorem names should start with test_
+   The theorem names should start with example_
 *)
