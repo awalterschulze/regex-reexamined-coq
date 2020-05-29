@@ -31,7 +31,7 @@ wreckit is a tactic to break down:
   - exists in hypotheses
   - conjuction in hypotheses
   - disjunction in hypotheses
-  - conjuction in goal
+  - conjuction in the goal
 *)
 
 (* inversion_exists:
