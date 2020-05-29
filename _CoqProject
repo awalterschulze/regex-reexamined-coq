@@ -16,6 +16,8 @@ src/nullable.v
 src/compare_regex.v
 src/CoqStock/reduce_orb.v
 
+src/CoqStock/Invs.v
+
 src/derive_def.v
 src/matches_pred.v
 src/matches_pred_proofs.v
