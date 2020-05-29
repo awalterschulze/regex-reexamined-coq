@@ -1,6 +1,6 @@
 -R src ""
-src/CoqStock/orb_simple.v
 
+src/CoqStock/orb_simple.v
 src/CoqStock/comparable.v
 
 src/compare_nat.v
@@ -29,4 +29,4 @@ src/set_of_sequences.v
 
 src/main.v
 
-src/original_brzozowski/original_brzozowski.v
+src/Brzozowski/Brzozowski.v

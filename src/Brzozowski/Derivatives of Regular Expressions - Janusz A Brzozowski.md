@@ -2,9 +2,9 @@
 mathspec: true
 ---
 
-> [See this document with rendered mathematical equations](./Derivatives%20of%20Regular%20Expressions%20-%20Janusz%20A%20Brzozowski.rendered.pdf)
+> [Link from markdown to pdf with rendered mathematical equations](./Derivatives%20of%20Regular%20Expressions%20-%20Janusz%20A%20Brzozowski.rendered.pdf)
 
-# Derivatives of Regular Expressions - Janusz A. Brzozowski
+# Derivatives of Regular Expressions - Janusz A. Brzozowski (Modified)
 
 ## Abstract
 
