@@ -25,7 +25,7 @@ WreckIt Ralph
 █████████▒▒▒▒▒▒▒▒▒▒▒▒▒▒█████████
 ████████████████████████████████
 
-"Im Gonna Wreck It!"
+"I'm Gonna Wreck It!"
 
 wreckit is a tactic to break down:
   - exists in hypotheses
@@ -154,9 +154,8 @@ Ltac wreckit_step :=
 Ltac wreckit := repeat wreckit_step.
 
 Example example_wreckit: forall (x: nat) (e: exists (y: nat), x = S y /\ y = O),
-  x = S O.
+  x = S O /\ S O = x.
 Proof.
 intros.
-wreckit.
-reflexivity.
+wreckit; reflexivity.
 Qed.
