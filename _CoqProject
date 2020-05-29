@@ -34,4 +34,9 @@ src/CoqStock/Untie.v
 
 src/main.v
 
-src/Brzozowski/Brzozowski.v
+src/Brzozowski/Alphabet.v
+src/Brzozowski/Sequences.v
+src/Brzozowski/Regex.v
+src/Brzozowski/Delta.v
+src/Brzozowski/Boolean.v
+src/Brzozowski/ExampleR.v
