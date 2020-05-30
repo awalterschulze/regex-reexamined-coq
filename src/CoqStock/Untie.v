@@ -18,8 +18,8 @@ Local Ltac untie_goal :=
 let H := fresh "H"
 in unfold not;
    intros H;
-   inversion H;
-   clear H.
+   inversion_clear H;
+   subst.
 
 Ltac untie :=
   match goal with
