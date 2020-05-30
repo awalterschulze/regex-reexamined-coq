@@ -331,9 +331,9 @@ Example example_list_cons_neq: forall (A: Type) (x: A) (y: A) (xs ys zs: list A)
 Proof.
 intros.
 list_app_uncons.
-inversion H0; clear H0; subst; inversion H1; clear H1; subst.
+inversion_clear H0; subst; inversion_clear H1; subst.
 - discriminate.
-- inversion H0; clear H0; subst. list_cons_neq. 
+- inversion_clear H0; subst. list_cons_neq.
 Qed.
 
 Ltac listerine_step :=
@@ -385,9 +385,9 @@ Example example_list_app_eq_double:
 Proof.
 intros.
 listerine.
-inversion H; clear H; inversion H0; clear H0; subst.
+inversion_clear H; inversion_clear H0; subst.
 - left. constructor; reflexivity.
-- inversion H. listerine. inversion H0; clear H0; subst.
+- inversion H. listerine. inversion_clear H0; subst.
   + right. left. inversion H1. subst. constructor; reflexivity.
   + right. right. inversion H1. subst. constructor; reflexivity.
 Qed.
@@ -401,13 +401,13 @@ Example example_list_app_eq_triple: forall (A: Type) (x y: A) (xs ys: list A),
 Proof.
 intros.
 listerine.
-inversion H; clear H.
+inversion_clear H.
 - left. assumption.
-- inversion H0; clear H0. inversion H; clear H. listerine.
-  inversion H0; clear H0.
-  + right. left. inversion H; clear H; subst. constructor; reflexivity.
-  + inversion H; clear H; subst. inversion H0; clear H0; subst.
-    listerine. inversion H; clear H; subst; inversion H0; clear H0; subst.
+- inversion_clear H0. inversion_clear H. listerine.
+  inversion_clear H0.
+  + right. left. inversion_clear H; subst. constructor; reflexivity.
+  + inversion_clear H; subst. inversion_clear H0; subst.
+    listerine. inversion_clear H; subst; inversion_clear H0; subst.
     * right. right. left. constructor; reflexivity.
     * right. right. right. constructor; reflexivity.
 Qed.
@@ -422,19 +422,19 @@ Example example_app_eq_quad: forall (A: Type) (x y: A) (xs ys: list A),
 Proof.
 intros.
 listerine.
-inversion H; clear H; subst; inversion H0; clear H0; subst.
+inversion_clear H; subst; inversion_clear H0; subst.
 - left. constructor; reflexivity.
-- inversion H; clear H; subst. listerine.
-  inversion H0; clear H0; subst; inversion H; clear H; subst.
+- inversion_clear H; subst. listerine.
+  inversion_clear H0; subst; inversion_clear H; subst.
   + right. left. constructor; reflexivity.
-  + inversion H0; clear H0; subst.
+  + inversion_clear H0; subst.
     listerine. 
-    inversion H; clear H; subst; inversion H0; clear H0; subst.
+    inversion_clear H; subst; inversion_clear H0; subst.
     * right. right. left. constructor; reflexivity.
-    * inversion H; clear H; subst. listerine.
-      inversion H0; clear H0; subst. inversion H; clear H; subst.
+    * inversion_clear H; subst. listerine.
+      inversion_clear H0; subst. inversion_clear H; subst.
       -- right. right. right. left. constructor; reflexivity.
-      -- right. right. right. right. inversion H; clear H; subst. constructor; reflexivity.
+      -- right. right. right. right. inversion_clear H; subst. constructor; reflexivity.
 Qed.
 
 Example example_list_eq_head: forall (A: Type) (x: A) (y: A) (xs: list A) (ys: list A),
@@ -461,7 +461,7 @@ Example example_neq_tail: forall (A: Type) (x y: A) (xs ys zs xs': list A),
 Proof.
 intros.
 listerine.
-inversion H0; clear H0; subst.
+inversion_clear H0; subst.
 contradiction.
 Qed.
 
@@ -471,13 +471,13 @@ Example example_list_neq_swap_suffix:
 Proof.
 intros.
 listerine.
-inversion H; clear H; subst.
-inversion H0; clear H0; subst.
+inversion_clear H; subst.
+inversion_clear H0; subst.
 - listerine. contradiction.
-- inversion H0; clear H0; subst.
-  inversion H; clear H; subst.
+- inversion_clear H0; subst.
+  inversion_clear H; subst.
   listerine.
-  inversion H0; clear H0; subst; inversion H; clear H; subst.
+  inversion_clear H0; subst; inversion_clear H; subst.
   + discriminate.
   + discriminate.
 Qed.
@@ -488,18 +488,18 @@ Example example_list_neq_longer_suffix:
 Proof.
 intros.
 listerine.
-inversion H; clear H; subst; inversion H0; clear H0; subst.
+inversion_clear H; subst; inversion_clear H0; subst.
 - discriminate.
-- inversion H; clear H; subst.
+- inversion_clear H; subst.
   listerine.
-  inversion H0; clear H0; subst; inversion H; clear H; subst.
+  inversion_clear H0; subst; inversion_clear H; subst.
   + discriminate.
-  + inversion H0; clear H0; subst.
+  + inversion_clear H0; subst.
     listerine.   
-    inversion H; clear H; subst; inversion H0; clear H0; subst.
+    inversion_clear H; subst; inversion_clear H0; subst.
     * listerine. contradiction.
-    * inversion H; clear H; subst. listerine.
-      inversion H0; clear H0; subst; inversion H; clear H; subst .
+    * inversion_clear H; subst. listerine.
+      inversion_clear H0; subst; inversion_clear H; subst .
       -- discriminate.
       -- discriminate.
 Qed.
