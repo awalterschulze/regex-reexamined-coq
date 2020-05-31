@@ -4,9 +4,9 @@ Require Import Bool.
 Require Import CoqStock.comparable.
 Require Import compare_regex.
 Require Export derive_def.
-Require Import nullable.
+Require Import Reexamined.nullable.
 Require Import CoqStock.orb_simple.
-Require Import regex.
+Require Import Reexamined.regex.
 Require Import CoqStock.reduce_orb.
 Require Import setoid.
 

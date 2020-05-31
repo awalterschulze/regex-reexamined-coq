@@ -1,10 +1,17 @@
 ![Check Proofs](https://github.com/awalterschulze/regex-reexamined-coq/workflows/Check%20Proofs/badge.svg)
 
-# Regular-expression derivatives reexamined with Coq
+# Derivatives for Regular reexamined with Coq
 
-[Regular-expression derivatives reexamined](https://www.ccs.neu.edu/home/turon/re-deriv.pdf) is a paper by Scott Owens, John Reppy and Aaron Turon.
+This repo reexamines a few papers on regular expressions using Coq as a learning exercise.
+We try to prove some things that are mentioned in the papers as a way to teach ourselves some Coq.
 
-In this repo we try to prove some things that are mentioned in the paper as a way to teach ourselves some Coq.
+  - [Regular-expression derivatives reexamined](./Reexamined)
+    This paper is a great introduction to using derivatives for regular expressions,
+    since it has been not only been updated, but is also one of the easier papers to read.
+  - [Derivatives of Regular Expressions - Janusz A Brzozowski](./Brzozowski)
+    This is the original paper on regular expressions.
+    We have retyped and modified it a bit to aid readability.
+  - [CoqStock](./CoqStock) standard library.
 
 ## Setup
 

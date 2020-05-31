@@ -2,7 +2,7 @@ Set Implicit Arguments.
 Set Asymmetric Patterns.
 
 Require Import CoqStock.comparable.
-Require Import regex.
+Require Import Reexamined.regex.
 
 Fixpoint compare_regex {A: Type} {cmp: comparable A} (r s: regex A) : comparison :=
   match r with

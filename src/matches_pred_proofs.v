@@ -2,7 +2,7 @@ Require Import List.
 Import ListNotations.
 
 Require Import CoqStock.comparable.
-Require Import regex.
+Require Import Reexamined.regex.
 Require Import matches_pred.
 
 

@@ -3,7 +3,7 @@ Import ListNotations.
 
 Require Import CoqStock.comparable.
 Require Import derive_def.
-Require Import regex.
+Require Import Reexamined.regex.
 
 Reserved Notation "xs =~ r" (at level 80).
 Reserved Notation "xs !=~ r" (at level 80).

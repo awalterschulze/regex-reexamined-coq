@@ -6,8 +6,8 @@ Require Import List.
 Require Import CoqStock.comparable.
 Require Import compare_regex.
 Require Import derive.
-Require Import nullable.
-Require Import regex.
+Require Import Reexamined.nullable.
+Require Import Reexamined.regex.
 Require Import smart.
 
 (*Using only or_comm, or_assoc and or_idemp 
