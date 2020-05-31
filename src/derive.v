@@ -36,13 +36,13 @@ unfold matchesb.
 induction xs.
 - simpl.
   intros.
-  rewrite (compare_equal r1 r2 p).
+  rewrite (regex_proof_compare_eq_is_equal r1 r2 p).
   apply Bool.andb_diag.
 - simpl.
   intros.
-  rewrite (compare_equal r1 r2 p).
+  rewrite (regex_proof_compare_eq_is_equal r1 r2 p).
   apply IHxs.
-  apply compare_reflex.
+  apply regex_proof_compare_eq_reflex.
 Qed.
 
 (* r&s = s&r *)
@@ -296,13 +296,13 @@ unfold matchesb.
 induction xs.
 - simpl.
   intros.
-  rewrite (compare_equal r1 r2 p).
+  rewrite (regex_proof_compare_eq_is_equal r1 r2 p).
   induction (nullable r2); compute; reflexivity.
 - simpl.
   intros.
-  rewrite (compare_equal r1 r2 p).
+  rewrite (regex_proof_compare_eq_is_equal r1 r2 p).
   apply IHxs.
-  apply compare_reflex.
+  apply regex_proof_compare_eq_reflex.
 Qed.
 
 (* r|s = s|r *)
