@@ -49,7 +49,7 @@ wreckit is a tactic to break down:
 Ltac inversion_exists :=
 match goal with
 | [ H: exists _, _ |- _ ] => 
-  inversion_clear H; subst
+  destruct H; subst
 end.
 
 Example example_inversion_exists: forall (x: nat) (e: exists (y: nat), x = S y /\ y = O),
@@ -76,7 +76,7 @@ Qed.
 Ltac inversion_conj :=
 match goal with
 | [ H: _ /\ _ |- _ ] =>
-  inversion_clear H; subst
+  destruct H; subst
 end.
 
 Example example_inversion_conj: forall (x: nat) (e: exists (y: nat), x = S y /\ y = O),
@@ -102,7 +102,7 @@ Qed.
 Ltac inversion_disj :=
 match goal with
 | [ H: _ \/ _ |- _ ] =>
-  inversion_clear H
+  destruct H
 end.
 
 Example example_inversion_disj: forall (x: nat) (p: x = 0 \/ x = 1),
