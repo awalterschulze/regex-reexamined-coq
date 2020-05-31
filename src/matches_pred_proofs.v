@@ -2,6 +2,7 @@ Require Import List.
 Import ListNotations.
 
 Require Import CoqStock.comparable.
+Require Import CoqStock.WreckIt.
 Require Import regex.
 Require Import matches_pred.
 
@@ -83,7 +84,8 @@ Proof.
   intros.
   elim H2; clear H2.
   intros.
-  (* TODO clean up above *)
+  (* TODO: Help Wanted
+     clean up above *)
 
 
   subst.
@@ -99,22 +101,12 @@ Theorem concat_assoc':
     l =~ (concat (concat r s) t) ->
     l =~ (concat r (concat s t)).
 Proof.
-  Ltac breakdown :=
-    repeat match goal with
-           | [ H: _ /\ _ |- _ ] => destruct H
-           | [ H: exists _, _ |- _ ] => destruct H
-           end.
-
   intros.
   apply concatP in H.
-  breakdown.
-  rewrite H.
-  apply concatP in H0.
-  breakdown.
-
-  subst.
+  wreckit.
+  apply concatP in H.
+  wreckit.
   rewrite <- app_assoc.
-
   apply concat_matches.
   - assumption.
   - apply concat_matches; assumption.
