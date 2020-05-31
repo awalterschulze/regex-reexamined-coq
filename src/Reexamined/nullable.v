@@ -1,7 +1,7 @@
 Require Import List.
 
 Require Import CoqStock.comparable.
-Require Import regex.
+Require Import Reexamined.regex.
 
 (* nullable returns whether the regular expression matchesb the
    empty string, for example:

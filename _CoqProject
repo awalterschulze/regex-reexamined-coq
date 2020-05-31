@@ -12,9 +12,9 @@ src/CoqStock/dup.v
 src/CoqStock/reorder.v
 src/CoqStock/reduce_orb.v
 
-src/regex.v
-src/size.v
-src/nullable.v
+src/Reexamined/regex.v
+src/Reexamined/size.v
+src/Reexamined/nullable.v
 src/compare_regex.v
 
 src/CoqStock/Invs.v

@@ -3,8 +3,8 @@ Set Asymmetric Patterns.
 
 Require Import CoqStock.comparable.
 Require Import compare_regex.
-Require Import nullable.
-Require Import regex.
+Require Import Reexamined.nullable.
+Require Import Reexamined.regex.
 
 (* simplified is a property that a regex's ors are somewhat simplified *)
 Fixpoint simplified {A: Type} {cmp: comparable A} (r: regex A) : Prop :=

@@ -11,10 +11,10 @@ Require Import CoqStock.comparable.
 Require Import compare_regex.
 Require Import CoqStock.dup.
 Require Import derive.
-Require Import nullable.
+Require Import Reexamined.nullable.
 Require Import CoqStock.orb_simple.
-Require Import regex.
-Require Import size.
+Require Import Reexamined.regex.
+Require Import Reexamined.size.
 Require Import CoqStock.sort.
 
 (*
