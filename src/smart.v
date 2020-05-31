@@ -5,9 +5,9 @@ Require Import List.
 
 Require Import CoqStock.comparable.
 Require Import compare_regex.
-Require Import Reexamined.derive.
+Require Import derive.
 Require Import Reexamined.nullable.
-Require Import regex.
+Require Import Reexamined.regex.
 Require Import smart_or.
 
 (* sderive is the same as derive, except that it applies
