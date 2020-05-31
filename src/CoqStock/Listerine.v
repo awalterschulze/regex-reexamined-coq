@@ -141,7 +141,9 @@ Qed.
 Local Ltac list_single :=
 match goal with
   | [ H: ?XS ++ ?YS = [?X] |- _ ] =>
-    apply app_eq_unit in H
+    let H0 := fresh "H0"
+    in apply app_eq_unit in H; 
+       destruct H as [H0 | H0]; destruct H0; subst
     (* xs ++ ys = [x] -> 
            (xs = [] /\ ys = [x])
         \/ (xs = [x] /\ ys = [])
@@ -169,7 +171,8 @@ Example example_list_single_app_eq_unit: forall {A: Type} (xs ys:list A) (x:A),
 Proof.
 intros.
 list_single.
-assumption.
+- left. constructor; reflexivity.
+- right. constructor; reflexivity.
 Qed.
 
 Example example_list_app_assoc_app_inj_tail: forall {A: Type} (xs ys zs:list A) (y z:A),
@@ -268,14 +271,21 @@ Qed.
 (* list_app_uncons:
    Finds an hypotheses that it can deconstruct using the list_app_cons lemma:
    ys ++ zs = x :: xs
-   into the possible combinations
-   ys = [] /\ zs = x :: xs
-   \/ ...
+   into the two goals, which consist of the possible combinations, as in:
+   - ys = [] /\ zs = x :: xs
+   - ...
 *)
 Local Ltac list_app_uncons :=
   match goal with
   | [ H: ?YS ++ ?ZS = cons ?X ?XS |- _ ] =>
-    apply list_app_uncons in H
+    let C := fresh "C"
+    in let E := fresh "E"
+    in let L := fresh "L"
+    in let E0 := fresh "E0"
+    in apply list_app_uncons in H;
+       destruct H as [C | E];
+       [inversion_clear C; subst
+       | inversion_clear E as [L E0]; inversion_clear E0; subst]
   end.
 
 Example example_list_app_uncons_double: 
@@ -287,12 +297,10 @@ Example example_list_app_uncons_double:
 Proof.
 intros.
 list_app_uncons.
-inversion H.
-- left. assumption.
-- inversion H0. inversion H1. subst. list_single.
-  inversion H2.
-  + right. left. inversion H3. subst. constructor; reflexivity.
-  + inversion H3. subst. right. right. constructor; reflexivity.
+- left. constructor; reflexivity.
+- list_single.
+  + right. left. constructor; reflexivity.
+  + right. right. constructor; reflexivity.
 Qed.
 
 (*
@@ -331,9 +339,8 @@ Example example_list_cons_neq: forall (A: Type) (x: A) (y: A) (xs ys zs: list A)
 Proof.
 intros.
 list_app_uncons.
-inversion_clear H0; subst; inversion_clear H1; subst.
 - discriminate.
-- inversion_clear H0; subst. list_cons_neq.
+- list_cons_neq.
 Qed.
 
 Ltac listerine_step :=
@@ -373,7 +380,8 @@ forall {A: Type} (x y:list A) (a:A),
 Proof.
 intros.
 listerine.
-assumption.
+- left. constructor; reflexivity.
+- right; constructor; reflexivity.
 Qed.
 
 Example example_list_app_eq_double: 
@@ -385,11 +393,20 @@ Example example_list_app_eq_double:
 Proof.
 intros.
 listerine.
-inversion_clear H; inversion_clear H0; subst.
 - left. constructor; reflexivity.
-- inversion H. listerine. inversion_clear H0; subst.
-  + right. left. inversion H1. subst. constructor; reflexivity.
-  + right. right. inversion H1. subst. constructor; reflexivity.
+- right. left. constructor; reflexivity.
+- right. right. constructor; reflexivity.
+Qed.
+
+Example example_list_app_eq_double_with_auto: 
+  forall {A: Type} (xs ys: list A) (x y: A),
+  xs ++ ys = [x;y] ->
+  (xs = [] /\ ys = [x;y])
+  \/ (xs = [x] /\ ys = [y])
+  \/ (xs = [x;y] /\ ys = []).
+Proof.
+intros.
+listerine; auto.
 Qed.
 
 Example example_list_app_eq_triple: forall (A: Type) (x y: A) (xs ys: list A),
@@ -400,16 +417,7 @@ Example example_list_app_eq_triple: forall (A: Type) (x y: A) (xs ys: list A),
     \/ (xs = [x;x;y] /\ ys = []).
 Proof.
 intros.
-listerine.
-inversion_clear H.
-- left. assumption.
-- inversion_clear H0. inversion_clear H. listerine.
-  inversion_clear H0.
-  + right. left. inversion_clear H; subst. constructor; reflexivity.
-  + inversion_clear H; subst. inversion_clear H0; subst.
-    listerine. inversion_clear H; subst; inversion_clear H0; subst.
-    * right. right. left. constructor; reflexivity.
-    * right. right. right. constructor; reflexivity.
+listerine; auto.
 Qed.
 
 Example example_app_eq_quad: forall (A: Type) (x y: A) (xs ys: list A),
@@ -421,20 +429,7 @@ Example example_app_eq_quad: forall (A: Type) (x y: A) (xs ys: list A),
     \/ (xs = [x;x;x;y] /\ ys = []).
 Proof.
 intros.
-listerine.
-inversion_clear H; subst; inversion_clear H0; subst.
-- left. constructor; reflexivity.
-- inversion_clear H; subst. listerine.
-  inversion_clear H0; subst; inversion_clear H; subst.
-  + right. left. constructor; reflexivity.
-  + inversion_clear H0; subst.
-    listerine. 
-    inversion_clear H; subst; inversion_clear H0; subst.
-    * right. right. left. constructor; reflexivity.
-    * inversion_clear H; subst. listerine.
-      inversion_clear H0; subst. inversion_clear H; subst.
-      -- right. right. right. left. constructor; reflexivity.
-      -- right. right. right. right. inversion_clear H; subst. constructor; reflexivity.
+listerine; auto 10.
 Qed.
 
 Example example_list_eq_head: forall (A: Type) (x: A) (y: A) (xs: list A) (ys: list A),
@@ -471,15 +466,7 @@ Example example_list_neq_swap_suffix:
 Proof.
 intros.
 listerine.
-inversion_clear H; subst.
-inversion_clear H0; subst.
-- listerine. contradiction.
-- inversion_clear H0; subst.
-  inversion_clear H; subst.
-  listerine.
-  inversion_clear H0; subst; inversion_clear H; subst.
-  + discriminate.
-  + discriminate.
+contradiction.
 Qed.
 
 Example example_list_neq_longer_suffix: 
@@ -488,20 +475,7 @@ Example example_list_neq_longer_suffix:
 Proof.
 intros.
 listerine.
-inversion_clear H; subst; inversion_clear H0; subst.
-- discriminate.
-- inversion_clear H; subst.
-  listerine.
-  inversion_clear H0; subst; inversion_clear H; subst.
-  + discriminate.
-  + inversion_clear H0; subst.
-    listerine.   
-    inversion_clear H; subst; inversion_clear H0; subst.
-    * listerine. contradiction.
-    * inversion_clear H; subst. listerine.
-      inversion_clear H0; subst; inversion_clear H; subst .
-      -- discriminate.
-      -- discriminate.
+contradiction.
 Qed.
 
 Example example_list_neq_longer_prefix: 
