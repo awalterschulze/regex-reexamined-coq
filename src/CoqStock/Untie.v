@@ -22,12 +22,14 @@ Ltac untie_step :=
     let Heq := fresh "Heq"
     in unfold not; 
        intro Heq;
+       try (discriminate || contradiction);
        rewrite Heq in *;
        clear Heq
   | [ H: context [?X] |- _ <> ?X ] =>
     let Heq := fresh "Heq"
     in unfold not;
        intro Heq;
+       try (discriminate || contradiction);
        rewrite <- Heq in *;
        clear Heq
   | [ |- ~ _ ] =>
