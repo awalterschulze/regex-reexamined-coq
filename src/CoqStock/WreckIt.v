@@ -34,7 +34,7 @@ wreckit is a tactic to break down:
   - conjuction in the goal
 *)
 
-(* inversion_exists:
+(* destruct_exists:
   - finds an exists in the hypotheses 
   - inverts that hypothesis
   - removes that hypothesis and 
@@ -46,36 +46,36 @@ wreckit is a tactic to break down:
   H: ?Y
   ```
 *)
-Ltac inversion_exists :=
+Ltac destruct_exists :=
 match goal with
 | [ H: exists _, _ = _ |- _ ] => 
   let E := fresh "E"
   in let B := fresh "B"
-  in inversion_clear H as [E B];
+  in destruct H as [E B];
   try rewrite B in *
 | [ H: exists _, _ |- _ ] => 
-  inversion_clear H
+  destruct H
 end.
 
-Example example_inversion_exists: forall (x: nat) (e: exists (y: nat), x = S y /\ y = O),
+Example example_destruct_exists: forall (x: nat) (e: exists (y: nat), x = S y /\ y = O),
   x = S O.
 Proof.
 intros.
-inversion_exists.
+destruct_exists.
 inversion_clear H.
 subst.
 reflexivity.
 Qed.
 
-Example example_inversion_exists_neq: forall (x: nat) (e: exists (y: nat), x = S y),
+Example example_destruct_exists_neq: forall (x: nat) (e: exists (y: nat), x = S y),
   x <> O.
 Proof.
 intros.
-inversion_exists.
+destruct_exists.
 discriminate.
 Qed.
 
-(* inversion_conj:
+(* destruct_conj:
   - finds a conjunction in the hypotheses
   - inverts that hypothesis
   - clears that hypothesis
@@ -86,22 +86,22 @@ Qed.
   H1: ?Y
   ```
 *)
-Ltac inversion_conj :=
+Ltac destruct_conj :=
 match goal with
 | [ H: _ /\ _ |- _ ] =>
   let L := fresh "L"
   in let R := fresh "R"
-  in inversion_clear H as [L R];
+  in destruct H as [L R];
   try rewrite L in *;
   try rewrite R in *
 end.
 
-Example example_inversion_conj: forall (x: nat) (e: exists (y: nat), x = S y /\ y = O),
+Example example_destruct_conj: forall (x: nat) (e: exists (y: nat), x = S y /\ y = O),
   x = S O.
 Proof.
 intros.
-inversion_exists.
-inversion_conj.
+destruct_exists.
+destruct_conj.
 reflexivity.
 Qed.
 
@@ -116,19 +116,19 @@ Qed.
      - H2: ?Y
   ```
 *)
-Ltac inversion_disj :=
+Ltac destruct_disj :=
 match goal with
 | [ H: _ \/ _ |- _ ] =>
   let B := fresh "B"
-  in inversion_clear H as [B | B];
+  in destruct H as [B | B];
      try rewrite B in *
 end.
 
-Example example_inversion_disj: forall (x: nat) (p: x = 0 \/ x = 1),
+Example example_destruct_disj: forall (x: nat) (p: x = 0 \/ x = 1),
   x < 2.
 Proof.
 intros.
-inversion_disj; auto.
+destruct_disj; auto.
 Qed.
 
 (* constructor_conj
@@ -160,9 +160,9 @@ Qed.
 
 (* wreckit_step is helpful for seeing what wreckit does step by step *)
 Ltac wreckit_step :=
-     inversion_exists
-  || inversion_conj
-  || inversion_disj
+     destruct_exists
+  || destruct_conj
+  || destruct_disj
   || constructor_conj
   .
 
