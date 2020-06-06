@@ -11,6 +11,39 @@ It consists of:
   - taking a step for not equal lists if a hypothesis is hinting that some elements aren't equal
 *)
 
+(*
+TODO: Help Wanted
+Some of these tactics complete the proof and others simply step forward.
+This seems like two goals that can be separated.
+Let `auto` handle the completion of proofs and
+let `listerine` handle stepping forward.
+Once `listerine` is more widely used in the code base,
+remove stuff from `listerine` that could be handled by auto.
+Then `listerine` becomes `repeat listerine_step; auto 10`.
+*)
+
+(*
+TODO: Good First Issue
+Inside the cases of match goal sometimes a tactic is applied
+and other times a theorem is applied.
+Find places where a theorem would be more surgical,
+create those theorems and replace the tactics.
+Example:
+
+Local Ltac list_cons_eq :=
+match goal with
+  | [H: (cons ?X ?XS) = (cons ?Y ?YS) |- _ ] =>
+    inversion H; clear H; subst
+    (* (x :: xs) = (y :: ys) -> (x = y) /\ (xs = ys) *)
+  | [H: ?XS ++ [?X] = ?YS ++ [?Y] |- _ ] =>
+    apply app_inj_tail in H
+    (* xs ++ [x] = ys ++ [y] -> 
+       xs = ys /\ x = y. *)
+end.
+
+replace `inversion H; clear H; subst` with a theorem `apply NewTheorem in H`.
+*)
+
 Require Import List.
 Import ListNotations.
 
@@ -24,28 +57,21 @@ Import ListNotations.
    - xs ++ [] -> xs
 *)
 Local Ltac list_empty :=
-match goal with
+(* [] = cons _ _ -> False *)
+(* cons _ _ = [] -> False *)
+(* [] = x :: xs -> False *)
+(* x :: xs = [] -> False *)
+   discriminate
+|| match goal with
 | [ |- [] <> ?X ++ (?Y :: ?YS) ] =>
   apply app_cons_not_nil
   (* [] = xs ++ y :: ys -> False *)
-| [ |- [] <> ?X :: ?XS ] =>
-  apply nil_cons
-  (* [] = x :: xs -> False *)
-| [ |- [] <> ?X :: ?XS ] =>
-  apply nil_cons
-  (* x :: xs = [] -> False *)
 | [ H: ?XS ++ ?YS = [] |- _ ] =>
   apply app_eq_nil in H
   (* xs ++ ys = [] -> 
         xs = [] 
      /\ ys = []
   *)
-| [ H: [] = cons _ _ |- _ ] =>
-  (* [] = cons _ _ -> False *)
-  discriminate
-| [ H: cons _ _ = [] |- _ ] =>
-  (* cons _ _ = [] -> False *)
-  discriminate
 | [ H: context [[] ++ _] |- _ ] =>
   rewrite app_nil_l in H
   (* [] ++ xs = xs *)
@@ -81,6 +107,21 @@ intros.
 list_empty.
 inversion H.
 assumption.
+Qed.
+
+Example example_list_empty_eq_app_easy: forall {A: Type} (xs: list A) (ys: list A),
+  xs ++ ys = [] -> xs = [].
+Proof.
+intros.
+list_empty.
+easy.
+Qed.
+
+Example example_list_empty_eq_app_now: forall {A: Type} (xs: list A) (ys: list A),
+  xs ++ ys = [] -> xs = [].
+Proof.
+intros.
+now list_empty.
 Qed.
 
 Example example_list_empty_neq_unit_hyp_r: forall {A: Type} (x: A),
@@ -129,9 +170,6 @@ Qed.
    - xs ++ ys = [x] -> 
          (xs = [] /\ ys = [x])
       \/ (xs = [x] /\ ys = [])
-   - xs ++ [x] = ys ++ [y] -> 
-         xs = ys 
-      /\ x = y.
    Sometimes it is needed to group singleton lists for other tactics to be applicable.
    - xs ++ ys ++ [y] ->
          (xs ++ ys) ++ [y]
@@ -148,10 +186,6 @@ match goal with
            (xs = [] /\ ys = [x])
         \/ (xs = [x] /\ ys = [])
     *)
-  | [H: ?X ++ [?A] = ?Y ++ [?B] |- _ ] =>
-    apply app_inj_tail in H
-    (* xs ++ [x] = ys ++ [y] -> 
-       xs = ys /\ x = y. *)
   | [H: context [?XS ++ ?YS ++ [?Y]] |- _ ] =>
     rewrite app_assoc in H
     (* xs ++ ys ++ [y] -> 
@@ -159,11 +193,11 @@ match goal with
   | [H: context [(?X :: ?XS) ++ ?YS] |- _ ] =>
     (* (x :: xs) ++ ys -> 
        x :: (xs ++ ys) *)
-    cbn in H
+    rewrite <- app_comm_cons in H
   | [ |- context [(?X :: ?XS) ++ ?YS] ] =>
     (* (x :: xs) ++ ys -> 
        x :: (xs ++ ys) *)
-    cbn
+    rewrite <- app_comm_cons
 end.
 
 Example example_list_single_app_eq_unit: forall {A: Type} (xs ys:list A) (x:A),
@@ -175,27 +209,28 @@ list_single.
 - right. constructor; reflexivity.
 Qed.
 
-Example example_list_app_assoc_app_inj_tail: forall {A: Type} (xs ys zs:list A) (y z:A),
-  xs ++ ys ++ [y] = zs ++ [z] -> y = z.
+Example example_list_single_app_eq_unit_auto: forall {A: Type} (xs ys:list A) (x:A),
+  xs ++ ys = [x] -> xs = [] /\ ys = [x] \/ xs = [x] /\ ys = [].
 Proof.
 intros.
-list_single.
-list_single.
-inversion H.
-assumption.
+list_single; auto.
 Qed.
 
 (* list_cons_eq:
    Finds an equality between lists in the hypotheses,
-   with a head element that can be deconstructed.
-   This hypothesis is inverted, cleared and variables are substituted.
+   with a head or tail element that can be deconstructed.
    (x :: xs) = (y :: ys) -> (x = y) /\ (xs = ys)
+   xs ++ [x] = ys ++ [y] -> xs = ys /\ x = y.
 *)
 Local Ltac list_cons_eq :=
 match goal with
   | [H: (cons ?X ?XS) = (cons ?Y ?YS) |- _ ] =>
     inversion H; clear H; subst
     (* (x :: xs) = (y :: ys) -> (x = y) /\ (xs = ys) *)
+  | [H: ?XS ++ [?X] = ?YS ++ [?Y] |- _ ] =>
+    apply app_inj_tail in H
+    (* xs ++ [x] = ys ++ [y] -> 
+       xs = ys /\ x = y. *)
 end.
 
 Example example_list_cons_eq: forall {A: Type} (x y: A) (xs ys: list A),
@@ -204,6 +239,25 @@ Proof.
 intros.
 list_cons_eq.
 reflexivity.
+Qed.
+
+Example example_list_app_assoc_app_inj_tail: forall {A: Type} (xs ys zs:list A) (y z:A),
+  xs ++ ys ++ [y] = zs ++ [z] -> y = z.
+Proof.
+intros.
+list_single.
+list_cons_eq.
+inversion H.
+assumption.
+Qed.
+
+Example example_list_app_assoc_app_inj_tail_easy: forall {A: Type} (xs ys zs:list A) (y z:A),
+  xs ++ ys ++ [y] = zs ++ [z] -> y = z.
+Proof.
+intros.
+list_single.
+list_cons_eq.
+easy.
 Qed.
 
 (* list_app_eq:
@@ -318,17 +372,37 @@ Local Ltac list_cons_neq :=
   | [ H: ?X <> ?Y |- cons ?X _ <> cons ?Y _ ] =>
     unfold not; intros; list_cons_eq; contradiction
     (* x <> y -> x :: _ <> y :: _ *)
-  | [ H: ?X <> ?Y |- cons ?X _ <> _ ] =>
-    unfold not; intros; subst
+   | [ H0: ?X <> ?Y, H1: context [?YS] |- cons ?X _ <> ?YS ] =>
+    let N := fresh "N"
+    in unfold not; intro N; rewrite <- N in *
     (* x <> y -> _ <> x :: _ -> (x <> y -> ... -> False) *)
-  | [ H: ?X <> ?Y |- _ <> cons ?X _ ] =>
-    unfold not; intros; subst
+  | [ H0: ?X <> ?Y, H1: context [?YS] |- ?YS <> cons ?X _ ] =>
+    let N := fresh "N"
+    in unfold not; intro N; rewrite N in *
     (* x <> y -> x :: _ <> _ -> (x <> y -> ... -> False) *)
-  | [ H: ?X <> ?Y |- cons ?Y _ <> _ ] =>
-    unfold not; intros; subst
+  | [ H0: ?X <> ?Y, H1: context [?YS] |- cons ?Y _ <> ?YS ] =>
+    let N := fresh "N"
+    in unfold not; intro N; rewrite <- N in *
     (* y <> x -> _ <> x :: _ -> (y <> x -> ... -> False) *)
-  | [ H: ?X <> ?Y |- _ <> cons ?Y _ ] =>
-    unfold not; intros; subst
+  | [ H0: ?X <> ?Y, H1: context [?YS] |- ?YS <> cons ?Y _ ] =>
+    let N := fresh "N"
+    in unfold not; intro N; rewrite N in *
+    (* y <> x -> x :: _ <> _ -> (y <> x -> ... -> False) *)
+  | [ H0: ?X <> ?Y |- cons ?X _ <> ?YS ] =>
+    let N := fresh "N"
+    in unfold not; intro N
+    (* x <> y -> _ <> x :: _ -> (x <> y -> ... -> False) *)
+  | [ H0: ?X <> ?Y |- ?YS <> cons ?X _ ] =>
+    let N := fresh "N"
+    in unfold not; intro N
+    (* x <> y -> x :: _ <> _ -> (x <> y -> ... -> False) *)
+  | [ H0: ?X <> ?Y |- cons ?Y _ <> ?YS ] =>
+    let N := fresh "N"
+    in unfold not; intro N
+    (* y <> x -> _ <> x :: _ -> (y <> x -> ... -> False) *)
+  | [ H0: ?X <> ?Y |- ?YS <> cons ?Y _ ] =>
+    let N := fresh "N"
+    in unfold not; intro N
     (* y <> x -> x :: _ <> _ -> (y <> x -> ... -> False) *)
   end.
 
