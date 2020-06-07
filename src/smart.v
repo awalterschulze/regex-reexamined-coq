@@ -4,7 +4,7 @@ Set Asymmetric Patterns.
 Require Import List.
 
 Require Import CoqStock.comparable.
-Require Import compare_regex.
+Require Import Reexamined.compare_regex.
 Require Import derive.
 Require Import Reexamined.nullable.
 Require Import Reexamined.regex.

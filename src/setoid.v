@@ -4,7 +4,7 @@ Require Export Relation_Definitions.
 Require Export Setoid.
 
 Require Import CoqStock.comparable.
-Require Import derive_def.
+Require Import Reexamined.derive_def.
 Require Import Reexamined.nullable.
 Require Import CoqStock.orb_simple.
 Require Import Reexamined.regex.

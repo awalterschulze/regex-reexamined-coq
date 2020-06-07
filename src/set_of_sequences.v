@@ -4,7 +4,7 @@ Import ListNotations.
 Require Import CoqStock.comparable.
 Require Import CoqStock.compare_nat.
 Require Import Reexamined.regex.
-Require Import derive_def.
+Require Import Reexamined.derive_def.
 
 (*
   A set of sequences is interpreted as a value of `list A -> Prop`

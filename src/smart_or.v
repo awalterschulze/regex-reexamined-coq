@@ -8,7 +8,7 @@ Require Import Omega.
 Require Import Coq.Program.Program.
 
 Require Import CoqStock.comparable.
-Require Import compare_regex.
+Require Import Reexamined.compare_regex.
 Require Import CoqStock.dup.
 Require Import derive.
 Require Import Reexamined.nullable.

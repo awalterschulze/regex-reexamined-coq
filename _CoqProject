@@ -1,5 +1,4 @@
 -R src ""
-src/CoqStock/WreckIt.v
 
 src/CoqStock/Listerine.v
 src/CoqStock/orb_simple.v
@@ -11,16 +10,16 @@ src/CoqStock/list_set.v
 src/CoqStock/dup.v
 src/CoqStock/reorder.v
 src/CoqStock/reduce_orb.v
+src/CoqStock/WreckIt.v
+src/CoqStock/Invs.v
 
 src/Reexamined/regex.v
 src/Reexamined/size.v
 src/Reexamined/nullable.v
-src/compare_regex.v
+src/Reexamined/compare_regex.v
+src/Reexamined/derive_def.v
+src/Reexamined/matches_pred.v
 
-src/CoqStock/Invs.v
-
-src/derive_def.v
-src/matches_pred.v
 src/matches_pred_proofs.v
 src/setoid.v
 src/derive.v
