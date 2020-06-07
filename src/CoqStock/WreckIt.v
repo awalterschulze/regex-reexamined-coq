@@ -180,15 +180,6 @@ rewrite p.
 auto.
 Qed.
 
-Example example_duplicate_conj': forall (x: nat) (p: x = 0),
-  (x < 2) /\ x < 2.
-Proof.
-intros.
-constructor_conj.
-rewrite p.
-auto.
-Qed.
-
 (* wreckit_step is helpful for seeing what wreckit does step by step *)
 Ltac wreckit_step :=
      destruct_exists
