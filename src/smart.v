@@ -6,8 +6,8 @@ Require Import List.
 Require Import CoqStock.comparable.
 Require Import compare_regex.
 Require Import derive.
-Require Import nullable.
-Require Import regex.
+Require Import Reexamined.nullable.
+Require Import Reexamined.regex.
 Require Import smart_or.
 
 (* sderive is the same as derive, except that it applies
@@ -56,7 +56,7 @@ induction xs.
       remember (Hmatch_or_if Heqc) as Hmatch_or.
       unfold matchesb in Hmatch_or.
       rewrite Hmatch_or.
-      remember compare_equal as H_compare_equal.
+      remember regex_proof_compare_eq_is_equal as H_compare_equal.
       remember (H_compare_equal (derive r1 a) (derive r2 a) Heqc) as Heq_r1_r2.
       rewrite Heq_r1_r2.
       apply IHxs.

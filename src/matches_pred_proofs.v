@@ -3,7 +3,7 @@ Import ListNotations.
 
 Require Import CoqStock.comparable.
 Require Import CoqStock.WreckIt.
-Require Import regex.
+Require Import Reexamined.regex.
 Require Import matches_pred.
 
 

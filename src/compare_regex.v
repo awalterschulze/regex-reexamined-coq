@@ -2,7 +2,7 @@ Set Implicit Arguments.
 Set Asymmetric Patterns.
 
 Require Import CoqStock.comparable.
-Require Import regex.
+Require Import Reexamined.regex.
 
 Fixpoint compare_regex {A: Type} {cmp: comparable A} (r s: regex A) : comparison :=
   match r with
@@ -76,85 +76,6 @@ Fixpoint compare_regex {A: Type} {cmp: comparable A} (r s: regex A) : comparison
     end
   end.
 
-Lemma regex_proof_compare_eq_is_equal
-    : forall {A: Type}
-             {cmp: comparable A}
-             (x y: regex A) 
-             (p: compare_regex x y = Eq)
-    , x = y.
-Proof.
-(* TODO: Good First Issue *)
-Admitted.
-
-Lemma regex_proof_compare_eq_reflex
-    : forall {A: Type}
-             {cmp: comparable A}
-             (x: regex A)
-    , compare_regex x x = Eq.
-Proof.
-(* TODO: Good First Issue *)
-Admitted.
-
-Lemma regex_proof_compare_eq_trans
-    : forall {A: Type}
-             {cmp: comparable A}
-             (x y z: regex A)
-             (p: compare_regex x y = Eq)
-             (q: compare_regex y z = Eq)
-    , compare_regex x z = Eq.
-Proof.
-(* TODO: Good First Issue *)
-Admitted.
-
-Lemma regex_proof_compare_lt_trans
-    : forall {A: Type}
-             {cmp: comparable A}
-             (x y z: regex A)
-             (p: compare_regex x y = Lt)
-             (q: compare_regex y z = Lt)
-    , compare_regex x z = Lt.
-Proof.
-(* TODO: Good First Issue *)
-Admitted.
-
-Lemma regex_proof_compare_gt_trans
-    : forall {A: Type}
-             {cmp: comparable A}
-             (x y z: regex A)
-             (p: compare_regex x y = Gt)
-             (q: compare_regex y z = Gt)
-    , compare_regex x z = Gt.
-Proof.
-(* TODO: Good First Issue *)
-Admitted.
-
-Instance comparable_regex {A: Type} {cmp: comparable A} : comparable (regex A) :=
-  { compare := compare_regex
-  ; proof_compare_eq_is_equal := regex_proof_compare_eq_is_equal
-  ; proof_compare_eq_reflex := regex_proof_compare_eq_reflex
-  ; proof_compare_eq_trans := regex_proof_compare_eq_trans
-  ; proof_compare_lt_trans := regex_proof_compare_lt_trans
-  ; proof_compare_gt_trans := regex_proof_compare_gt_trans
-  }.
-
-Theorem compare_regex_is_compare: forall
-  {A: Type}
-  {cmp: comparable A}
-  (r s: regex A),
-  compare_regex r s = compare r s.
-Proof.
-simpl.
-reflexivity.
-Qed.
-
-(* induction_on_compare_regex starts induction on a `compare_regex` expression in the goal.
-   It makes sense to remember this comparison, so that it be rewritten to an
-   equality in the Eq induction goal.
-*)
-Ltac induction_on_compare_regex :=
-  rewrite compare_regex_is_compare;
-  induction_on_compare.
-
 Lemma test_compare_regex_char : forall 
   {A: Type}
   {cmp: comparable A}
@@ -173,7 +94,7 @@ or
     - x2
     - x1
 *)
-Lemma test_compare_regex_or_all_left : forall {A: Type} {cmp: comparable A} (x1 x2: A) (p: compare x1 x2 = Lt),
+Example example_compare_regex_or_all_left : forall {A: Type} {cmp: comparable A} (x1 x2: A) (p: compare x1 x2 = Lt),
   compare_regex (char x1) (or (char x2) (or (char x2) (char x1))) = Lt.
 Proof. intros. simpl. reflexivity. Qed.
 
@@ -187,12 +108,16 @@ or
     - x2
     - x1
 *)
-Lemma test_compare_regex_or_symmetric: forall {A: Type} {cmp: comparable A} (x1 x2: A) (p: compare x1 x2 = Lt),
+Example example_compare_regex_or_symmetric: forall {A: Type} {cmp: comparable A} (x1 x2: A) (p: compare x1 x2 = Lt),
   compare_regex (or (char x1) (char x2)) (or (char x2) (char x1)) = Lt.
 Proof. intros. simpl. now (rewrite p). Qed.
 
-Theorem compare_equal : forall {A: Type} {cmp: comparable A} (r1 r2: regex A) (p: compare_regex r1 r2 = Eq),
-  r1 = r2.
+Lemma regex_proof_compare_eq_is_equal
+    : forall {A: Type}
+             {cmp: comparable A}
+             (r1 r2: regex A) 
+             (p: compare_regex r1 r2 = Eq)
+    , r1 = r2.
 Proof.
 induction r1.
  - induction r2; simpl; trivial; discriminate. (* fail *)
@@ -265,8 +190,8 @@ induction r1.
     reflexivity.
 Qed.
 
-Theorem compare_reflex : forall {A: Type} {cmp: comparable A} (r: regex A), 
- compare_regex r r = Eq.
+Theorem regex_proof_compare_eq_reflex : forall {A: Type} {cmp: comparable A} (r: regex A), 
+  compare_regex r r = Eq.
 Proof.
 induction r; try reflexivity; simpl.
 - apply proof_compare_eq_reflex.
@@ -276,6 +201,66 @@ induction r; try reflexivity; simpl.
 - rewrite IHr. reflexivity.
 - rewrite IHr. reflexivity.
 Qed.
+
+Lemma regex_proof_compare_eq_trans
+    : forall {A: Type}
+             {cmp: comparable A}
+             (x y z: regex A)
+             (p: compare_regex x y = Eq)
+             (q: compare_regex y z = Eq)
+    , compare_regex x z = Eq.
+Proof.
+(* TODO: Good First Issue *)
+Admitted.
+
+Lemma regex_proof_compare_lt_trans
+    : forall {A: Type}
+             {cmp: comparable A}
+             (x y z: regex A)
+             (p: compare_regex x y = Lt)
+             (q: compare_regex y z = Lt)
+    , compare_regex x z = Lt.
+Proof.
+(* TODO: Good First Issue *)
+Admitted.
+
+Lemma regex_proof_compare_gt_trans
+    : forall {A: Type}
+             {cmp: comparable A}
+             (x y z: regex A)
+             (p: compare_regex x y = Gt)
+             (q: compare_regex y z = Gt)
+    , compare_regex x z = Gt.
+Proof.
+(* TODO: Good First Issue *)
+Admitted.
+
+Instance comparable_regex {A: Type} {cmp: comparable A} : comparable (regex A) :=
+  { compare := compare_regex
+  ; proof_compare_eq_is_equal := regex_proof_compare_eq_is_equal
+  ; proof_compare_eq_reflex := regex_proof_compare_eq_reflex
+  ; proof_compare_eq_trans := regex_proof_compare_eq_trans
+  ; proof_compare_lt_trans := regex_proof_compare_lt_trans
+  ; proof_compare_gt_trans := regex_proof_compare_gt_trans
+  }.
+
+Theorem compare_regex_is_compare: forall
+  {A: Type}
+  {cmp: comparable A}
+  (r s: regex A),
+  compare_regex r s = compare r s.
+Proof.
+simpl.
+reflexivity.
+Qed.
+
+(* induction_on_compare_regex starts induction on a `compare_regex` expression in the goal.
+   It makes sense to remember this comparison, so that it be rewritten to an
+   equality in the Eq induction goal.
+*)
+Ltac induction_on_compare_regex :=
+  rewrite compare_regex_is_compare;
+  induction_on_compare.
 
 (* test_compare_list simply tests whether nat can be used
    with a function that expects a comparable instance.

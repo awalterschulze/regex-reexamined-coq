@@ -2,8 +2,8 @@ Require Import List.
 Require Import Bool.
 
 Require Import CoqStock.comparable.
-Require Import nullable.
-Require Import regex.
+Require Import Reexamined.nullable.
+Require Import Reexamined.regex.
 
 Definition is_eq {A: Type} {cmp: comparable A} (x y: A) : bool :=
   match compare x y with

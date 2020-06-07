@@ -5,9 +5,9 @@ Require Export Setoid.
 
 Require Import CoqStock.comparable.
 Require Import derive_def.
-Require Import nullable.
+Require Import Reexamined.nullable.
 Require Import CoqStock.orb_simple.
-Require Import regex.
+Require Import Reexamined.regex.
 
 Section RegexEq.
 

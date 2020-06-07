@@ -4,7 +4,7 @@ Set Asymmetric Patterns.
 Require Import List.
 
 Require Import CoqStock.comparable.
-Require Import regex.
+Require Import Reexamined.regex.
 
 Fixpoint size {A: Type} {cmp: comparable A} (r: regex A) := 
   match r with

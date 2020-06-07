@@ -1,6 +1,7 @@
 -R src ""
 src/CoqStock/WreckIt.v
 
+src/CoqStock/Listerine.v
 src/CoqStock/orb_simple.v
 src/CoqStock/comparable.v
 
@@ -11,10 +12,12 @@ src/CoqStock/dup.v
 src/CoqStock/reorder.v
 src/CoqStock/reduce_orb.v
 
-src/regex.v
-src/size.v
-src/nullable.v
+src/Reexamined/regex.v
+src/Reexamined/size.v
+src/Reexamined/nullable.v
 src/compare_regex.v
+
+src/CoqStock/Invs.v
 
 src/derive_def.v
 src/matches_pred.v
@@ -27,6 +30,13 @@ src/simplified.v
 src/simple.v
 src/set_of_sequences.v
 
+src/CoqStock/Untie.v
+
 src/main.v
 
-src/Brzozowski/Brzozowski.v
+src/Brzozowski/Alphabet.v
+src/Brzozowski/Sequences.v
+src/Brzozowski/Regex.v
+src/Brzozowski/Delta.v
+src/Brzozowski/Boolean.v
+src/Brzozowski/ExampleR.v

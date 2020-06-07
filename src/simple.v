@@ -6,8 +6,8 @@ Require Import List.
 Require Import CoqStock.comparable.
 Require Import compare_regex.
 Require Import derive.
-Require Import nullable.
-Require Import regex.
+Require Import Reexamined.nullable.
+Require Import Reexamined.regex.
 Require Import smart.
 Require Import smart_or.
 
@@ -69,9 +69,9 @@ induction r, s; simpl; try easy.
       -- unfold Logic.not.
          intros.
          assert (h := H).
-         apply compare_equal in H.
+         apply regex_proof_compare_eq_is_equal in H.
          rewrite H in Heqc.
-         rewrite compare_reflex in Heqc.
+         rewrite regex_proof_compare_eq_reflex in Heqc.
          discriminate.
 - unfold smart_or.
   remember (compare_regex (and r1 r2) (and s1 s2)) as c.
@@ -96,9 +96,9 @@ induction r, s; simpl; try easy.
       -- unfold Logic.not.
          intros.
          assert (h := H).
-         apply compare_equal in H.
+         apply regex_proof_compare_eq_is_equal in H.
          rewrite H in Heqc.
-         rewrite compare_reflex in Heqc.
+         rewrite regex_proof_compare_eq_reflex in Heqc.
          discriminate.
 - unfold smart_or.
   remember (compare_regex (concat r1 r2) (concat s1 s2)) as c.
@@ -123,9 +123,9 @@ induction r, s; simpl; try easy.
       -- unfold Logic.not.
          intros.
          assert (h := H).
-         apply compare_equal in H.
+         apply regex_proof_compare_eq_is_equal in H.
          rewrite H in Heqc.
-         rewrite compare_reflex in Heqc.
+         rewrite regex_proof_compare_eq_reflex in Heqc.
          discriminate.
 - unfold smart_or.
   remember (compare_regex (not r) (not s)) as c.
@@ -150,9 +150,9 @@ induction r, s; simpl; try easy.
       -- unfold Logic.not.
          intros.
          assert (h := H).
-         apply compare_equal in H.
+         apply regex_proof_compare_eq_is_equal in H.
          rewrite H in Heqc.
-         rewrite compare_reflex in Heqc.
+         rewrite regex_proof_compare_eq_reflex in Heqc.
          discriminate.
 - unfold smart_or.
   remember (compare_regex (star r) (star s)) as c.
@@ -177,8 +177,8 @@ induction r, s; simpl; try easy.
       -- unfold Logic.not.
          intros.
          assert (h := H).
-         apply compare_equal in H.
+         apply regex_proof_compare_eq_is_equal in H.
          rewrite H in Heqc.
-         rewrite compare_reflex in Heqc.
+         rewrite regex_proof_compare_eq_reflex in Heqc.
          discriminate.
 Qed.
