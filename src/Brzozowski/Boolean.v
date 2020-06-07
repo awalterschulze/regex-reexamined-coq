@@ -1,13 +1,8 @@
+Require Import CoqStock.WreckIt.
+
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Regex.
 Require Import Brzozowski.Sequences.
-
-Theorem conj2: forall (P: Prop),
-  P -> P /\ P.
-Proof.
-intros.
-constructor; assumption.
-Qed.
 
 (* the *intersection* $P \& Q$, *)
 Theorem elem_intersection: forall (p q: regex) (s: seq),
@@ -68,7 +63,7 @@ unfold not.
 intros.
 cbn.
 constructor.
-apply conj2.
+wreckit.
 unfold not.
 assumption.
 Qed.
@@ -91,7 +86,7 @@ Proof.
 intros.
 cbn.
 constructor.
-apply conj2.
+wreckit.
 unfold not.
 unfold "`elem`".
 intros.
@@ -121,7 +116,7 @@ subst.
 unfold not in H3.
 apply H3.
 constructor.
-apply conj2.
+wreckit.
 unfold not.
 assumption.
 Qed.
@@ -141,7 +136,7 @@ unfold not in H2.
 unfold not in H3.
 apply H3.
 constructor.
-apply conj2.
+wreckit.
 unfold not.
 assumption.
 Qed.

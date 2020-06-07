@@ -1,6 +1,9 @@
 Require Import List.
 Import ListNotations.
 
+Require Import CoqStock.WreckIt.
+Require Import CoqStock.Listerine.
+
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Boolean.
 Require Import Brzozowski.Regex.
@@ -32,7 +35,7 @@ assert ([a1] ++ [a0] ++ [a1] = [a1; a0; a1]). reflexivity.
 exists H.
 constructor.
 - constructor.
-  apply conj2.
+  wreckit.
   apply notelem_emptyset.
 - constructor.
   exists [a0].
@@ -52,26 +55,6 @@ apply H.
 apply test_elem_xI01_101.
 Qed.
 
-Ltac inv_exists :=
-  match goal with
-  | [ H: exists _, _ |- _ ] => 
-    inversion H; clear H; subst
-  end.
-
-Ltac inv_conj :=
-  match goal with
-  | [ H: _ /\ _ |- _ ] =>
-    inversion H; clear H
-  end.
-
-(* TODO: Good First Issue
-   replace with real wreckit *)
-Ltac wreckit :=
-  repeat (
-    inv_conj
-    || inv_exists
-  ).
-
 Local Ltac elemt :=
   match goal with
   | [ H : _ `elem` _ |- _ ] =>
@@ -84,18 +67,16 @@ Lemma test_notleme_xI01_empty:
     [] `notelem` {{xI01}}.
 Proof.
 elemt.
-wreckit.
 elemt.
 wreckit.
 elemt.
 subst.
 cbn in x3.
 apply app_eq_nil in x3.
-inv_conj.
+wreckit.
 assert ([a0; a1] <> []).
 discriminate.
 subst.
-wreckit.
 elemt.
 elemt.
 subst.
@@ -116,10 +97,9 @@ elemt.
 wreckit.
 subst.
 assert (x ++ [a0] ++ [a1] <> [a1] ++ [a0]).
-(* TODO: Good First Issue
-   first merge listerine 
-*)
-Abort.
+listerine.
+contradiction.
+Qed.
 
 Lemma test_notelem_xI01_1110:
   ([a1] ++ [a1] ++ [a1] ++ [a0]) `notelem` {{xI01}}.
@@ -133,9 +113,8 @@ elemt.
 elemt.
 subst.
 cbn in x3.
-(* TODO: Good First Issue
-   first merge listerine *)
-Abort.
+listerine.
+Qed.
 
 Lemma test_notelem_x11star_0: 
   [a0] `notelem` {{ x11star }}.
@@ -146,18 +125,12 @@ wreckit.
 elemt.
 - subst.
   cbn in x3.
-  rewrite app_nil_r in x3.
-  subst.
-  elemt.
+  discriminate.
 - elemt.
   wreckit.
-  inversion H0; clear H0.
-  inversion H1; clear H1.
   subst.
-(* TODO: Good First Issue
-   first merge listerine
-*)
-Abort.
+  listerine.
+Qed.
 
 Lemma test_notelem_x11star_1110: 
     ([a1] ++ [a1] ++ [a1] ++ [a0]) `notelem` {{x11star}}.
