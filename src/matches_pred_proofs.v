@@ -104,7 +104,7 @@ Proof.
   intros.
   apply concatP in H.
   wreckit.
-  apply concatP in H.
+  apply concatP in L0.
   wreckit.
   rewrite <- app_assoc.
   apply concat_matches.
