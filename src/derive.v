@@ -2,8 +2,8 @@ Require Import List.
 Require Import Bool.
 
 Require Import CoqStock.comparable.
-Require Import compare_regex.
-Require Export derive_def.
+Require Import Reexamined.compare_regex.
+Require Export Reexamined.derive_def.
 Require Import Reexamined.nullable.
 Require Import CoqStock.orb_simple.
 Require Import Reexamined.regex.

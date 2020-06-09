@@ -4,7 +4,7 @@ Import ListNotations.
 Require Import CoqStock.comparable.
 Require Import CoqStock.WreckIt.
 Require Import Reexamined.regex.
-Require Import matches_pred.
+Require Import Reexamined.matches_pred.
 
 
 Theorem concat_empty_l:
