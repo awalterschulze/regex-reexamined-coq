@@ -131,6 +131,13 @@ intros.
 destruct_disj; auto.
 Qed.
 
+Theorem conj2: forall (P: Prop),
+  P -> P /\ P.
+Proof.
+intros.
+constructor; assumption.
+Qed.
+
 (* constructor_conj
    If the goal is a conjuction,
    then deconstruct it into two goals.
@@ -140,9 +147,15 @@ Qed.
    - ?X
    - ?Y
    ```
+   or one goal if possible
+   ```
+   ?X /\ ?X -> ?X
+   ```
 *)
 Ltac constructor_conj :=
 match goal with
+| [ |- ?X /\ ?X ] =>
+  apply conj2
 | [ |- _ /\ _ ] =>
   apply conj
 end.
@@ -156,6 +169,15 @@ constructor_conj.
   auto.
 - rewrite p.
   auto.
+Qed.
+
+Example example_duplicate_conj: forall (x: nat) (p: x = 0),
+  x < 2 /\ x < 2.
+Proof.
+intros.
+constructor_conj.
+rewrite p.
+auto.
 Qed.
 
 (* wreckit_step is helpful for seeing what wreckit does step by step *)
