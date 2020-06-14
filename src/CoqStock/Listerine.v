@@ -84,6 +84,9 @@ Local Ltac list_empty :=
 | [ |- context [_ ++ []] ] =>
   rewrite app_nil_r
   (* xs ++ [] = xs *)
+| [ |- [] = [] ] =>
+  reflexivity
+  (* [] = [] *)
 end.
 
 Example example_list_empty_neq_cons_r: forall {A: Type} (x: A) (xs: list A) ,
