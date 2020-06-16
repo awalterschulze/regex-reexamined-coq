@@ -39,8 +39,10 @@ Yes we can merge an Admitted or Abort proof with a TODO comment.  This is where 
 
 A proof may be left out if:
 
- - you are lazy, for example maybe you see the proof will be similar to other proofs (this gives beginners an opportunity to also contribute).  In this case please add `(* TODO: Good First Issue *)`
- - you need help (this gives beginners who are up for a challenge, a chance to contribute). In this case please add `(* TODO: Help Wanted *)`
+ ### TODO, Good First Issue
+ - you are lazy, for example maybe you see the proof will be similar to other proofs (this gives beginners an opportunity to also contribute).
+ ### TODO, Help Wanted
+ - you need help (this gives beginners who are up for a challenge, a chance to contribute).
 
 ### Tactics
 
