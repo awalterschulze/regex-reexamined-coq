@@ -47,15 +47,33 @@ Inductive nor_seqs (P Q: seqs): seqs :=
     nor_seqs P Q s
   .
 
+Inductive emptyset_seqs: seqs :=
+  (* | mk_emptyset: forall (s: seq),
+    False ->
+    emptyset_seqs s *)
+  .
+
+Inductive lambda_seqs: seqs :=
+  | mk_lambda: forall (s: seq),
+    s = [] ->
+    lambda_seqs s
+  .
+
+Inductive symbol_seqs (a: alphabet): seqs :=
+  | mk_symbol: forall (s: seq),
+    s = [a] ->
+    symbol_seqs a s
+  .
+
 (* Here we use a mix of Fixpoint and Inductive predicates to define the denotation of regular expressions.
    This works, but it would be nicer to define it purely as an Inductive predicate.
 *)
 Reserved Notation "{{ r }}" (r at level 60, no associativity).
 Fixpoint denote_regex (r: regex): seqs :=
   match r with
-  | emptyset => fun _ => False
-  | lambda => fun xs => xs = []
-  | symbol y => fun xs => xs = [y]
+  | emptyset => emptyset_seqs
+  | lambda => lambda_seqs
+  | symbol y => symbol_seqs y
   | concat r1 r2 => concat_seqs {{r1}} {{r2}}
   | star r1 => star_seqs {{r1}}
   | nor r1 r2 => nor_seqs {{r1}} {{r2}}

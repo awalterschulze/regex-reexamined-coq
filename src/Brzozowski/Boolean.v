@@ -1,4 +1,8 @@
+Require Import List.
+Import ListNotations.
+
 Require Import CoqStock.WreckIt.
+Require Import CoqStock.Listerine.
 
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Regex.
@@ -90,7 +94,7 @@ wreckit.
 unfold not.
 unfold "`elem`".
 intros.
-assumption.
+inversion H.
 Qed.
 
 Theorem notelem_emptyset: forall (s: seq),
@@ -100,7 +104,7 @@ intros.
 unfold not.
 cbn.
 intros.
-assumption.
+inversion H.
 Qed.
 
 Theorem notelem_intersection_l: forall (p q: regex) (s: seq),
@@ -157,7 +161,7 @@ apply H3.
 constructor.
 unfold not.
 constructor; assumption.
-Qed.  
+Qed.
 
 Lemma elem_or_notelem_symbol: forall (a: alphabet) (s: seq),
   s `elem` {{symbol a}} \/ s `notelem` {{symbol a}}.
@@ -167,16 +171,18 @@ induction s.
   unfold not.
   intros.
   inversion H.
+  listerine.
 - induction s.
   + induction a, a0.
-    * left. constructor.
-    * right. unfold not. intros. inversion H.
-    * right. unfold not. intros. inversion H.
-    * left. constructor.
+    * left. constructor. reflexivity.
+    * right. unfold not. intros. inversion H. listerine.
+    * right. unfold not. intros. inversion H. listerine.
+    * left. constructor. reflexivity.
   + right.
     unfold not.
     intros.
     inversion H.
+    discriminate.
 Qed.   
 
 Lemma elem_or_notelem_emptyset: forall (s: seq),
@@ -194,8 +200,8 @@ Lemma elem_or_notelem_lambda: forall (s: seq),
 Proof.
 intros.
 induction s.
-- left. constructor.
-- right. unfold not. intros. inversion H.
+- left. constructor. reflexivity.
+- right. unfold not. intros. inversion H. listerine.
 Qed.
 
 Lemma elem_or_notelem_concat: forall (r1 r2: regex) (s: seq),

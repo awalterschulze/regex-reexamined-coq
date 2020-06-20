@@ -20,3 +20,10 @@ destruct x, y.
 - right. discriminate.
 - left. reflexivity.
 Qed. 
+
+Definition eqa (x y: alphabet): bool :=
+  match (x, y) with
+  | (a0, a0) => true
+  | (a1, a1) => true
+  | _ => false
+  end.

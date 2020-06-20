@@ -1,6 +1,8 @@
 Require Import List.
 Import ListNotations.
 
+Require Import CoqStock.Listerine.
+
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Regex.
 Require Import Brzozowski.Sequences.
@@ -41,6 +43,7 @@ Theorem delta_lambda_is_lambda: delta lambda lambda.
 Proof.
 apply delta_lambda.
 constructor.
+reflexivity.
 Qed.
 
 Theorem delta_emptyset_is_emptyset: delta emptyset emptyset.
@@ -59,6 +62,7 @@ apply delta_emptyset.
 unfold not.
 intros.
 inversion H.
+listerine.
 Qed.
 
 (*
