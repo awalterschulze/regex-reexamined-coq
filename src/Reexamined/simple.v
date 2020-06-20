@@ -5,11 +5,11 @@ Require Import List.
 
 Require Import CoqStock.comparable.
 Require Import Reexamined.compare_regex.
-Require Import derive.
+Require Import Reexamined.derive.
 Require Import Reexamined.nullable.
 Require Import Reexamined.regex.
-Require Import smart.
-Require Import smart_or.
+Require Import Reexamined.smart.
+Require Import Reexamined.smart_or.
 
 (* simple is a simpler version of simplified to learn how to prove simplified in future *)
 Fixpoint simple {A: Type} {cmp: comparable A} (r: regex A) : Prop :=

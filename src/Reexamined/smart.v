@@ -5,10 +5,10 @@ Require Import List.
 
 Require Import CoqStock.comparable.
 Require Import Reexamined.compare_regex.
-Require Import derive.
+Require Import Reexamined.derive.
 Require Import Reexamined.nullable.
 Require Import Reexamined.regex.
-Require Import smart_or.
+Require Import Reexamined.smart_or.
 
 (* sderive is the same as derive, except that it applies
    simplification rules by construction.
