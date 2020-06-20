@@ -1,9 +1,10 @@
 Require Import List.
 Import ListNotations.
 
-Require Import CoqStock.WreckIt.
 Require Import CoqStock.Listerine.
 Require Import CoqStock.Invs.
+Require Import CoqStock.Untie.
+Require Import CoqStock.WreckIt.
 
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Delta.
@@ -50,7 +51,6 @@ unfold seqs_eq.
 split.
 - intros.
   inversion_clear H.
-  discriminate.
 - intros.
   inversion_clear H.
 Qed. 
@@ -65,13 +65,10 @@ split.
 - intros.
   inversion_clear H.
   constructor.
-  listerine.
 - intros.
   inversion_clear H.
   apply mk_derive_seqs.
   constructor.
-  subst.
-  reflexivity.
 Qed.
 
 Theorem derive_seqs_symbol_a1:
@@ -83,7 +80,6 @@ unfold seqs_eq.
 split.
 - intros.
   inversion_clear H.
-  listerine.
 - intros.
   inversion_clear H.
 Qed.
@@ -111,7 +107,7 @@ split.
     exists [].
     exists eq_refl.
     split.
-    * constructor. reflexivity.
+    * constructor.
     * apply mk_star_zero.
       reflexivity.
   + inversion_clear H0.
@@ -127,34 +123,17 @@ split.
     exists (a0 :: x0).
     exists eq_refl.
     split.
-    -- constructor. reflexivity.
+    -- constructor.
     -- apply mk_star_more.
        constructor.
        exists [a0].
        exists x0.
        exists eq_refl.
        split.
-       ++ constructor. reflexivity.
+       ++ constructor.
        ++ cbn in R.
           exact R.
 Qed.
-
-Fixpoint delta_def (r: regex): regex :=
-match r with
-| emptyset => emptyset
-| lambda => lambda
-| symbol _ => emptyset
-| concat s t => match (delta_def s, delta_def t) with
-  | (lambda, lambda) => lambda
-  | _ => emptyset
-  end
-| star s => lambda
-| nor s t => 
-    match (delta_def s, delta_def t) with
-    | (emptyset, emptyset) => lambda
-    | _ => emptyset
-    end
-end.
 
 Fixpoint derive_def (r: regex) (a: alphabet) : regex :=
   match r with
@@ -180,7 +159,7 @@ split.
   inversion H.
 - intros.
   inversion H.
-Qed.  
+Qed.
 
 Theorem commutes_emptyset: forall (a: alphabet),
   derive_seqs {{ emptyset }} a
@@ -201,7 +180,6 @@ intros.
 split.
 - intros.
   inversion H.
-  discriminate.
 - intros.
   inversion H.
 Qed.
@@ -215,19 +193,129 @@ intros.
 split; intros.
 - inversion H.
   subst.
-  destruct a, b; cbn.
+  destruct a; cbn.
   + constructor.
-    listerine.
-  + discriminate.
-  + discriminate.
   + constructor.
-    listerine.
 - destruct a, b; cbn in H.
-  + invs H. constructor. reflexivity.
+  + invs H. constructor.
   + inversion H.
   + inversion H.
-  + invs H. constructor. reflexivity.
-Qed.   
+  + invs H. constructor.
+Qed.
+
+Theorem commutes_concat: forall (s t: regex) (a: alphabet),
+  derive_seqs {{s}} a `seqs_eq` {{derive_def s a}} ->
+  derive_seqs {{t}} a `seqs_eq` {{derive_def t a}} ->
+  derive_seqs {{ concat s t }} a
+  `seqs_eq`
+  {{ derive_def (concat s t) a }}.
+Proof.
+intros.
+split; intros.
+- invs H1. wreckit. cbn. constructor. wreckit.
+  untie.
+  invs H1.
+  wreckit.
+  listerine.
+  apply delta_lambda in L.
+  apply delta_implies_delta_def in L.
+  + apply H0 in R.
+    apply R0.
+    constructor.
+    exists [].
+    exists s0.
+    exists eq_refl.
+    split.
+    * rewrite L.
+      constructor.
+    * assumption.
+  + apply H in L.
+    apply L0.
+    constructor.
+    exists L1.
+    exists x0.
+    exists eq_refl.
+    split.
+    * assumption.
+    * assumption.
+- cbn.
+  inversion_clear H1.
+  wreckit.
+  induction s.
+  + exfalso. apply R.
+    constructor.
+    split.
+    * untie.
+      inversion_clear H1.
+      wreckit.
+      inversion L0.
+    * untie.
+      inversion_clear H1.
+      wreckit.
+      inversion L0.
+  + constructor.
+    exists [].
+    exists (a :: s0).
+    exists eq_refl.
+    split.
+    * constructor.
+    * induction t.
+      -- exfalso.
+         apply R.
+         constructor.
+         split.
+         ++ untie.
+            inversion H1.
+            wreckit.
+            inversion R0.
+         ++ untie.
+            inversion H1.
+            wreckit.
+            inversion R0.
+      -- exfalso.
+         apply R.
+         constructor.
+         split.
+         ++ untie.
+            inversion H1.
+            wreckit.
+            inversion L0.
+         ++ untie.
+            inversion H1.
+            wreckit.
+            inversion R0.
+      -- destruct s0.
+         ++ destruct a.
+            ** exfalso.
+               apply R.
+               constructor.
+               split.
+               --- untie.
+                   inversion H1.
+                   wreckit.
+                   inversion L0.
+               --- untie.
+                   inversion H1.
+                   wreckit.
+                   inversion L0.
+                   listerine.
+                   wreckit.
+                   subst.
+                   cbn in R0.
+                   destruct a0.
+                   +++ inversion R0. 
+
+                   inversion R1.
+                   cbn in R0.
+                   inversion R0. 
+
+  
+
+   
+   
+  
+
+
 
 
 Theorem commutes: forall (r: regex) (a: alphabet),
@@ -238,5 +326,7 @@ Proof.
 intros.
 induction r.
 - apply commutes_emptyset.
-- 
+- apply commutes_lambda.
+- apply commutes_symbol.
+-   
   

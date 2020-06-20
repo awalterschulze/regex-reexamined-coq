@@ -33,6 +33,7 @@ src/Reexamined/smart_or.v
 src/Brzozowski/Alphabet.v
 src/Brzozowski/Boolean.v
 src/Brzozowski/Delta.v
+
 src/Brzozowski/ExampleR.v
 src/Brzozowski/Regex.v
 src/Brzozowski/Sequences.v
