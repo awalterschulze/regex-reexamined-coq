@@ -1,41 +1,38 @@
 -R src ""
 
-src/CoqStock/Listerine.v
-src/CoqStock/orb_simple.v
-src/CoqStock/comparable.v
 
+src/CoqStock/comparable.v
 src/CoqStock/compare_nat.v
-src/CoqStock/sort.v
-src/CoqStock/list_set.v
 src/CoqStock/dup.v
+src/CoqStock/list_set.v
+src/CoqStock/orb_simple.v
 src/CoqStock/reorder.v
 src/CoqStock/reduce_orb.v
-src/CoqStock/WreckIt.v
+src/CoqStock/sort.v
 src/CoqStock/Invs.v
-
-src/Reexamined/regex.v
-src/Reexamined/size.v
-src/Reexamined/nullable.v
-src/Reexamined/compare_regex.v
-src/Reexamined/derive_def.v
-src/Reexamined/matches_pred.v
-
-src/matches_pred_proofs.v
-src/setoid.v
-src/derive.v
-src/smart_or.v
-src/smart.v
-src/simplified.v
-src/simple.v
-src/set_of_sequences.v
-
+src/CoqStock/Listerine.v
 src/CoqStock/Untie.v
+src/CoqStock/WreckIt.v
 
-src/main.v
+src/Reexamined/compare_regex.v
+src/Reexamined/derive.v
+src/Reexamined/derive_def.v
+src/Reexamined/nullable.v
+src/Reexamined/main.v
+src/Reexamined/matches_pred.v
+src/Reexamined/matches_pred_proofs.v
+src/Reexamined/regex.v
+src/Reexamined/setoid.v
+src/Reexamined/set_of_sequences.v
+src/Reexamined/simple.v
+src/Reexamined/simplified.v
+src/Reexamined/size.v
+src/Reexamined/smart.v
+src/Reexamined/smart_or.v
 
 src/Brzozowski/Alphabet.v
-src/Brzozowski/Sequences.v
-src/Brzozowski/Regex.v
-src/Brzozowski/Delta.v
 src/Brzozowski/Boolean.v
+src/Brzozowski/Delta.v
 src/Brzozowski/ExampleR.v
+src/Brzozowski/Regex.v
+src/Brzozowski/Sequences.v

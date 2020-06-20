@@ -8,7 +8,7 @@ Require Import Reexamined.nullable.
 Require Import CoqStock.orb_simple.
 Require Import Reexamined.regex.
 Require Import CoqStock.reduce_orb.
-Require Import setoid.
+Require Import Reexamined.setoid.
 
 Theorem fail_is_terminating : forall {A: Type} {cmp: comparable A} (xs: list A),
   matchesb fail xs = false.

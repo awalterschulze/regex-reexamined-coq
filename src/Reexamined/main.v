@@ -5,10 +5,10 @@ Require Import List.
 
 Require Import CoqStock.comparable.
 Require Import Reexamined.compare_regex.
-Require Import derive.
+Require Import Reexamined.derive.
 Require Import Reexamined.nullable.
 Require Import Reexamined.regex.
-Require Import smart.
+Require Import Reexamined.smart.
 
 (*Using only or_comm, or_assoc and or_idemp 
   Brzozowski proved that a notion of RE similarity including only
