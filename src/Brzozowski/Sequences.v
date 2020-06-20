@@ -48,22 +48,31 @@ Inductive nor_seqs (P Q: seqs): seqs :=
   .
 
 Inductive emptyset_seqs: seqs :=
-  (* | mk_emptyset: forall (s: seq),
-    False ->
-    emptyset_seqs s *)
   .
+  (* 
+  | mk_emptyset: forall (s: seq),
+    False ->
+    emptyset_seqs s
+  *)
 
 Inductive lambda_seqs: seqs :=
-  | mk_lambda: forall (s: seq),
+  | mk_lambda: lambda_seqs []
+  .
+  (*
+  | mk_lambda:
+    forall (s: seq),
     s = [] ->
     lambda_seqs s
-  .
+  *)
 
 Inductive symbol_seqs (a: alphabet): seqs :=
-  | mk_symbol: forall (s: seq),
+  | mk_symbol: symbol_seqs a [a].
+  (*
+  | mk_symbol:
+    forall (s: seq),
     s = [a] ->
     symbol_seqs a s
-  .
+  *)
 
 (* Here we use a mix of Fixpoint and Inductive predicates to define the denotation of regular expressions.
    This works, but it would be nicer to define it purely as an Inductive predicate.

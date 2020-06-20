@@ -1,7 +1,10 @@
 Require Import List.
 Import ListNotations.
 
+Require Import CoqStock.Invs.
 Require Import CoqStock.Listerine.
+Require Import CoqStock.Untie.
+Require Import CoqStock.WreckIt.
 
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Regex.
@@ -19,31 +22,30 @@ Require Import Brzozowski.Sequences.
 *)
 
 Inductive delta: regex -> regex -> Prop :=
-    | delta_lambda (r: regex):
-        [] `elem` {{r}} ->
-        delta r lambda
-    | delta_emptyset (r: regex):
-        [] `notelem` {{r}} ->
-        delta r emptyset
+  | delta_lambda (r: regex):
+    [] `elem` {{r}} ->
+    delta r lambda
+  | delta_emptyset (r: regex):
+    [] `notelem` {{r}} ->
+    delta r emptyset
     .
 
 (*
-    It is clear that:
+  It is clear that:
 
-    $$
-    \begin{aligned}
-    \delta(a) & = \emptyset\ \text{for any}\ a \in \Sigma_k, \\
-    \delta(\lambda) & = \lambda, \text{and} \\
-    \delta(\emptyset) & = \emptyset . \\
-    \end{aligned}
-    $$
+  $$
+  \begin{aligned}
+  \delta(a) & = \emptyset\ \text{for any}\ a \in \Sigma_k, \\
+  \delta(\lambda) & = \lambda, \text{and} \\
+  \delta(\emptyset) & = \emptyset . \\
+  \end{aligned}
+  $$
 *)
 
 Theorem delta_lambda_is_lambda: delta lambda lambda.
 Proof.
 apply delta_lambda.
 constructor.
-reflexivity.
 Qed.
 
 Theorem delta_emptyset_is_emptyset: delta emptyset emptyset.
@@ -62,7 +64,6 @@ apply delta_emptyset.
 unfold not.
 intros.
 inversion H.
-listerine.
 Qed.
 
 (*
@@ -231,3 +232,182 @@ inversion H.
 constructor.
 constructor; assumption.
 Qed.
+
+Fixpoint delta_def (r: regex): regex :=
+  match r with
+  | emptyset => emptyset
+  | lambda => lambda
+  | symbol _ => emptyset
+  | concat s t => match (delta_def s, delta_def t) with
+    | (lambda, lambda) => lambda
+    | _ => emptyset
+    end
+  | star s => lambda
+  | nor s t => 
+      match (delta_def s, delta_def t) with
+      | (emptyset, emptyset) => lambda
+      | _ => emptyset
+      end
+end.
+
+Theorem delta_is_delta_def:
+  forall (r: regex),
+  delta r (delta_def r).
+Proof.
+intros.
+induction r.
+- cbn.
+  apply delta_emptyset.
+  untie.
+- cbn.
+  apply delta_lambda.
+  constructor.
+- cbn.
+  apply delta_emptyset.
+  untie.
+  invs H.
+- cbn.
+  invs IHr1;
+  invs IHr2.
+  + apply delta_lambda.
+    constructor.
+    exists [].
+    exists [].
+    exists eq_refl.
+    split; assumption.
+  + apply delta_emptyset.
+    untie.
+    invs H1.
+    wreckit.
+    listerine.
+    wreckit.
+    contradiction.
+  + apply delta_emptyset.
+    untie.
+    invs H1.
+    wreckit.
+    listerine.
+    wreckit.
+    contradiction.
+  + apply delta_emptyset.
+    untie.
+    invs H1.
+    wreckit.
+    listerine.
+    wreckit.
+    contradiction.
+- cbn.
+  apply delta_lambda.
+  constructor.
+  reflexivity.
+- cbn.
+  invs IHr1; invs IHr2.
+  + apply delta_emptyset.
+    untie.
+    inversion H1.
+    wreckit.
+    contradiction.
+  + apply delta_emptyset.
+    untie.
+    inversion H1.
+    wreckit.
+    contradiction.
+  + apply delta_emptyset.
+    untie.
+    inversion H1.
+    wreckit.
+    contradiction.
+  + apply delta_lambda.
+    constructor.
+    split; assumption.
+Qed.
+
+Theorem delta_def_implies_delta:
+  forall (r s: regex),
+  delta_def r = s -> delta r s.
+Proof.
+intros.
+rewrite <- H.
+apply delta_is_delta_def.
+Qed.
+
+Theorem delta_implies_delta_def:
+  forall (r s: regex),
+  delta r s -> delta_def r = s.
+Proof.
+intros.
+inversion_clear H.
+- induction r.
+  + inversion H0.
+  + cbn. reflexivity.
+  + inversion H0.
+  + invs H0. wreckit. listerine. wreckit. subst.
+    remember (IHr1 L).
+    remember (IHr2 R).
+    cbn.
+    rewrite e.
+    rewrite e0.
+    reflexivity.
+  + cbn. reflexivity.
+  + invs H0. wreckit.
+    cbn.
+    remember (delta_def r1).
+    remember (delta_def r2).
+    induction r;
+      symmetry in Heqr;
+      apply delta_def_implies_delta in Heqr;
+      symmetry in Heqr0;
+      apply delta_def_implies_delta in Heqr0;
+      inversion Heqr;
+      inversion Heqr0.
+    * remember (R H1).
+      inversion f.
+    * reflexivity.
+    * remember (L H).
+      inversion f.
+    * remember (L H).
+      inversion f.
+- induction r.
+  + cbn. reflexivity.
+  + exfalso.
+    apply H0.
+    constructor.
+  + cbn. reflexivity.
+  + cbn.
+    remember (delta_def r1) as dr1.
+    remember (delta_def r2) as dr2.
+    symmetry in Heqdr1.
+    symmetry in Heqdr2.
+    apply delta_def_implies_delta in Heqdr1.
+    apply delta_def_implies_delta in Heqdr2.
+    induction dr1; inversion_clear Heqdr1.
+    * reflexivity.
+    * induction dr2; inversion_clear Heqdr2.
+      -- reflexivity.
+      -- exfalso.
+         apply H0.
+         constructor.
+         exists [].
+         exists [].
+         exists eq_refl.
+         split; assumption.
+  + exfalso.
+    apply H0.
+    constructor.
+    reflexivity.
+  + cbn.
+    remember (delta_def r1) as dr1.
+    remember (delta_def r2) as dr2.
+    symmetry in Heqdr1.
+    symmetry in Heqdr2.
+    apply delta_def_implies_delta in Heqdr1.
+    apply delta_def_implies_delta in Heqdr2.
+    induction dr1; inversion_clear Heqdr1.
+    * induction dr2; inversion_clear Heqdr2.
+      -- exfalso. apply H0. constructor.
+         split; assumption.
+      -- reflexivity.
+    * reflexivity.
+Qed.
+    
+    

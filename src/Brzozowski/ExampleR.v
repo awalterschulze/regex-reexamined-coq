@@ -42,8 +42,8 @@ constructor.
   exists [a1].
   exists eq_refl.
   constructor.
-  + constructor. reflexivity.
-  + constructor. reflexivity.
+  + constructor.
+  + constructor.
 Qed.
 
 Lemma test_notelem_xI01_101_false:
@@ -127,7 +127,6 @@ elemt.
   listerine.
   subst.
   elemt.
-  discriminate.
 - elemt.
   wreckit.
   subst.

@@ -171,18 +171,16 @@ induction s.
   unfold not.
   intros.
   inversion H.
-  listerine.
 - induction s.
   + induction a, a0.
-    * left. constructor. reflexivity.
-    * right. unfold not. intros. inversion H. listerine.
-    * right. unfold not. intros. inversion H. listerine.
-    * left. constructor. reflexivity.
+    * left. constructor.
+    * right. unfold not. intros. inversion H.
+    * right. unfold not. intros. inversion H.
+    * left. constructor.
   + right.
     unfold not.
     intros.
     inversion H.
-    discriminate.
 Qed.   
 
 Lemma elem_or_notelem_emptyset: forall (s: seq),
@@ -200,8 +198,8 @@ Lemma elem_or_notelem_lambda: forall (s: seq),
 Proof.
 intros.
 induction s.
-- left. constructor. reflexivity.
-- right. unfold not. intros. inversion H. listerine.
+- left. constructor.
+- right. unfold not. intros. inversion H.
 Qed.
 
 Lemma elem_or_notelem_concat: forall (r1 r2: regex) (s: seq),
