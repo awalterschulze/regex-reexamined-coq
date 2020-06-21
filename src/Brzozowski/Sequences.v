@@ -1,6 +1,10 @@
 Require Import List.
 Import ListNotations.
 
+Require Import CoqStock.Invs.
+Require Import CoqStock.Listerine.
+Require Import CoqStock.WreckIt.
+
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Regex.
 
@@ -50,32 +54,41 @@ Inductive nor_seqs (P Q: seqs): seqs :=
 Inductive emptyset_seqs: seqs :=
   .
   (* 
+  This is equivalent to:
+  ```
   | mk_emptyset: forall (s: seq),
     False ->
     emptyset_seqs s
+  ```
   *)
 
 Inductive lambda_seqs: seqs :=
   | mk_lambda: lambda_seqs []
   .
   (*
+  This is equivalent to:
+  ```
   | mk_lambda:
     forall (s: seq),
     s = [] ->
     lambda_seqs s
+  ```
   *)
 
 Inductive symbol_seqs (a: alphabet): seqs :=
   | mk_symbol: symbol_seqs a [a].
   (*
+  This is equivalent to:
+  ```
   | mk_symbol:
     forall (s: seq),
     s = [a] ->
     symbol_seqs a s
+  ```
   *)
 
-(* Here we use a mix of Fixpoint and Inductive predicates to define the denotation of regular expressions.
-   This works, but it would be nicer to define it purely as an Inductive predicate.
+(* 
+  Here we use a mix of Fixpoint and Inductive predicates to define the denotation of regular expressions.
 *)
 Reserved Notation "{{ r }}" (r at level 60, no associativity).
 Fixpoint denote_regex (r: regex): seqs :=
@@ -88,3 +101,90 @@ Fixpoint denote_regex (r: regex): seqs :=
   | nor r1 r2 => nor_seqs {{r1}} {{r2}}
   end
 where "{{ r }}" := (denote_regex r).
+
+Definition seqs_impl (s1 s2: seqs): Prop :=
+  forall (s: seq),
+  s `elem` s1 -> s `elem` s2.
+
+Notation "s1 {->} s2" := (seqs_impl s1 s2) (at level 80).
+
+Definition seqs_eq (s1 s2: seqs): Prop :=
+  forall (s: seq),
+  s `elem` s1 <-> s `elem` s2.
+
+Notation "s1 {<->} s2" := (seqs_eq s1 s2) (at level 80).
+
+Theorem concat_emptyset_l: forall (r: seqs),
+  concat_seqs emptyset_seqs r
+  {<->}
+  emptyset_seqs.
+Proof.
+split.
+- intros.
+  invs H.
+  wreckit.
+  invs L.
+- intros.
+  invs H. 
+Qed.
+
+Theorem concat_emptyset_r: forall (r: seqs),
+  concat_seqs r emptyset_seqs
+  {<->}
+  emptyset_seqs.
+Proof.
+split.
+- intros.
+  invs H.
+  wreckit.
+  invs R.
+- intros.
+  invs H.
+Qed.
+
+Theorem concat_lambda_l: forall (r: seqs),
+  concat_seqs lambda_seqs r
+  {<->}
+  r.
+Proof.
+split.
+- intros.
+  invs H.
+  wreckit.
+  subst.
+  inversion_clear L.
+  cbn.
+  assumption.
+- intros.
+  constructor.
+  exists [].
+  exists s.
+  exists eq_refl.
+  split.
+  + constructor.
+  + assumption.
+Qed.
+
+Theorem concat_lambda_r: forall (r: seqs),
+  concat_seqs r lambda_seqs
+  {<->}
+  r.
+Proof.
+split.
+- intros.
+  invs H.
+  wreckit.
+  subst.
+  inversion_clear R.
+  listerine.
+  assumption.
+- intros.
+  constructor.
+  exists s.
+  exists [].
+  assert (s ++ [] = s). listerine. reflexivity.
+  exists H0.
+  split.
+  + assumption.
+  + constructor.
+Qed.

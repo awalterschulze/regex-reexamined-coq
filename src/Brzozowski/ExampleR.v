@@ -17,29 +17,29 @@ The desired expression is easily seen to be:
 
 R = (I.1.1.1.I)\&(I.0.1+1.1^{*})'.
 *)
-Definition x1 := symbol a1.
-Definition x0 := symbol a0.
+Definition x1 := symbol A1.
+Definition x0 := symbol A0.
 Definition xI111I := concat I (concat x1 (concat x1 (concat x1 I))).
 Definition xI01 := concat I (concat x0 x1).
 Definition x11star := concat x1 (star x1).
 Definition exampleR := and xI111I (complement (or xI01 x11star)).
 
 Lemma test_elem_xI01_101:
-  ([a1] ++ [a0] ++ [a1]) `elem` {{xI01}}.
+  ([A1] ++ [A0] ++ [A1]) `elem` {{xI01}}.
 Proof.
 unfold xI01.
 constructor.
-exists [a1].
-exists ([a0] ++ [a1]).
-assert ([a1] ++ [a0] ++ [a1] = [a1; a0; a1]). reflexivity.
+exists [A1].
+exists ([A0] ++ [A1]).
+assert ([A1] ++ [A0] ++ [A1] = [A1; A0; A1]). reflexivity.
 exists H.
 constructor.
 - constructor.
   wreckit.
   apply notelem_emptyset.
 - constructor.
-  exists [a0].
-  exists [a1].
+  exists [A0].
+  exists [A1].
   exists eq_refl.
   constructor.
   + constructor.
@@ -47,7 +47,7 @@ constructor.
 Qed.
 
 Lemma test_notelem_xI01_101_false:
-  ([a1] ++ [a0] ++ [a1]) `notelem` {{xI01}}  -> False.
+  ([A1] ++ [A0] ++ [A1]) `notelem` {{xI01}}  -> False.
 Proof.
 unfold not.
 intros.
@@ -74,7 +74,7 @@ subst.
 cbn in x3.
 apply app_eq_nil in x3.
 wreckit.
-assert ([a0; a1] <> []).
+assert ([A0; A1] <> []).
 discriminate.
 subst.
 elemt.
@@ -84,7 +84,7 @@ contradiction.
 Qed.
 
 Lemma test_notelem_xI01_10:
-  ([a1] ++ [a0]) `notelem` {{xI01}}.
+  ([A1] ++ [A0]) `notelem` {{xI01}}.
 Proof.
 elemt.
 elemt.
@@ -96,13 +96,13 @@ elemt.
 elemt.
 wreckit.
 subst.
-assert (x ++ [a0] ++ [a1] <> [a1] ++ [a0]).
+assert (x ++ [A0] ++ [A1] <> [A1] ++ [A0]).
 listerine.
 contradiction.
 Qed.
 
 Lemma test_notelem_xI01_1110:
-  ([a1] ++ [a1] ++ [a1] ++ [a0]) `notelem` {{xI01}}.
+  ([A1] ++ [A1] ++ [A1] ++ [A0]) `notelem` {{xI01}}.
 Proof.
 elemt.
 elemt.
@@ -117,7 +117,7 @@ listerine.
 Qed.
 
 Lemma test_notelem_x11star_0: 
-  [a0] `notelem` {{ x11star }}.
+  [A0] `notelem` {{ x11star }}.
 Proof.
 elemt.
 elemt.
@@ -137,7 +137,7 @@ elemt.
 Qed.
 
 Lemma test_notelem_x11star_1110: 
-    ([a1] ++ [a1] ++ [a1] ++ [a0]) `notelem` {{x11star}}.
+    ([A1] ++ [A1] ++ [A1] ++ [A0]) `notelem` {{x11star}}.
 Proof.
 (* TODO: Good First Issue
    first merge listerine
@@ -145,7 +145,7 @@ Proof.
 Abort.
 
 Lemma test_elem_xI111I_1110: 
-    ([a1] ++ [a1] ++ [a1] ++ [a0]) `elem` {{xI111I}}.
+    ([A1] ++ [A1] ++ [A1] ++ [A0]) `elem` {{xI111I}}.
 Proof.
 (* TODO: Good First Issue
    first merge listerine
@@ -153,7 +153,7 @@ Proof.
 Abort.
 
 Theorem test_exampleR_1110_elem: 
-    ([a1] ++ [a1] ++ [a1] ++ [a0]) `elem` {{exampleR}}.
+    ([A1] ++ [A1] ++ [A1] ++ [A0]) `elem` {{exampleR}}.
 Proof.
 (* TODO: Good First Issue
    first merge listerine
@@ -162,7 +162,7 @@ Abort.
 
 
 Theorem test_exampleR_111_notelem: 
-    [a1; a1; a1] `notelem` {{exampleR}}.
+    [A1; A1; A1] `notelem` {{exampleR}}.
 Proof.
 (* TODO: Good First Issue
    first merge listerine
