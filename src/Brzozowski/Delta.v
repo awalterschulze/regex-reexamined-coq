@@ -11,7 +11,8 @@ Require Import Brzozowski.Regex.
 Require Import Brzozowski.Sequences.
 
 (*
-    **Definition 3.2.** Given any set $R$ of sequences we define $\delta(R)$ to be
+    **Definition 3.2.**
+    Given any set $R$ of sequences we define $\delta(R)$ to be
 
     $$
     \begin{aligned}
@@ -29,6 +30,28 @@ Inductive delta: regex -> regex -> Prop :=
     [] `notelem` {{r}} ->
     delta r emptyset
     .
+
+(*
+delta_and is only true when both regexes are true, where
+true = lambda
+false = emptyset
+*)
+Fixpoint delta_and (p q: regex): regex :=
+  match (p, q) with
+  | (lambda, lambda) => lambda
+  | _ => emptyset
+  end.
+
+(*
+delta_nor is only true when both regexes are false, where
+true = lambda
+false = emptyset
+*)
+Fixpoint delta_nor (p q: regex): regex :=
+  match (p, q) with
+  | (emptyset, emptyset) => lambda
+  | _ => emptyset
+  end.
 
 (*
   It is clear that:
@@ -77,6 +100,7 @@ Qed.
     $$
 *)
 
+(* \delta(P* ) = \lambda\ *)
 Theorem delta_star_is_lambda: forall (r: regex),
     delta (star r) lambda.
 Proof.
@@ -105,6 +129,28 @@ split.
   exact  H2.
 Qed.
 
+(* \delta(P.Q) = \delta(P)\ \&\ \delta(Q) *)
+Theorem delta_concat_is_and:
+  forall (p q: regex)
+         (dp dq: regex)
+         (dc: regex)
+         (delta_p: delta p dp)
+         (delta_q: delta q dq),
+  delta (concat p q) (delta_and dp dq).
+Proof.
+intros.
+invs delta_p; invs delta_q; cbn; constructor; try untie.
+- constructor.
+  exists []. exists []. exists eq_refl.
+  split; assumption.
+- invs H1. wreckit. listerine. wreckit.
+  apply H0. assumption.
+- invs H1. wreckit. listerine. wreckit.
+  apply H. assumption.
+- invs H1. wreckit. listerine. wreckit.
+  apply H. assumption.
+Qed.
+
 Theorem delta_concat_is_and_emptyset_r: forall (p q: regex),
     delta p emptyset ->
     delta q lambda ->
@@ -130,17 +176,113 @@ Proof.
 Abort.
 
 (*
-    If $R = f(P, Q)$ it is also easy to determine $\delta(R)$. For example,
+  If $R = f(P, Q)$ it is also easy to determine $\delta(R)$. For example,
 
-    $$
-    \begin{aligned}
-    \text{(3.1)}&\ \delta(P + Q)    &= \delta(P) + \delta(Q). \\
-    \text{(3.2)}&\ \delta(P\ \&\ Q) &= \delta(P)\ \&\ \delta(Q). \\
-    \text{(3.3)}&\ \delta(P')       &= \lambda\ \text{if}\ \delta(P) = \emptyset \\
-                &                   &= \emptyset\ \text{if}\ \delta(P) = \lambda \\
-    \end{aligned}
-    $$
+  $$
+  \begin{aligned}
+  \text{(3.1)}&\ \delta(P + Q)    &= \delta(P) + \delta(Q). \\
+  \text{(3.2)}&\ \delta(P\ \&\ Q) &= \delta(P)\ \&\ \delta(Q). \\
+  \text{(3.3)}&\ \delta(P')       &= \lambda\ \text{if}\ \delta(P) = \emptyset \\
+              &                   &= \emptyset\ \text{if}\ \delta(P) = \lambda \\
+  \end{aligned}
+  $$
+
+  where $\&$ and $+$ is defined for $\delta$ similar to 
+  $\lambda$ being True and $\emptyset$ being False in a boolean equation.
+
+  $$
+  \begin{aligned}
+  A\ \&\ B = \lambda\ \text{if and only if}\ A = \lambda\ \text{and}\ B = \lambda \\
+  A + B = \emptyset\ \text{if and only if}\ A = \emptyset\ \text{and}\ B = \emptyset
+  \end{aligned}
+  $$
 *)
+
+(*
+delta_or is only true when one of the regexes are true, where
+true = lambda
+false = emptyset
+*)
+Fixpoint delta_or (p q: regex): regex :=
+  match (p, q) with
+  | (lambda, _) => lambda
+  | (_, lambda) => lambda
+  | _ => emptyset
+  end.
+
+(* \delta(P + Q) = \delta(P) + \delta(Q) *)
+Theorem delta_or_is_or:
+  forall
+    (p q: regex)
+    (dp dq: regex)
+    (delta_p: delta p dp)
+    (delta_q: delta q dq),
+    delta (or p q) (delta_or dp dq).
+Proof.
+intros.
+invs delta_p; invs delta_q; cbn; constructor;
+  try (constructor; split); untie;
+  invs H1; wreckit; try contradiction.
+- apply L. constructor.
+  split; assumption.
+Qed.
+
+(* \delta(P\ \&\ Q) = \delta(P)\ \&\ \delta(Q). *)
+Theorem delta_and_is_and:
+  forall
+    (p q: regex)
+    (dp dq: regex)
+    (delta_p: delta p dp)
+    (delta_q: delta q dq),
+    delta (and p q) (delta_and dp dq).
+Proof.
+intros.
+invs delta_p; invs delta_q; cbn; constructor;
+  try (constructor; split); 
+  untie;
+  invs H1;
+  wreckit;
+  try contradiction.
+- apply R. constructor. wreckit. assumption.
+- apply L. constructor. wreckit. assumption.
+- apply L. constructor. wreckit. assumption.
+Qed.
+
+(*
+delta_not is only true if input is false and vice versa, where
+true = lambda
+false = emptyset
+*)
+Fixpoint delta_not (p: regex): regex :=
+  match p with
+  | lambda => emptyset
+  | _ => lambda
+  end.
+
+(*
+\delta(P') = \lambda\ \text{if}\ \delta(P) = \emptyset \\
+\delta(P') = \emptyset\ \text{if}\ \delta(P) = \lambda
+*)
+Theorem delta_not_is_not:
+  forall
+    (p: regex)
+    (dp: regex)
+    (delta_p: delta p dp),
+    delta (complement p) (delta_not dp).
+Proof.
+intros.
+invs delta_p; cbn; constructor.
+- untie.
+  cbn in H0.
+  invs H0.
+  wreckit.
+  apply L.
+  assumption.
+- cbn.
+  constructor.
+  wreckit.
+  assumption.
+Qed. 
 
 Theorem delta_or_lambda: forall (p q: regex),
     delta p lambda ->
@@ -238,16 +380,9 @@ Fixpoint delta_def (r: regex): regex :=
   | emptyset => emptyset
   | lambda => lambda
   | symbol _ => emptyset
-  | concat s t => match (delta_def s, delta_def t) with
-    | (lambda, lambda) => lambda
-    | _ => emptyset
-    end
+  | concat s t => delta_and (delta_def s) (delta_def t)
   | star s => lambda
-  | nor s t => 
-      match (delta_def s, delta_def t) with
-      | (emptyset, emptyset) => lambda
-      | _ => emptyset
-      end
+  | nor s t => delta_nor (delta_def s) (delta_def t)
 end.
 
 Theorem delta_is_delta_def:
