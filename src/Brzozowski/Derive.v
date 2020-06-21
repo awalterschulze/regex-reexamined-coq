@@ -143,3 +143,108 @@ split; intros.
   + inversion H.
   + invs H. constructor.
 Qed.
+
+Theorem concat_seqs_impl_def: forall (r1 r2: regex) (a: alphabet),
+  derive_seqs {{r1}} a {->} {{derive_def r1 a}} ->
+  derive_seqs {{r2}} a {->} {{derive_def r2 a}} ->
+  (
+    derive_seqs {{ concat r1 r2 }} a
+    {->}
+    {{ derive_def (concat r1 r2) a }}
+  ).
+Proof.
+unfold seqs_impl.
+intros r1 r2 a R1 R2 s C.
+invs C. 
+wreckit.
+cbn.
+constructor.
+wreckit.
+untie.
+invs H.
+wreckit.
+listerine.
+- apply delta_lambda in L.
+  apply delta_implies_delta_def in L.
+  apply R2 in R.
+  apply R0.
+  constructor.
+  exists [].
+  exists s.
+  exists eq_refl.
+  split.
+  + rewrite L.
+    constructor.
+  + assumption.
+- apply R1 in L.
+  apply L0.
+  constructor.
+  exists L1.
+  exists x0.
+  exists eq_refl.
+  split.
+  * assumption.
+  * assumption.
+Qed.
+
+Theorem concat_emptyset_l_def_impl_seqs:
+  forall (r2: regex) (a: alphabet),
+  (
+    {{ derive_def (concat emptyset r2) a }}
+    {->}
+    derive_seqs {{ concat emptyset r2 }} a
+  ).
+Proof.
+unfold "{->}".
+intros r2 a s C.
+cbn in C.
+invs C.
+wreckit.
+exfalso.
+apply R.
+constructor.
+split.
+- untie.
+  invs H.
+  wreckit.
+  invs L0.
+- untie.
+  invs H.
+  wreckit.
+  invs L0.
+Qed.
+
+Theorem concat_emptyset_r_def_impl_seqs:
+  forall (r1: regex) (a: alphabet),
+  (
+    {{ derive_def (concat r1 emptyset) a }}
+    {->}
+    derive_seqs {{ concat r1 emptyset }} a
+  ).
+Proof.
+unfold "{->}".
+intros r1 a s C.
+cbn in C.
+invs C.
+wreckit.
+exfalso.
+apply R.
+constructor.
+split.
+- untie.
+  invs H.
+  wreckit.
+  invs R0.
+- untie.
+  invs H.
+  wreckit.
+  invs R0.
+Qed.
+
+Theorem derive_commutes: forall (r: regex) (a: alphabet),
+  derive_seqs {{ r }} a
+  {<->}
+  {{ derive_def r a }}.
+Proof.
+(* TODO: Help Wanted *)
+Abort.
