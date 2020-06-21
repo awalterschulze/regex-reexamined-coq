@@ -98,6 +98,19 @@ split.
   inversion H.
 Qed.
 
+Theorem emptyset_terminates: forall (s: seq),
+  derive_seqs emptyset_seqs s
+  {<->}
+  emptyset_seqs.
+Proof.
+intros.
+split.
+- intros.
+  inversion H.
+- intros.
+  inversion H.
+Qed.
+
 (*
 **THEOREM 3.1.** If $R$ is a regular expression, 
 the derivative of $R$ with respect to a character $a \in \Sigma_k$ is found 
@@ -128,6 +141,9 @@ Fixpoint derive_def (r: regex) (a: alphabet) : regex :=
   | nor s t => nor (derive_def s a) (derive_def t a)
   end.
 
+Fixpoint derive_defs (r: regex) (s: seq) : regex :=
+  fold_left derive_def s r.
+
 Theorem commutes_a_emptyset: forall (a: alphabet),
   derive_seqs_a {{ emptyset }} a
   {<->}
@@ -136,6 +152,24 @@ Proof.
 intros.
 cbn.
 apply emptyset_terminates_a.
+Qed.
+
+Theorem commutes_emptyset: forall (s: seq),
+  derive_seqs {{ emptyset }} s
+  {<->}
+  {{ derive_defs emptyset s }}.
+Proof.
+intros.
+induction s.
+- cbn. apply emptyset_terminates.
+- split; intros.
+  + invs H.
+  + unfold seqs_eq in IHs.
+    cbn in H.
+    fold (derive_defs emptyset s) in H.
+    remember (IHs s0).
+    apply i in H.
+    invs H.
 Qed.
 
 Theorem commutes_a_lambda: forall (a: alphabet),
@@ -149,6 +183,32 @@ split.
   inversion H.
 - intros.
   inversion H.
+Qed.
+
+Theorem commutes_lambda: forall (s: seq),
+  derive_seqs {{ lambda }} s
+  {<->}
+  {{ derive_defs lambda s }}.
+Proof.
+intros.
+split.
+- intros.
+  inversion H.
+  listerine.
+  constructor.
+- intros.
+  induction s, s0.
+  + constructor.
+  + cbn in H.
+    invs H.
+  + cbn in H.
+    fold (derive_defs emptyset s) in H.
+    apply commutes_emptyset in H.
+    invs H.
+  + cbn in H.
+    fold (derive_defs emptyset s) in H.
+    apply commutes_emptyset in H.
+    invs H.
 Qed.
 
 Theorem commutes_a_symbol: forall (a b: alphabet),
@@ -169,6 +229,14 @@ split; intros.
   + inversion H.
   + invs H. constructor.
 Qed.
+
+Theorem commutes_symbol: forall (b: alphabet) (s: seq),
+  derive_seqs {{ symbol b }} s
+  {<->}
+  {{ derive_defs (symbol b) s }}.
+Proof.
+(* TODO: Help Wanted *)
+Abort.
 
 Theorem concat_seqs_a_impl_def: forall (r1 r2: regex) (a: alphabet),
   derive_seqs_a {{r1}} a {->} {{derive_def r1 a}} ->
@@ -267,10 +335,18 @@ split.
   invs R0.
 Qed.
 
-Theorem derive_commutes: forall (r: regex) (a: alphabet),
+Theorem derive_commutes_a: forall (r: regex) (a: alphabet),
   derive_seqs_a {{ r }} a
   {<->}
   {{ derive_def r a }}.
+Proof.
+(* TODO: Help Wanted *)
+Abort.
+
+Theorem derive_commutes: forall (r: regex) (s: seq),
+  derive_seqs {{ r }} s
+  {<->}
+  {{ derive_defs r s }}.
 Proof.
 (* TODO: Help Wanted *)
 Abort.

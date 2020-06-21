@@ -143,11 +143,11 @@ invs delta_p; invs delta_q; cbn; constructor; try untie.
 - constructor.
   exists []. exists []. exists eq_refl.
   split; assumption.
-- invs H1. wreckit. listerine. wreckit.
+- invs H1. wreckit. listerine. subst.
   apply H0. assumption.
-- invs H1. wreckit. listerine. wreckit.
+- invs H1. wreckit. listerine. subst.
   apply H. assumption.
-- invs H1. wreckit. listerine. wreckit.
+- invs H1. wreckit. listerine. subst.
   apply H. assumption.
 Qed.
 
@@ -415,21 +415,18 @@ induction r.
     invs H1.
     wreckit.
     listerine.
-    wreckit.
     contradiction.
   + apply delta_emptyset.
     untie.
     invs H1.
     wreckit.
     listerine.
-    wreckit.
     contradiction.
   + apply delta_emptyset.
     untie.
     invs H1.
     wreckit.
     listerine.
-    wreckit.
     contradiction.
 - cbn.
   apply delta_lambda.
@@ -476,7 +473,7 @@ inversion_clear H.
   + inversion H0.
   + cbn. reflexivity.
   + inversion H0.
-  + invs H0. wreckit. listerine. wreckit. subst.
+  + invs H0. wreckit. listerine. subst.
     remember (IHr1 L).
     remember (IHr2 R).
     cbn.

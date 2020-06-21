@@ -67,10 +67,27 @@ Local Ltac list_empty :=
   apply app_cons_not_nil
   (* [] = xs ++ y :: ys -> False *)
 | [ H: ?XS ++ ?YS = [] |- _ ] =>
-  apply app_eq_nil in H
+  let H0 := fresh "H0" in
+  let H1 := fresh "H1" in
+  apply app_eq_nil in H;
+  destruct H as [H0 H1];
+  try rewrite H0 in *;
+  try rewrite H1 in *
   (* xs ++ ys = [] -> 
         xs = [] 
      /\ ys = []
+  *)
+| [ H: [] = ?XS ++ ?YS |- _ ] =>
+  let H0 := fresh "H0" in
+  let H1 := fresh "H1" in
+  symmetry in H;
+  apply app_eq_nil in H;
+  destruct H as [H0 H1];
+  try rewrite H0 in *;
+  try rewrite H1 in *
+  (* [] = xs ++ ys -> 
+       xs = [] 
+    /\ ys = []
   *)
 | [ H: context [[] ++ _] |- _ ] =>
   rewrite app_nil_l in H
@@ -108,8 +125,7 @@ Example example_list_empty_eq_app: forall {A: Type} (xs: list A) (ys: list A),
 Proof.
 intros.
 list_empty.
-inversion H.
-assumption.
+reflexivity.
 Qed.
 
 Example example_list_empty_eq_app_easy: forall {A: Type} (xs: list A) (ys: list A),
