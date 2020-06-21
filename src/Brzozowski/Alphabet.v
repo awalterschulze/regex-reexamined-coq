@@ -1,6 +1,6 @@
 (* Alphabet is Sigma_k *)
-(* We are defining it here as a1 and x0, but we could do any disjoint set *)
-Inductive alphabet := a0 | a1.
+(* We are defining it here as A1 and A0, but we could do any disjoint set *)
+Inductive alphabet := A0 | A1.
 
 Lemma alphabet_disjoint: forall (x y: alphabet),
   x = y \/ x <> y.
@@ -23,7 +23,7 @@ Qed.
 
 Definition eqa (x y: alphabet): bool :=
   match (x, y) with
-  | (a0, a0) => true
-  | (a1, a1) => true
+  | (A0, A0) => true
+  | (A1, A1) => true
   | _ => false
   end.
