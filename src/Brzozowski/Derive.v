@@ -11,20 +11,31 @@ Require Import Brzozowski.Delta.
 Require Import Brzozowski.Regex.
 Require Import Brzozowski.Sequences.
 
-(* D_a R = { t | a.t \in R} *)
-Definition derive_seqs (R: seqs) (a: alphabet) (t: seq): Prop :=
+(* 
+**Definition 3.1.**
+Given a set $R$ of sequences and a finite sequence $s$, 
+the derivative of $R$ with respect to $s$ is denoted by $D_s R$ and is 
+$D_s R = \{t | s.t \in R \}$.
+*)
+Definition derive_seqs (R: seqs) (s: seq) (t: seq): Prop :=
+  (s ++ t) `elem` R.
+
+(*
+D_a R = { t | a.t \in R} 
+*)
+Definition derive_seqs_a (R: seqs) (a: alphabet) (t: seq): Prop :=
   (a :: t) `elem` R.
 
 (* Alternative inductive predicate for derive_seqs *)
-Inductive derive_seqs' (R: seqs) (a: alphabet) (t: seq): Prop :=
+Inductive derive_seqs_a' (R: seqs) (a: alphabet) (t: seq): Prop :=
   | mk_derive_seqs:
     (a :: t) `elem` R ->
-    t `elem` (derive_seqs' R a)
+    t `elem` (derive_seqs_a' R a)
   .
 
-Theorem derive_seqs_star:
+Theorem derive_seqs_a_star_a:
   forall (a: alphabet),
-  derive_seqs {{ star (symbol a) }} a
+  derive_seqs_a {{ star (symbol a) }} a
   {<->}
   {{ star (symbol a) }}.
 Proof.
@@ -74,8 +85,8 @@ split.
           exact R.
 Qed.
 
-Theorem emptyset_terminates: forall (a: alphabet),
-  derive_seqs emptyset_seqs a
+Theorem emptyset_terminates_a: forall (a: alphabet),
+  derive_seqs_a emptyset_seqs a
   {<->}
   emptyset_seqs.
 Proof.
@@ -87,6 +98,21 @@ split.
   inversion H.
 Qed.
 
+(*
+**THEOREM 3.1.** If $R$ is a regular expression, 
+the derivative of $R$ with respect to a character $a \in \Sigma_k$ is found 
+recursively as follows:
+
+$$
+\begin{aligned}
+\text{(3.4)}&\ D_a a &=&\ \lambda, \\
+\text{(3.5)}&\ D_a b &=&\ \emptyset,\ \text{for}\ b = \lambda\ \text{or}\ b = \emptyset\ \text{or}\ b \in A_k\ \text{and}\ b \neq a, \\
+\text{(3.6)}&\ D_a (P^* ) &=&\ (D_a P)P^*, \\
+\text{(3.7)}&\ D_a (PQ) &=&\ (D_a P)Q + \delta(P)(D_a Q). \\
+\text{(3.8)}&\ D_a (f(P, Q)) &=&\ f(D_a P, D_a Q). \\
+\end{aligned}
+$$
+*)
 Fixpoint derive_def (r: regex) (a: alphabet) : regex :=
   match r with
   | emptyset => emptyset
@@ -102,18 +128,18 @@ Fixpoint derive_def (r: regex) (a: alphabet) : regex :=
   | nor s t => nor (derive_def s a) (derive_def t a)
   end.
 
-Theorem commutes_emptyset: forall (a: alphabet),
-  derive_seqs {{ emptyset }} a
+Theorem commutes_a_emptyset: forall (a: alphabet),
+  derive_seqs_a {{ emptyset }} a
   {<->}
   {{ derive_def emptyset a }}.
 Proof.
 intros.
 cbn.
-apply emptyset_terminates.
+apply emptyset_terminates_a.
 Qed.
 
-Theorem commutes_lambda: forall (a: alphabet),
-  derive_seqs {{ lambda }} a
+Theorem commutes_a_lambda: forall (a: alphabet),
+  derive_seqs_a {{ lambda }} a
   {<->}
   {{ derive_def lambda a }}.
 Proof.
@@ -125,8 +151,8 @@ split.
   inversion H.
 Qed.
 
-Theorem commutes_symbol: forall (a b: alphabet),
-  derive_seqs {{ symbol b }} a
+Theorem commutes_a_symbol: forall (a b: alphabet),
+  derive_seqs_a {{ symbol b }} a
   {<->}
   {{ derive_def (symbol b) a }}.
 Proof.
@@ -144,11 +170,11 @@ split; intros.
   + invs H. constructor.
 Qed.
 
-Theorem concat_seqs_impl_def: forall (r1 r2: regex) (a: alphabet),
-  derive_seqs {{r1}} a {->} {{derive_def r1 a}} ->
-  derive_seqs {{r2}} a {->} {{derive_def r2 a}} ->
+Theorem concat_seqs_a_impl_def: forall (r1 r2: regex) (a: alphabet),
+  derive_seqs_a {{r1}} a {->} {{derive_def r1 a}} ->
+  derive_seqs_a {{r2}} a {->} {{derive_def r2 a}} ->
   (
-    derive_seqs {{ concat r1 r2 }} a
+    derive_seqs_a {{ concat r1 r2 }} a
     {->}
     {{ derive_def (concat r1 r2) a }}
   ).
@@ -187,12 +213,12 @@ listerine.
   * assumption.
 Qed.
 
-Theorem concat_emptyset_l_def_impl_seqs:
+Theorem concat_emptyset_l_def_impl_seqs_a:
   forall (r2: regex) (a: alphabet),
   (
     {{ derive_def (concat emptyset r2) a }}
     {->}
-    derive_seqs {{ concat emptyset r2 }} a
+    derive_seqs_a {{ concat emptyset r2 }} a
   ).
 Proof.
 unfold "{->}".
@@ -214,12 +240,12 @@ split.
   invs L0.
 Qed.
 
-Theorem concat_emptyset_r_def_impl_seqs:
+Theorem concat_emptyset_r_def_impl_seqs_a:
   forall (r1: regex) (a: alphabet),
   (
     {{ derive_def (concat r1 emptyset) a }}
     {->}
-    derive_seqs {{ concat r1 emptyset }} a
+    derive_seqs_a {{ concat r1 emptyset }} a
   ).
 Proof.
 unfold "{->}".
@@ -242,7 +268,7 @@ split.
 Qed.
 
 Theorem derive_commutes: forall (r: regex) (a: alphabet),
-  derive_seqs {{ r }} a
+  derive_seqs_a {{ r }} a
   {<->}
   {{ derive_def r a }}.
 Proof.
