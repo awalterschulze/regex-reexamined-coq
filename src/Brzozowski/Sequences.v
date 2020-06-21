@@ -3,6 +3,7 @@ Import ListNotations.
 
 Require Import CoqStock.Invs.
 Require Import CoqStock.Listerine.
+Require Import CoqStock.Untie.
 Require Import CoqStock.WreckIt.
 
 Require Import Brzozowski.Alphabet.
@@ -114,7 +115,7 @@ Definition seqs_eq (s1 s2: seqs): Prop :=
 
 Notation "s1 {<->} s2" := (seqs_eq s1 s2) (at level 80).
 
-Theorem concat_emptyset_l: forall (r: seqs),
+Theorem concat_seqs_emptyset_l_is_emptyset: forall (r: seqs),
   concat_seqs emptyset_seqs r
   {<->}
   emptyset_seqs.
@@ -125,10 +126,20 @@ split.
   wreckit.
   invs L.
 - intros.
-  invs H. 
+  invs H.
 Qed.
 
-Theorem concat_emptyset_r: forall (r: seqs),
+Theorem concat_seqs_emptyset_l: forall (r: seqs) (s: seq),
+  s `notelem` concat_seqs emptyset_seqs r.
+Proof.
+intros.
+untie.
+invs H.
+wreckit.
+invs L.
+Qed.
+
+Theorem concat_seqs_emptyset_r_is_emptyset: forall (r: seqs),
   concat_seqs r emptyset_seqs
   {<->}
   emptyset_seqs.
@@ -142,7 +153,17 @@ split.
   invs H.
 Qed.
 
-Theorem concat_lambda_l: forall (r: seqs),
+Theorem concat_seqs_emptyset_r: forall (r: seqs) (s: seq),
+  s `notelem` concat_seqs r emptyset_seqs.
+Proof.
+intros.
+untie.
+invs H.
+wreckit.
+invs R.
+Qed.
+
+Theorem concat_seqs_lambda_l_is_l: forall (r: seqs),
   concat_seqs lambda_seqs r
   {<->}
   r.
@@ -165,7 +186,7 @@ split.
   + assumption.
 Qed.
 
-Theorem concat_lambda_r: forall (r: seqs),
+Theorem concat_seqs_lambda_r_is_r: forall (r: seqs),
   concat_seqs r lambda_seqs
   {<->}
   r.
