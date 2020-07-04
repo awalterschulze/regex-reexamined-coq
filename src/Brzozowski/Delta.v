@@ -412,19 +412,19 @@ induction r.
     split; assumption.
   + apply delta_emptyset.
     untie.
-    invs H1.
+    invs H2.
     wreckit.
     listerine.
     contradiction.
   + apply delta_emptyset.
     untie.
-    invs H1.
+    invs H2.
     wreckit.
     listerine.
     contradiction.
   + apply delta_emptyset.
     untie.
-    invs H1.
+    invs H2.
     wreckit.
     listerine.
     contradiction.
@@ -436,17 +436,17 @@ induction r.
   invs IHr1; invs IHr2.
   + apply delta_emptyset.
     untie.
-    inversion H1.
+    inversion H2.
     wreckit.
     contradiction.
   + apply delta_emptyset.
     untie.
-    inversion H1.
+    inversion H2.
     wreckit.
     contradiction.
   + apply delta_emptyset.
     untie.
-    inversion H1.
+    inversion H2.
     wreckit.
     contradiction.
   + apply delta_lambda.

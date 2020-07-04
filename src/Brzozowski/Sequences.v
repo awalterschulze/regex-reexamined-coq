@@ -9,8 +9,9 @@ Require Import CoqStock.WreckIt.
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Regex.
 
-(*  A regular expression denotes a set of sequences. *)
+(* A sequence is a list of characters or string. *)
 Definition seq := (list alphabet).
+(* A regular expression denotes a set of sequences. *)
 Definition seqs := seq -> Prop.
 Definition elem (ss: seqs) (s: seq): Prop := ss s.
 Notation "p `elem` P" := (elem P p) (at level 80).
@@ -113,7 +114,23 @@ Definition seqs_eq (s1 s2: seqs): Prop :=
   forall (s: seq),
   s `elem` s1 <-> s `elem` s2.
 
+Theorem seqs_eq_left: forall (s: seq) (s1 s2: seqs),
+  (s `elem` s1 <-> s `elem` s2) ->
+  s `elem` s1 -> s `elem` s2.
+Proof.
+intros s s1 s2 H.
+destruct H.
+assumption.
+Qed.
+
 Notation "s1 {<->} s2" := (seqs_eq s1 s2) (at level 80).
+
+Theorem notelem_emptyset: forall (s: seq),
+  s `notelem` emptyset_seqs.
+Proof.
+intros.
+untie.
+Qed.
 
 Theorem concat_seqs_emptyset_l_is_emptyset: forall (r: seqs),
   concat_seqs emptyset_seqs r

@@ -205,6 +205,15 @@ match goal with
            (xs = [] /\ ys = [x])
         \/ (xs = [x] /\ ys = [])
     *)
+  | [ H: [?X] = ?XS ++ ?YS  |- _ ] =>
+    symmetry in H;
+    let H0 := fresh "H0"
+    in apply app_eq_unit in H; 
+       destruct H as [H0 | H0]; destruct H0; subst
+    (* xs ++ ys = [x] -> 
+           (xs = [] /\ ys = [x])
+        \/ (xs = [x] /\ ys = [])
+    *)
   | [H: context [?XS ++ ?YS ++ [?Y]] |- _ ] =>
     rewrite app_assoc in H
     (* xs ++ ys ++ [y] -> 
