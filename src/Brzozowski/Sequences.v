@@ -114,15 +114,6 @@ Definition seqs_eq (s1 s2: seqs): Prop :=
   forall (s: seq),
   s `elem` s1 <-> s `elem` s2.
 
-Theorem seqs_eq_left: forall (s: seq) (s1 s2: seqs),
-  (s `elem` s1 <-> s `elem` s2) ->
-  s `elem` s1 -> s `elem` s2.
-Proof.
-intros s s1 s2 H.
-destruct H.
-assumption.
-Qed.
-
 Notation "s1 {<->} s2" := (seqs_eq s1 s2) (at level 80).
 
 Theorem notelem_emptyset: forall (s: seq),
