@@ -42,7 +42,7 @@ D_a R = { t | a.t \in R}
 Definition derive_seqs_a (R: seqs) (a: alphabet) (t: seq): Prop :=
   (a :: t) `elem` R.
 
-Theorem derive_seqs_single: forall (R: seqs) (a: alphabet),
+Theorem derive_seqs_a_single: forall (R: seqs) (a: alphabet),
   derive_seqs R [a] {<->} derive_seqs_a R a.
 Proof.
 intros.
@@ -52,6 +52,32 @@ unfold "{<->}".
 intros.
 cbn.
 easy.
+Qed.
+
+Theorem derive_seqs_single: forall (R: seqs) (a: alphabet) (s s0: seq),
+  s0 `elem` derive_seqs R (a :: s) <->
+  (s ++ s0) `elem` derive_seqs R (a :: []).
+Proof.
+intros.
+split;
+  intros;
+  unfold derive_seqs in *;
+  unfold "`elem`" in *;
+  listerine;
+  assumption.
+Qed.
+
+Theorem derive_seqs_double: forall (R: seqs) (a a0: alphabet) (s s0: seq),
+  s0 `elem` derive_seqs R (a :: a0 :: s) <->
+  (s ++ s0) `elem` derive_seqs R (a :: a0 :: []).
+Proof.
+intros.
+split;
+  intros;
+  unfold derive_seqs in *;
+  unfold "`elem`" in *;
+  listerine;
+  assumption.
 Qed.
 
 Theorem derive_seqs_step: forall (R: seqs) (a: alphabet) (s: seq),
@@ -216,63 +242,100 @@ derive_defs                  derive_seqs
 Derived Regex---{{}}------> Derived Set Of Sequences
 *)
 
+Theorem derive_seqs_commutes_empty: forall (r: regex),
+  derive_seqs {{r}} [] {<->} {{derive_defs r []}}.
+Proof.
+intros.
+rewrite derive_defs_empty.
+unfold seqs_eq.
+intro s. 
+remember (derive_seqs_empty {{r}} s) as E; destruct E.
+split.
+- intros. 
+  apply e.
+  assumption.
+- intros.
+  apply e0.
+  assumption.
+Qed.
+
+Theorem derive_seqs_commutes_single:
+  forall (r: regex) (a: alphabet),
+    (
+      forall (r': regex) (a: alphabet),
+      derive_seqs_a {{r'}} a {<->} {{derive_def r' a}}
+    )
+  ->
+    derive_seqs {{r}} [a] {<->} {{derive_defs r [a]}}
+  .
+Proof.
+intros.
+remember (derive_seqs_commutes_empty (derive_def r a)) as H0.
+clear HeqH0.
+rewrite <- derive_defs_step in H0.
+remember derive_seqs_step as S. clear HeqS.
+unfold "{<->}" in *.
+intros.
+specialize H with (s := s).
+specialize H0 with (s := s).
+destruct H0.
+split; intros.
+- apply H0.
+  remember (S {{r}} a [] s) as S0.
+  clear HeqS0.
+  destruct S0.
+  apply H3 in H2.
+  apply H in H2.
+  apply derive_seqs_empty.
+  exact H2.
+- remember (S {{r}} a [] s) as S0.
+  clear HeqS0.
+  destruct S0.
+  apply H4.
+  apply derive_seqs_empty.
+  apply H.
+  rewrite derive_defs_step in H2.
+  rewrite derive_defs_empty in H2.
+  exact H2.
+Qed.
+
 (* Part of Theorem 3.2 *)
 Theorem derive_seqs_commutes_star:
-  forall (r: regex) (a: alphabet) (s: seq),
-    derive_seqs_a {{r}} a {<->} {{derive_def r a}}
+  forall (r: regex) (s: seq),
+    (
+      forall (r': regex) (a: alphabet),
+      derive_seqs_a {{r'}} a {<->} {{derive_def r' a}}
+    )
   ->
     derive_seqs {{r}} s {<->} {{derive_defs r s}}
   .
 Proof.
 intros.
 induction s.
-- rewrite derive_defs_empty.
-  unfold seqs_eq.
-  intro s. 
-  remember (derive_seqs_empty {{r}} s) as E; destruct E.
-  split.
-  + intros. 
-    apply e.
-    assumption.
-  + intros.
-    apply e0.
-    assumption.
+- apply derive_seqs_commutes_empty.
 - intros.
-  rewrite derive_defs_step.  
-  unfold seqs_eq.
-  intros s1.
-  remember (derive_seqs_step {{r}} a0 s s1) as E.
-  destruct E.
-  split.
-  + intros.
-    apply e in H0.
-    unfold derive_seqs in *.
-    unfold derive_seqs_a in *.
-    unfold "`elem`" in *.
-    
-    
-    invs H0.
-
-    remember (H (derive_def r a0) s1) as A.
-    destruct A as [A1 A2].
-    apply A.
-    apply (H ((derive_def r a0))).
+  induction s.
+  + apply derive_seqs_commutes_single.
     apply H.
-
-     
-
-
-  remember (derive_seqs_empty {{r}}) as E.
-  destruct E.
-  remember (seqs_eq_left [] (derive_seqs_empty {{r}})).
-  destruct E.
-  split in s.
-  rewrite derive_defs_empty.
-  split; intros.
-  +  apply H0 in s.
-  intros.
-    
-    cbn. 
+  + clear IHs0.
+    rewrite derive_defs_step.
+    unfold seqs_eq in *.
+    intros.
+    remember (derive_seqs_step {{r}} a (a0 :: s) s0) as Dr.
+      clear HeqDr.
+      destruct Dr as [Dr0 Dr1].
+    remember (derive_seqs_step {{derive_def r a}} a0 s s0) as Dr2.
+      clear HeqDr2.
+      destruct Dr2 as [Dr2 Dr3].
+    remember (H (derive_def r a) a0 (s ++ s0)) as H2.
+      clear HeqH2.
+      destruct H2 as [H0 H1].
+    remember (derive_seqs_double {{r}} a a0 s s0) as DD.
+      clear HeqDD.
+      destruct DD as [DD0 DD1].
+    split; intros.
+    * apply DD0 in H2.
+Abort.
 
 Theorem commutes_a_emptyset: forall (a: alphabet),
   derive_seqs_a {{ emptyset }} a
@@ -405,10 +468,8 @@ Theorem commutes_a_nor: forall (p q: regex) (a: alphabet),
   {<->}
   {{ derive_def (nor p q) a }}.
 Proof.
-intros.
-split.
-- intros.
-   
+(* TODO: Help Wanted *)
+Abort.
 
 Theorem commutes_nor_emptyset_emptyset: forall (s: seq),
   derive_seqs {{ nor emptyset emptyset }} s
@@ -462,60 +523,6 @@ split.
       untie.
       invs H0.
 Qed.
-
-
-
-
-Theorem commutes_nor_emptyset_l: forall (p q: regex) (s: seq),
-  derive_seqs {{ nor emptyset q }} s
-  {<->}
-  {{ derive_defs (nor emptyset q) s }}.
-Proof.
-intros.
-split.
-- intros.
-  induction q; induction s; cbn; cbn in H; invs H; wreckit.
-  + constructor.
-    wreckit.
-    untie.
-  + assert (s0 `elem` derive_seqs {{nor emptyset emptyset}} s).
-    * constructor; wreckit; untie.
-    * apply IHs in H.
-      exact H.
-  + destruct s0.
-    * exfalso.
-      apply R.
-      constructor.
-    * constructor.
-      split; untie.
-  + induction s.
-    * cbn.
-      constructor; wreckit; untie.
-    * cbn.
-      apply IHs0.
-      -- intros.
-          
-  
-  invs H.
-    constructor. 
-
-  induction s.
-  + 
-    
-    *   
-  cbn.
-  fold (derive_defs (nor emptyset q) s).
-
-
-Theorem commutes_nor: forall (p q: regex) (s: seq),
-  derive_seqs {{ nor p q }} s
-  {<->}
-  {{ derive_defs (nor p q) s }}.
-Proof.
-intros.
-split.
-- intros.
-  
 
 Theorem concat_seqs_a_impl_def: forall (r1 r2: regex) (a: alphabet),
   derive_seqs_a {{r1}} a {->} {{derive_def r1 a}} ->
