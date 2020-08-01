@@ -336,10 +336,8 @@ intros.
 specialize IHp with s.
 specialize IHq with s.
 unfold "`elem`" in *.
-unfold derive_def.
-fold derive_def.
-unfold denote_regex.
-fold denote_regex.
+dubstep derive_def.
+dubstep denote_regex.
 split.
 - intros.
   apply nor_seqs_distributes in H.
