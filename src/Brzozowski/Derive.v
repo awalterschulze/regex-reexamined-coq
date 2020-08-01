@@ -20,11 +20,78 @@ $D_s R = \{t | s.t \in R \}$.
 Definition derive_seqs (R: seqs) (s: seq) (t: seq): Prop :=
   (s ++ t) `elem` R.
 
+(* Part of THEOREM 3.2
+   For completeness, if s = \lambda, then D_[] R = R
+*)
+Theorem derive_seqs_empty: forall (R: seqs),
+  derive_seqs R [] {<->} R.
+Proof.
+intros.
+unfold derive_seqs.
+cbn.
+unfold "`elem`".
+unfold "{<->}".
+intros.
+unfold "`elem`".
+easy.
+Qed.
+
 (*
-D_a R = { t | a.t \in R} 
+D_a R = { t | a.t \in R}
 *)
 Definition derive_seqs_a (R: seqs) (a: alphabet) (t: seq): Prop :=
   (a :: t) `elem` R.
+
+Theorem derive_seqs_a_single: forall (R: seqs) (a: alphabet),
+  derive_seqs R [a] {<->} derive_seqs_a R a.
+Proof.
+intros.
+unfold derive_seqs.
+unfold derive_seqs_a.
+unfold "{<->}".
+intros.
+cbn.
+easy.
+Qed.
+
+Theorem derive_seqs_single: forall (R: seqs) (a: alphabet) (s s0: seq),
+  s0 `elem` derive_seqs R (a :: s) <->
+  (s ++ s0) `elem` derive_seqs R (a :: []).
+Proof.
+intros.
+split;
+  intros;
+  unfold derive_seqs in *;
+  unfold "`elem`" in *;
+  listerine;
+  assumption.
+Qed.
+
+Theorem derive_seqs_double: forall (R: seqs) (a a0: alphabet) (s s0: seq),
+  s0 `elem` derive_seqs R (a :: a0 :: s) <->
+  (s ++ s0) `elem` derive_seqs R (a :: a0 :: []).
+Proof.
+intros.
+split;
+  intros;
+  unfold derive_seqs in *;
+  unfold "`elem`" in *;
+  listerine;
+  assumption.
+Qed.
+
+Theorem derive_seqs_step: forall (R: seqs) (a: alphabet) (s: seq),
+  derive_seqs R (a :: s) {<->} derive_seqs (derive_seqs_a R a) s.
+Proof.
+intros.
+unfold derive_seqs.
+unfold derive_seqs_a.
+unfold "{<->}".
+unfold "`elem`".
+intros.
+listerine.
+easy.
+Qed.
 
 (* Alternative inductive predicate for derive_seqs *)
 Inductive derive_seqs_a' (R: seqs) (a: alphabet) (t: seq): Prop :=
@@ -144,6 +211,132 @@ Fixpoint derive_def (r: regex) (a: alphabet) : regex :=
 Fixpoint derive_defs (r: regex) (s: seq) : regex :=
   fold_left derive_def s r.
 
+(* derive_defs = fold_left derive_def s r. *)
+Theorem derive_defs_step: forall (r: regex) (a: alphabet) (s: seq),
+  derive_defs r (a :: s) =
+  derive_defs (derive_def r a) s.
+Proof.
+intros.
+destruct r; try (cbn; reflexivity).
+destruct a, a0; cbn; reflexivity.
+Qed.
+
+(* derive_defs = fold_left derive_def s r. *)
+Theorem derive_defs_empty: forall (r: regex),
+  derive_defs r [] = r.
+Proof.
+intros.
+destruct r; (cbn; reflexivity).
+Qed.
+
+(*
+TODO: Help Wanted
+
+Prove that the derive square commutes
+Regex --denote_regex-{{}}-> Set Of Sequences
+   |                            |
+derive_defs                  derive_seqs
+   |                            |
+  \ /                          \ /
+   .                            .
+Derived Regex---{{}}------> Derived Set Of Sequences
+*)
+
+Theorem derive_seqs_commutes_empty: forall (r: regex),
+  derive_seqs {{r}} [] {<->} {{derive_defs r []}}.
+Proof.
+intros.
+rewrite derive_defs_empty.
+unfold seqs_eq.
+intro s. 
+remember (derive_seqs_empty {{r}} s) as E; destruct E.
+split.
+- intros. 
+  apply e.
+  assumption.
+- intros.
+  apply e0.
+  assumption.
+Qed.
+
+Theorem derive_seqs_commutes_single:
+  forall (r: regex) (a: alphabet),
+    (
+      forall (r': regex) (a: alphabet),
+      derive_seqs_a {{r'}} a {<->} {{derive_def r' a}}
+    )
+  ->
+    derive_seqs {{r}} [a] {<->} {{derive_defs r [a]}}
+  .
+Proof.
+intros.
+remember (derive_seqs_commutes_empty (derive_def r a)) as H0.
+clear HeqH0.
+rewrite <- derive_defs_step in H0.
+remember derive_seqs_step as S. clear HeqS.
+unfold "{<->}" in *.
+intros.
+specialize H with (s := s).
+specialize H0 with (s := s).
+destruct H0.
+split; intros.
+- apply H0.
+  remember (S {{r}} a [] s) as S0.
+  clear HeqS0.
+  destruct S0.
+  apply H3 in H2.
+  apply H in H2.
+  apply derive_seqs_empty.
+  exact H2.
+- remember (S {{r}} a [] s) as S0.
+  clear HeqS0.
+  destruct S0.
+  apply H4.
+  apply derive_seqs_empty.
+  apply H.
+  rewrite derive_defs_step in H2.
+  rewrite derive_defs_empty in H2.
+  exact H2.
+Qed.
+
+(* Part of Theorem 3.2 *)
+Theorem derive_seqs_commutes_star:
+  forall (r: regex) (s: seq),
+    (
+      forall (r': regex) (a: alphabet),
+      derive_seqs_a {{r'}} a {<->} {{derive_def r' a}}
+    )
+  ->
+    derive_seqs {{r}} s {<->} {{derive_defs r s}}
+  .
+Proof.
+intros.
+induction s.
+- apply derive_seqs_commutes_empty.
+- intros.
+  induction s.
+  + apply derive_seqs_commutes_single.
+    apply H.
+  + clear IHs0.
+    rewrite derive_defs_step.
+    unfold seqs_eq in *.
+    intros.
+    remember (derive_seqs_step {{r}} a (a0 :: s) s0) as Dr.
+      clear HeqDr.
+      destruct Dr as [Dr0 Dr1].
+    remember (derive_seqs_step {{derive_def r a}} a0 s s0) as Dr2.
+      clear HeqDr2.
+      destruct Dr2 as [Dr2 Dr3].
+    remember (H (derive_def r a) a0 (s ++ s0)) as H2.
+      clear HeqH2.
+      destruct H2 as [H0 H1].
+    remember (derive_seqs_double {{r}} a a0 s s0) as DD.
+      clear HeqDD.
+      destruct DD as [DD0 DD1].
+    split; intros.
+    * apply DD0 in H2.
+Abort.
+
 Theorem commutes_a_emptyset: forall (a: alphabet),
   derive_seqs_a {{ emptyset }} a
   {<->}
@@ -235,8 +428,101 @@ Theorem commutes_symbol: forall (b: alphabet) (s: seq),
   {<->}
   {{ derive_defs (symbol b) s }}.
 Proof.
+intros.
+split.
+- intros.
+  inversion H.
+  listerine.
+  + cbn. constructor.
+  + cbn. destruct b; constructor.
+- intros.
+  induction s0, s.
+  + invs H.
+  + rewrite derive_defs_step in H.
+    cbn.
+    listerine.
+    induction s; destruct a, b;
+    (constructor
+      || invs H
+      || (cbn in H;
+         fold (derive_defs emptyset s) in H;
+         apply commutes_emptyset in H;
+         invs H)).
+  + cbn in H.
+    invs H.
+    constructor.
+  + rewrite derive_defs_step in H.
+    cbn.
+    destruct a0, b; induction s; cbn in H; (
+      invs H
+      || (
+        fold (derive_defs emptyset s) in H;
+        apply commutes_emptyset in H;
+        invs H
+      )
+    ).
+Qed.
+
+Theorem commutes_a_nor: forall (p q: regex) (a: alphabet),
+  derive_seqs_a {{ nor p q }} a
+  {<->}
+  {{ derive_def (nor p q) a }}.
+Proof.
 (* TODO: Help Wanted *)
 Abort.
+
+Theorem commutes_nor_emptyset_emptyset: forall (s: seq),
+  derive_seqs {{ nor emptyset emptyset }} s
+  {<->}
+  {{ derive_defs (nor emptyset emptyset) s }}.
+Proof.
+intros.
+split.
+- intros.
+  induction s; cbn.
+  + constructor. wreckit. untie.
+  + apply IHs. constructor. wreckit. untie.
+- intros.
+  constructor. wreckit. untie.
+Qed.
+
+Theorem commutes_nor_emptyset_lambda: forall (s: seq),
+  derive_seqs {{ nor emptyset lambda }} s
+  {<->}
+  {{ derive_defs (nor emptyset lambda) s }}.
+Proof.
+intros.
+split.
+- intros.
+  invs H.
+  wreckit.
+  clear L.
+  induction s.
+  + cbn.
+    constructor.
+    wreckit.
+    * untie.
+    * untie.
+  + clear R.
+    cbn.
+    fold (derive_defs (nor emptyset emptyset) s).
+    apply commutes_nor_emptyset_emptyset.
+    constructor.
+    wreckit.
+    untie.
+- intros.
+  constructor.
+  wreckit.
+  + untie.
+  + induction s.
+    * invs H.
+      wreckit.
+      listerine.
+      assumption.
+    * cbn.
+      untie.
+      invs H0.
+Qed.
 
 Theorem concat_seqs_a_impl_def: forall (r1 r2: regex) (a: alphabet),
   derive_seqs_a {{r1}} a {->} {{derive_def r1 a}} ->
