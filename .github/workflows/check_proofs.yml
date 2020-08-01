@@ -14,13 +14,13 @@ jobs:
         echo "::set-env name=PATH::$GITHUB_WORKSPACE/.cache/bin:$PATH"
         echo "::set-env name=OPAMROOT::$GITHUB_WORKSPACE/.cache/.opam"
     - name: Cache Opam
-      id: cache-opam
+      id: cache-opam-pin
       uses: actions/cache@v1
       with:
         path: .cache
-        key: opam-coq-8-11
+        key: opam-coq-8-11-1
     - name: install opam
-      if: steps.cache-opam.outputs.cache-hit != 'true'
+      if: steps.cache-opam-pin.outputs.cache-hit != 'true'
       run: |
         mkdir -p $CACHE_BIN
         cd $CACHE_BIN
@@ -28,13 +28,13 @@ jobs:
         mv opam-2.0.6-x86_64-linux opam
         chmod +x opam
     - name: Install coq
-      if: steps.cache-opam.outputs.cache-hit != 'true'
+      if: steps.cache-opam-pin.outputs.cache-hit != 'true'
       run: |
         sudo apt-get install bubblewrap
         opam init -c 4.07.1
         eval $(opam env)
         opam repo add coq-released https://coq.inria.fr/opam/released
-        opam install coq -y
+        opam pin add coq 8.11.1 -y
         coqc --version
     - name: Check proofs with Coq
       run: |
