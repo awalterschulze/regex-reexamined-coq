@@ -309,6 +309,11 @@ split; intros.
 Qed.
 
 (*
+  Let us consider now (3.8).
+  It is sufficient to prove this relation for $f(P, Q) = P + Q$ and 
+  for $f(P, Q) = P'$, for this is a complete set of Boolean connectives.
+  Now
+
   $$
   \begin{aligned}
   D_a (P + Q) &= \{t | a.t \in (P + Q)\} \\
@@ -316,6 +321,16 @@ Qed.
               &= D_a P + D_a Q. \\
   \end{aligned}
   $$
+
+  It is clear that this rule can be extended to any number of regular expressions, 
+  i.e. that $D_a (R_1 + R_2 + \ldots) = D_a R_1 + D_a R_2 + \ldots$
+  even when the number of $R_j$ is countably infinite.
+  Next, note that $a.D_a R + a.D_a R' = a.I$.
+  Taking the derivative with respect to $a$ of both sides,
+  we have $D_a R + D_a R' = I$. Also $(D_a R) \& (D_a R') = \emptyset$,
+  and we have $D_a R' = (D_a R)'$.
+  Thus rule (3.8) holds for union and complementation,
+  and consequently for any Boolean function.
 *)
 
 (* A helper Lemma for commutes_a_nor *)
@@ -471,6 +486,23 @@ split.
   invs R0.
 Qed.
 
+(*
+  Next consider $D_a P.Q$ . Let $P = \delta(P) + P_0$, where $\delta(P_0) = \emptyset$.
+  Then
+
+  $$
+  \begin{aligned}
+  D_a PQ  &= \{s | as \in (\delta(P) + P_0)Q\} \\
+          &= \{u | au \in \delta(P)Q\} + \{v | av \in P_0 Q\} \\
+          &= \delta(P) (D_a Q) + \{v_1 v_2 | a v_1 \in P_0, v_2 \in Q\} \\
+          &= \delta(P) (D_a Q) + \{v_1 | a v_1 \in P_0\} Q \\
+          &= \delta(P) (D_a Q) + (D_a P_0) Q. \\
+  \end{aligned}
+  $$
+
+  But $D_a P = D_a (P_0 + \lambda) = D_a P_0$; hence $D_a (PQ) = \delta(P) D_a Q + (D_a P) Q$,
+  which is rule (3.7).
+*)
 Lemma commutes_a_concat: forall (a : alphabet) (p q: regex)
   (IHp: derive_seqs_a {{p}} a {<->} {{derive_def p a}})
   (IHq: derive_seqs_a {{q}} a {<->} {{derive_def q a}}),
@@ -490,6 +522,34 @@ split.
   + apply (IHq s0).
 - (* TODO: Help Wanted *)
 Admitted.
+
+(*
+  Finally we have
+
+  $$
+  \begin{aligned}
+  D_a P^* &= D_a (\lambda + P + PP + PPP + \ldots) \\
+          &= D_a \lambda + D_a P + D_a P ^2 + \ldots D_a P^n \ldots. \\
+  \end{aligned}
+  $$
+
+  But
+
+  $$
+  \begin{aligned}
+  \sum^{\infty}_{n=1} D_a P^n &= \sum^{\infty}_{n=1} ((D_a P)P^{n-1} + \delta(P) (D_a P^{n-1})) \\
+                              &= \sum^{\infty}_{n=1} (D_a P)P^{n-1}, \\
+  \end{aligned}
+  $$
+
+  since $\delta(P) (D_a^{n-1})$ is either $\emptyset$ or it is $D_a P^{n-1}$,
+  which is already included.
+  Thus we have
+
+  $D_a P* = \sum^{\infty}_{n=1} (D_a P)P^{n-1} = (D_a P) \sum^{\infty}_{n=1}P^{n-1} = (D_a P)P*$,
+
+  which is rule (3.6).
+*)
 
 Lemma commutes_a_star: forall (a : alphabet) (r : regex)
   (IH: derive_seqs_a {{r}} a {<->} {{derive_def r a}}),
