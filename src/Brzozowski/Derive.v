@@ -480,7 +480,15 @@ Lemma commutes_a_concat: forall (a : alphabet) (p q: regex)
     {{derive_def (concat p q) a}}
   ).
 Proof.
-(* TODO: Help Wanted *)
+intros.
+split.
+- apply concat_seqs_a_impl_def;
+    unfold "{<->}" in *;
+    unfold "{->}" in *;
+    intros s0.
+  + apply (IHp s0).
+  + apply (IHq s0).
+- (* TODO: Help Wanted *)
 Admitted.
 
 Lemma commutes_a_star: forall (a : alphabet) (r : regex)
