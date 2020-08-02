@@ -263,7 +263,8 @@ Fixpoint derive_def (r: regex) (a: alphabet) : regex :=
   | nor s t => nor (derive_def s a) (derive_def t a)
   end.
 
-Theorem commutes_a_emptyset: forall (a: alphabet),
+(* A helper Lemma for derive_commutes_a *)
+Lemma commutes_a_emptyset: forall (a: alphabet),
   derive_seqs_a {{ emptyset }} a
   {<->}
   {{ derive_def emptyset a }}.
@@ -273,7 +274,8 @@ cbn.
 apply emptyset_terminates_a.
 Qed.
 
-Theorem commutes_a_lambda: forall (a: alphabet),
+(* A helper Lemma for derive_commutes_a *)
+Lemma commutes_a_lambda: forall (a: alphabet),
   derive_seqs_a {{ lambda }} a
   {<->}
   {{ derive_def lambda a }}.
@@ -286,7 +288,8 @@ split.
   inversion H.
 Qed.
 
-Theorem commutes_a_symbol: forall (a b: alphabet),
+(* A helper Lemma for derive_commutes_a *)
+Lemma commutes_a_symbol: forall (a b: alphabet),
   derive_seqs_a {{ symbol b }} a
   {<->}
   {{ derive_def (symbol b) a }}.
@@ -315,16 +318,17 @@ Qed.
   $$
 *)
 
-Theorem nor_seqs_distributes: forall (p q: regex) (a: alphabet),
+(* A helper Lemma for commutes_a_nor *)
+Lemma nor_seqs_distributes: forall (p q: regex) (a: alphabet),
   derive_seqs_a {{nor p q}} a {<->}
   nor_seqs (derive_seqs_a {{p}} a) (derive_seqs_a {{q}} a).
 Proof.
 intros.
-dubstep denote_regex.
 split; intros; invs H; constructor; wreckit; untie.
 Qed.
 
-Theorem commutes_a_nor: forall (p q: regex) (a: alphabet)
+(* A helper Lemma for derive_commutes_a *)
+Lemma commutes_a_nor: forall (p q: regex) (a: alphabet)
   (IHp: derive_seqs_a {{p}} a {<->} {{derive_def p a}})
   (IHq: derive_seqs_a {{q}} a {<->} {{derive_def q a}}),
   derive_seqs_a {{ nor p q }} a
@@ -367,7 +371,8 @@ split.
     assumption.
 Qed.
 
-Theorem concat_seqs_a_impl_def: forall (r1 r2: regex) (a: alphabet),
+(* A helper Lemma for commutes_a_concat *)
+Lemma concat_seqs_a_impl_def: forall (r1 r2: regex) (a: alphabet),
   derive_seqs_a {{r1}} a {->} {{derive_def r1 a}} ->
   derive_seqs_a {{r2}} a {->} {{derive_def r2 a}} ->
   (
@@ -410,7 +415,8 @@ listerine.
   * assumption.
 Qed.
 
-Theorem concat_emptyset_l_def_impl_seqs_a:
+(* A helper Lemma for commutes_a_concat *)
+Lemma concat_emptyset_l_def_impl_seqs_a:
   forall (r2: regex) (a: alphabet),
   (
     {{ derive_def (concat emptyset r2) a }}
@@ -437,7 +443,8 @@ split.
   invs L0.
 Qed.
 
-Theorem concat_emptyset_r_def_impl_seqs_a:
+(* A helper Lemma for commutes_a_concat *)
+Lemma concat_emptyset_r_def_impl_seqs_a:
   forall (r1: regex) (a: alphabet),
   (
     {{ derive_def (concat r1 emptyset) a }}
@@ -464,20 +471,37 @@ split.
   invs R0.
 Qed.
 
+Lemma commutes_a_concat: forall (a : alphabet)
+    (r1 r2 : regex),
+  derive_seqs_a {{concat r1 r2}} a
+  {<->} {{derive_def (concat r1 r2) a}}.
+Proof.
+(* TODO: Help Wanted *)
+Admitted.
+
+Lemma commutes_a_star: forall (a : alphabet)
+    (r : regex),
+ derive_seqs_a {{star r}} a
+               {<->} {{derive_def (star r) a}}.
+Proof.
+(* TODO: Help Wanted *)
+Admitted.
+
 Theorem derive_commutes_a: forall (r: regex) (a: alphabet),
   derive_seqs_a {{ r }} a
   {<->}
   {{ derive_def r a }}.
 Proof.
-induction r.
-- admit.
-- admit.
-- admit.
-- admit.
-- admit.
-- admit.
-(* TODO: Help Wanted *)
-Abort.
+induction r; intros.
+- apply commutes_a_emptyset.
+- apply commutes_a_lambda.
+- apply commutes_a_symbol.
+- apply commutes_a_concat.
+- apply commutes_a_star.
+- apply commutes_a_nor.
+  + apply IHr1.
+  + apply IHr2.
+Qed.
 
 Fixpoint derive_defs (r: regex) (s: seq) : regex :=
   fold_left derive_def s r.
