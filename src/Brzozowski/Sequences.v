@@ -22,6 +22,8 @@ Notation "p `notelem` P" := (~ (elem P p)) (at level 80).
 We are defining a set that is not necessarily computable.
 https://stackoverflow.com/questions/36588263/how-to-define-set-in-coq-without-defining-set-as-a-list-of-elements
 This axiom fixes that and allows us to prove double negation.
+This is similar to the axiom in Coq.Logic.Classical_Prop: https://coq.inria.fr/library/Coq.Logic.Classical_Prop.html
+`Axiom classic : forall P:Prop, P \/ ~ P.`
 *)
 Axiom seqs_dec:
   forall (s: seq) (R: seqs),
