@@ -87,7 +87,29 @@ Inductive concat_seqs (P Q: seqs): seqs :=
   .
 
 (*
-    *Star*. $P^{*} = \cup_{0}^{\infty} P^n$ , where $P^2 = P.P$, etc. 
+   concat_seqs_morph allows rewrite to work inside concat_seqs parameters
+*)
+Add Parametric Morphism: concat_seqs
+  with signature seqs_iff ==> seqs_iff ==> seqs_iff as concat_seqs_morph.
+Proof.
+intros.
+constructor; constructor; invs H1; wreckit;
+  exists x1;
+  exists x2;
+  exists x3;
+  wreckit.
+  + apply H.
+    assumption.
+  + apply H0.
+    assumption.
+  + apply H.
+    assumption.
+  + apply H0.
+    assumption.
+Qed.
+
+(*
+    *Star*. $P^{*} = \cup_{0}^{\infty} P^n$ , where $P^2 = P.P$, etc.
     and $P^0 = \lambda$, the set consisting of the sequence of zero length.
 *)
 Inductive star_seqs (R: seqs): seqs :=
@@ -99,7 +121,16 @@ Inductive star_seqs (R: seqs): seqs :=
   .
 
 (*
-    *Boolean function*. We shall denote any Boolean function of $P$ and $Q$ by $f(P, Q)$. 
+   star_seqs_morph allows rewrite to work inside star_seqs parameters
+*)
+Add Parametric Morphism: star_seqs
+  with signature seqs_iff ==> seqs_iff as star_seqs_morph.
+Proof.
+(* TODO: Help Wanted *)
+Abort.
+
+(*
+    *Boolean function*. We shall denote any Boolean function of $P$ and $Q$ by $f(P, Q)$.
     Of course, all the laws of Boolean algebra apply.
     `nor` is used to emulate `f`, since nor can be used to emulate all boolean functions.
 *)
@@ -109,8 +140,8 @@ Inductive nor_seqs (P Q: seqs): seqs :=
     nor_seqs P Q s
   .
 
-(* 
-   nor_seqs_morph allows rewrite to work inside nor_seqs parameters 
+(*
+   nor_seqs_morph allows rewrite to work inside nor_seqs parameters
    see Example NorSeqsMorphSetoidRewrite
 *)
 Add Parametric Morphism: nor_seqs
@@ -136,7 +167,7 @@ constructor;
 - apply R.
   apply H0.
   assumption.
-- apply L. 
+- apply L.
   apply H.
   assumption.
 - apply R.
@@ -148,7 +179,7 @@ Existing Instance nor_seqs_morph_Proper.
 
 Inductive emptyset_seqs: seqs :=
   .
-  (* 
+  (*
   This is equivalent to:
   ```
   | mk_emptyset: forall (s: seq),
@@ -182,7 +213,7 @@ Inductive symbol_seqs (a: alphabet): seqs :=
   ```
   *)
 
-(* 
+(*
   Here we use a mix of Fixpoint and Inductive predicates to define the denotation of regular expressions.
 *)
 Reserved Notation "{{ r }}" (r at level 60, no associativity).
