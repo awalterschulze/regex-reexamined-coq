@@ -219,8 +219,7 @@ split.
 Qed.
 
 (*
-The implementation of Setoid for seqs
-allows the use of rewrite and reflexivity.
+  The implementation of Setoid for seqs allows the use of rewrite and reflexivity.
 *)
 Example SeqsSetoidRewriteReflexivity: forall (r: seqs),
   concat_seqs emptyset_seqs r
@@ -233,8 +232,7 @@ reflexivity.
 Qed.
 
 (*
-The implementation not_seqs_morph
-allows the use of rewrite inside nor_seqs parameters.
+  The implementation of not_seqs_morph allows the use of rewrite inside nor_seqs parameters.
 *)
 Example NorSeqsMorphSetoidRewrite: forall (r s: seqs),
   nor_seqs (concat_seqs emptyset_seqs r) s
