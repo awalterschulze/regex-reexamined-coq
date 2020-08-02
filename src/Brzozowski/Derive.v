@@ -396,7 +396,7 @@ Lemma concat_seqs_a_impl_def: forall (r1 r2: regex) (a: alphabet),
     {{ derive_def (concat r1 r2) a }}
   ).
 Proof.
-unfold seqs_impl.
+unfold "{->}".
 intros r1 r2 a R1 R2 s C.
 invs C.
 wreckit.
@@ -620,7 +620,7 @@ Theorem derive_seqs_commutes_empty: forall (r: regex),
 Proof.
 intros.
 rewrite derive_defs_empty.
-unfold seqs_eq.
+unfold "{<->}".
 intro s.
 remember (derive_seqs_empty {{r}} s) as E; destruct E.
 split.
@@ -692,7 +692,7 @@ induction s.
     apply H.
   + clear IHs0.
     rewrite derive_defs_step.
-    unfold seqs_eq in *.
+    unfold "{<->}" in *.
     intros.
     remember (derive_seqs_step {{r}} a (a0 :: s) s0) as Dr.
       clear HeqDr.
@@ -720,7 +720,7 @@ induction s.
 - cbn. apply emptyset_terminates.
 - split; intros.
   + invs H.
-  + unfold seqs_eq in IHs.
+  + unfold "{<->}" in IHs.
     cbn in H.
     fold (derive_defs emptyset s) in H.
     remember (IHs s0).
