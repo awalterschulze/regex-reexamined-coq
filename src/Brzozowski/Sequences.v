@@ -18,6 +18,15 @@ Definition elem (ss: seqs) (s: seq): Prop := ss s.
 Notation "p `elem` P" := (elem P p) (at level 80).
 Notation "p `notelem` P" := (~ (elem P p)) (at level 80).
 
+(*
+We are defining a set that is not necessarily computable.
+https://stackoverflow.com/questions/36588263/how-to-define-set-in-coq-without-defining-set-as-a-list-of-elements
+This axiom fixes that and allows us to prove double negation.
+*)
+Axiom seqs_dec:
+  forall (s: seq) (R: seqs),
+  s `elem` R \/ s `notelem` R.
+
 Definition seqs_if (s1 s2: seqs): Prop :=
   forall (s: seq),
   s `elem` s1 -> s `elem` s2.
@@ -29,6 +38,24 @@ Definition seqs_iff (s1 s2: seqs): Prop :=
   s `elem` s1 <-> s `elem` s2.
 
 Notation "s1 {<->} s2" := (seqs_iff s1 s2) (at level 80).
+
+Lemma notnotelem: forall (s: seq) (R: seqs),
+  s `elem` R
+  <->
+  ~ (s `notelem` R).
+Proof.
+intros.
+split; intros.
+- untie.
+- specialize seqs_dec.
+  intros.
+  specialize H0 with (s := s) (R := R).
+  wreckit.
+  + assumption.
+  + exfalso.
+    apply H.
+    assumption.
+Qed.
 
 (* seqs_setoid makes it possible to use:
   - rewrite for proven seqs_iff theorems
@@ -227,6 +254,59 @@ Fixpoint denote_regex (r: regex): seqs :=
   | nor r1 r2 => nor_seqs {{r1}} {{r2}}
   end
 where "{{ r }}" := (denote_regex r).
+
+Definition not_seqs (R: seqs) : seqs :=
+  nor_seqs R R.
+
+Theorem not_seqs_not_seqs: forall (r: regex),
+  not_seqs (not_seqs {{r}})
+  {<->}
+  {{r}}.
+Proof.
+intros.
+specialize seqs_dec with (R := {{r}}).
+intros.
+split; intros; specialize H with s; wreckit.
+- assumption.
+- invs H0.
+  wreckit.
+  exfalso.
+  apply L.
+  constructor.
+  wreckit.
+  assumption.
+- constructor.
+  wreckit.
+  untie.
+  invs H.
+  wreckit.
+  apply L.
+  assumption.
+- contradiction.
+Qed.
+
+Lemma notelem_norseqs: forall (s: seq) (R: seqs),
+  s `elem` R
+  <->
+  s `notelem` nor_seqs R R.
+Proof.
+intros.
+split; intros.
+- untie.
+  invs H0.
+  wreckit.
+  apply L.
+  assumption.
+- specialize seqs_dec with (s := s) (R := R).
+  intros.
+  wreckit.
+  + assumption.
+  + exfalso.
+    apply H.
+    constructor.
+    wreckit.
+    assumption.
+Qed.
 
 Theorem notelem_emptyset: forall (s: seq),
   s `notelem` emptyset_seqs.
