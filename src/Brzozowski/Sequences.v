@@ -17,6 +17,60 @@ Definition elem (ss: seqs) (s: seq): Prop := ss s.
 Notation "p `elem` P" := (elem P p) (at level 80).
 Notation "p `notelem` P" := (~ (elem P p)) (at level 80).
 
+Definition seqs_if (s1 s2: seqs): Prop :=
+  forall (s: seq),
+  s `elem` s1 -> s `elem` s2.
+
+Notation "s1 {->} s2" := (seqs_if s1 s2) (at level 80).
+
+Definition seqs_iff (s1 s2: seqs): Prop :=
+  forall (s: seq),
+  s `elem` s1 <-> s `elem` s2.
+
+Notation "s1 {<->} s2" := (seqs_iff s1 s2) (at level 80).
+
+(* seqs_setoid makes it possible to use:
+  - rewrite for proven seqs_iff theorems
+  - reflexivity for seqs_iff relations where both sides are equal
+*)
+Section SeqsSetoid.
+
+Theorem seqs_iff_refl : forall A:seqs, A {<->} A.
+  Proof.
+    split; auto.
+  Qed.
+
+Theorem seqs_iff_trans : forall A B C:seqs, (A {<->} B) -> (B {<->} C) -> (A {<->} C).
+  Proof.
+    intros.
+    unfold "{<->}" in *.
+    intros.
+    specialize H with s.
+    specialize H0 with s.
+    unfold "`elem`" in *.
+    apply iff_trans with (A := A s) (B := B s); assumption.
+  Qed.
+
+Theorem seqs_iff_sym : forall A B:seqs, (A {<->} B) -> (B {<->} A).
+  Proof.
+    intros.
+    unfold "{<->}" in *.
+    intros.
+    specialize H with s.
+    unfold "`elem`" in *.
+    apply iff_sym.
+    assumption.
+  Qed.
+
+Add Parametric Relation: seqs seqs_iff
+  reflexivity proved by seqs_iff_refl
+  symmetry proved by seqs_iff_sym
+  transitivity proved by seqs_iff_trans as seqs_setoid.
+
+End SeqsSetoid.
+
+Existing Instance seqs_setoid.
+
 (* Concatenation*. $(P.Q) = \{ s | s = p.q; p \in P, q \in Q \}$. *)
 Inductive concat_seqs (P Q: seqs): seqs :=
   | mk_concat: forall (s: seq),
@@ -104,18 +158,6 @@ Fixpoint denote_regex (r: regex): seqs :=
   end
 where "{{ r }}" := (denote_regex r).
 
-Definition seqs_impl (s1 s2: seqs): Prop :=
-  forall (s: seq),
-  s `elem` s1 -> s `elem` s2.
-
-Notation "s1 {->} s2" := (seqs_impl s1 s2) (at level 80).
-
-Definition seqs_eq (s1 s2: seqs): Prop :=
-  forall (s: seq),
-  s `elem` s1 <-> s `elem` s2.
-
-Notation "s1 {<->} s2" := (seqs_eq s1 s2) (at level 80).
-
 Theorem notelem_emptyset: forall (s: seq),
   s `notelem` emptyset_seqs.
 Proof.
@@ -135,6 +177,20 @@ split.
   invs L.
 - intros.
   invs H.
+Qed.
+
+(*
+The implemenation of Setoid for seqs
+allows the use of rewrite and reflexivity.
+*)
+Example SeqsSetoidRewriteReflexivity: forall (r: seqs),
+  concat_seqs emptyset_seqs r
+  {<->}
+  emptyset_seqs.
+Proof.
+intros.
+rewrite concat_seqs_emptyset_l_is_emptyset.
+reflexivity.
 Qed.
 
 Theorem concat_seqs_emptyset_l: forall (r: seqs) (s: seq),
