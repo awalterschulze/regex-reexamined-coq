@@ -1,5 +1,6 @@
 Require Import List.
 Import ListNotations.
+Require Import Setoid.
 
 Require Import CoqStock.Invs.
 Require Import CoqStock.Listerine.
@@ -32,6 +33,7 @@ Notation "s1 {<->} s2" := (seqs_iff s1 s2) (at level 80).
 (* seqs_setoid makes it possible to use:
   - rewrite for proven seqs_iff theorems
   - reflexivity for seqs_iff relations where both sides are equal
+  see Example SeqsSetoidRewriteReflexivity
 *)
 Section SeqsSetoid.
 
@@ -107,6 +109,43 @@ Inductive nor_seqs (P Q: seqs): seqs :=
     nor_seqs P Q s
   .
 
+(* 
+   nor_seqs_morph allows rewrite to work inside nor_seqs parameters 
+   see Example NorSeqsMorphSetoidRewrite
+*)
+Add Parametric Morphism: nor_seqs
+  with signature seqs_iff ==> seqs_iff ==> seqs_iff as nor_seqs_morph.
+Proof.
+intros.
+unfold "{<->}" in *.
+unfold "`elem`" in *.
+intros.
+specialize H with s.
+specialize H0 with s.
+constructor;
+  intros;
+  constructor;
+  wreckit;
+    untie;
+    unfold "`elem`" in *;
+    invs H1;
+    wreckit.
+- apply L.
+  apply H.
+  assumption.
+- apply R.
+  apply H0.
+  assumption.
+- apply L. 
+  apply H.
+  assumption.
+- apply R.
+  apply H0.
+  assumption.
+Qed.
+
+Existing Instance nor_seqs_morph_Proper.
+
 Inductive emptyset_seqs: seqs :=
   .
   (* 
@@ -180,13 +219,27 @@ split.
 Qed.
 
 (*
-The implemenation of Setoid for seqs
+The implementation of Setoid for seqs
 allows the use of rewrite and reflexivity.
 *)
 Example SeqsSetoidRewriteReflexivity: forall (r: seqs),
   concat_seqs emptyset_seqs r
   {<->}
   emptyset_seqs.
+Proof.
+intros.
+rewrite concat_seqs_emptyset_l_is_emptyset.
+reflexivity.
+Qed.
+
+(*
+The implementation not_seqs_morph
+allows the use of rewrite inside nor_seqs parameters.
+*)
+Example NorSeqsMorphSetoidRewrite: forall (r s: seqs),
+  nor_seqs (concat_seqs emptyset_seqs r) s
+  {<->}
+  nor_seqs emptyset_seqs s.
 Proof.
 intros.
 rewrite concat_seqs_emptyset_l_is_emptyset.

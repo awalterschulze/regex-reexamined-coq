@@ -350,40 +350,13 @@ Lemma commutes_a_nor: forall (p q: regex) (a: alphabet)
   {<->}
   {{ derive_def (nor p q) a }}.
 Proof.
-unfold "{<->}".
 intros.
-specialize IHp with s.
-specialize IHq with s.
-unfold "`elem`" in *.
+rewrite nor_seqs_distributes.
+rewrite IHp.
+rewrite IHq.
 dubstep derive_def.
-dubstep denote_regex.
-split.
-- intros.
-  apply nor_seqs_distributes in H.
-  invs H.
-  wreckit.
-  constructor.
-  unfold "`elem`" in *.
-  split; untie.
-  + apply L.
-    apply IHp.
-    assumption.
-  + apply R.
-    apply IHq.
-    assumption.
-- intros.
-  apply nor_seqs_distributes.
-  invs H.
-  wreckit.
-  unfold "`elem`" in *.
-  constructor.
-  split; untie.
-  + apply L.
-    apply IHp.
-    assumption.
-  + apply R.
-    apply IHq.
-    assumption.
+cbn.
+reflexivity.
 Qed.
 
 (* A helper Lemma for commutes_a_concat *)
