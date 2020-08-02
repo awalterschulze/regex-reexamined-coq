@@ -471,18 +471,25 @@ split.
   invs R0.
 Qed.
 
-Lemma commutes_a_concat: forall (a : alphabet)
-    (r1 r2 : regex),
-  derive_seqs_a {{concat r1 r2}} a
-  {<->} {{derive_def (concat r1 r2) a}}.
+Lemma commutes_a_concat: forall (a : alphabet) (p q: regex)
+  (IHp: derive_seqs_a {{p}} a {<->} {{derive_def p a}})
+  (IHq: derive_seqs_a {{q}} a {<->} {{derive_def q a}}),
+  (
+    derive_seqs_a {{concat p q}} a
+    {<->}
+    {{derive_def (concat p q) a}}
+  ).
 Proof.
 (* TODO: Help Wanted *)
 Admitted.
 
-Lemma commutes_a_star: forall (a : alphabet)
-    (r : regex),
- derive_seqs_a {{star r}} a
-               {<->} {{derive_def (star r) a}}.
+Lemma commutes_a_star: forall (a : alphabet) (r : regex)
+  (IH: derive_seqs_a {{r}} a {<->} {{derive_def r a}}),
+  (
+    derive_seqs_a {{star r}} a
+    {<->}
+    {{derive_def (star r) a}}
+  ).
 Proof.
 (* TODO: Help Wanted *)
 Admitted.
@@ -497,7 +504,10 @@ induction r; intros.
 - apply commutes_a_lambda.
 - apply commutes_a_symbol.
 - apply commutes_a_concat.
+  + apply IHr1.
+  + apply IHr2.
 - apply commutes_a_star.
+  + apply IHr.
 - apply commutes_a_nor.
   + apply IHr1.
   + apply IHr2.
