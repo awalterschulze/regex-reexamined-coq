@@ -135,6 +135,28 @@ split;
   assumption.
 Qed.
 
+Definition derive_step:
+  forall (r: regex) (a: alphabet) (s: seq)
+  , s `elem` derive_seqs_a {{ r }} a
+  -> (a :: s) `elem` {{ r }}.
+Proof.
+intros.
+unfold derive_seqs_a in H.
+assumption.
+Qed.
+
+Definition derive_step2:
+  forall (r: regex) (a: alphabet) (s: seq)
+  , s `elem` derive_seqs_a {{ r }} a
+  \/ s `notelem` derive_seqs_a {{ r }} a
+  -> (a :: s) `elem` {{ r }}
+  \/ (a :: s) `notelem` {{ r }}.
+Proof.
+intros.
+unfold derive_seqs_a in H.
+assumption.
+Qed.
+
 Theorem derive_seqs_step: forall (R: seqs) (a: alphabet) (s: seq),
   derive_seqs R (a :: s) {<->} derive_seqs (derive_seqs_a R a) s.
 Proof.
@@ -310,19 +332,19 @@ Qed.
 
 (*
   Let us consider now (3.8).
-  It is sufficient to prove this relation for $f(P, Q) = P + Q$ and 
+  It is sufficient to prove this relation for $f(P, Q) = P + Q$ and
   for $f(P, Q) = P'$, for this is a complete set of Boolean connectives.
   Now
 
   $$
   \begin{aligned}
-  D_a (P + Q) &= \{t | a.t \in (P + Q)\} \\
-              &= \{u | a.u \in P\} + \{v | a.v \in P\} \\
-              &= D_a P + D_a Q. \\
+  D_a (P + Q) &= {t | a.t \in (P + Q)}
+              &= {u | a.u \in P} + {v | a.v \in P}
+              &= D_a P + D_a Q.
   \end{aligned}
   $$
 
-  It is clear that this rule can be extended to any number of regular expressions, 
+  It is clear that this rule can be extended to any number of regular expressions,
   i.e. that $D_a (R_1 + R_2 + \ldots) = D_a R_1 + D_a R_2 + \ldots$
   even when the number of $R_j$ is countably infinite.
   Next, note that $a.D_a R + a.D_a R' = a.I$.
@@ -460,20 +482,40 @@ split.
 Qed.
 
 (*
-  Next consider $D_a P.Q$ . Let $P = \delta(P) + P_0$, where $\delta(P_0) = \emptyset$.
-  Then
+  Next consider:
+  derive_seqs_a (R: seqs) (a: alphabet) (t: seq): Prop :=
+  (a :: t) `elem` R.
+  derive_seqs_a (concat_seqs P Q)
+  Let:
+  P = delta_def(P) or P_0
+  where delta_def(P_0) = emptyset
+  Then:
+  derive_seqs_a (concat_seqs P Q) a
+    {<->} {s | (a :: s) `elem` (concat_seqs P Q)}
+    {<->} {s | (a :: s) `elem` (concat_seqs (or_seqs {{delta_def(P)}} P_0) Q)}
+    {<->} {u | (a :: u) `elem` (concat_seqs {{delta_def(P)}} Q)}
+          \/
+          {v | (a :: v) `elem` (concat_seqs P_0 Q)}
+    {<->} concat_seqs {{delta_def(P)}} (derive_seqs_a Q a)
+          \/
+          {v_1 ++ v_2 | (a :: v_1) `elem` P_0, v_2 `elem` Q}
+    {<->} concat_seqs {{delta_def(P)}} (derive_seqs_a Q a)
+          \/
+          concat_seqs ({v_1 | (a :: v_1) `elem` P_0}) Q
+    {<->} concat_seqs {{delta_def(P)}} (derive_seqs_a Q a)
+          \/
+          concat_seqs (derive_seqs_a P_0 a) Q.
 
-  $$
-  \begin{aligned}
-  D_a PQ  &= \{s | as \in (\delta(P) + P_0)Q\} \\
-          &= \{u | au \in \delta(P)Q\} + \{v | av \in P_0 Q\} \\
-          &= \delta(P) (D_a Q) + \{v_1 v_2 | a v_1 \in P_0, v_2 \in Q\} \\
-          &= \delta(P) (D_a Q) + \{v_1 | a v_1 \in P_0\} Q \\
-          &= \delta(P) (D_a Q) + (D_a P_0) Q. \\
-  \end{aligned}
-  $$
-
-  But $D_a P = D_a (P_0 + \lambda) = D_a P_0$; hence $D_a (PQ) = \delta(P) D_a Q + (D_a P) Q$,
+  But:
+  derive_seqs_a P a
+  {<->} derive_seqs_a (or_seqs P_0 lambda_seqs) a
+  {<->} derive_seqs_a P_0 a
+  ; hence:
+  derive_seqs_a (concat_seqs P Q)
+  {<->} concat_seqs {{delta_def(P)}} (derive_seqs_a Q a)
+        \/
+        concat_seqs (derive_seqs_a P a) Q
+        concat_seqs ((a :: s) \in P) Q
   which is rule (3.7).
 *)
 Lemma commutes_a_concat: forall (a : alphabet) (p q: regex)
