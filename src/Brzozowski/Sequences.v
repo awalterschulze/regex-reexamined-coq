@@ -228,11 +228,269 @@ Fixpoint denote_regex (r: regex): seqs :=
   end
 where "{{ r }}" := (denote_regex r).
 
+(* Definition seq_nullable (r: regex):
+  [] `elem` {{ delta_def r }} \/
+  forall (s: seq), s `notelem` {{ delta_def r }}.
+Admitted. *)
+
 Theorem notelem_emptyset: forall (s: seq),
   s `notelem` emptyset_seqs.
 Proof.
 intros.
 untie.
+Qed.
+
+Theorem denotation_nor_is_decidable (p q: regex) (s: seq):
+  s `elem` {{ p }} \/ s `notelem` {{ p }} ->
+  s `elem` {{ q }} \/ s `notelem` {{ q }} ->
+  s `elem` {{ nor p q }} \/ s `notelem` {{ nor p q }}.
+Proof.
+simpl.
+intros.
+wreckit.
+- right.
+  untie.
+  invs H.
+  wreckit.
+  contradiction.
+- right.
+  untie.
+  invs H.
+  wreckit.
+  contradiction.
+- right.
+  untie.
+  invs H.
+  wreckit.
+  contradiction.
+- left.
+  constructor.
+  wreckit.
+  * assumption.
+  * assumption.
+Qed.
+
+Theorem denotation_is_decidable_on_empty_string (r: regex):
+  [] `elem` {{ r }} \/ [] `notelem` {{ r }}.
+Proof.
+intros.
+induction r.
+- right.
+  apply notelem_emptyset.
+- left.
+  constructor.
+- right.
+  untie.
+  invs H.
+- wreckit.
+  + left.
+    constructor.
+    exists [].
+    exists [].
+    exists eq_refl.
+    wreckit; assumption.
+  + right.
+    untie.
+    invs H.
+    wreckit.
+    listerine.
+    contradiction.
+  + right.
+    untie.
+    invs H.
+    wreckit.
+    listerine.
+    contradiction.
+  + right.
+    untie.
+    invs H.
+    wreckit.
+    listerine.
+    contradiction.
+- left.
+  constructor.
+  reflexivity.
+- apply denotation_nor_is_decidable.
+  + assumption.
+  + assumption.
+Qed.
+
+Theorem denotation_is_decidable (r: regex) (s: seq):
+  s `elem` {{ r }} \/ s `notelem` {{ r }}.
+Proof.
+induction s.
+- apply denotation_is_decidable_on_empty_string.
+- induction r.
+  + admit.
+  + admit.
+  + admit.
+  + wreckit.
+    invs B.
+    wreckit.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+intros.
+induction r.
+- right.
+  apply notelem_emptyset.
+- destruct s.
+  + left.
+    constructor.
+  + right.
+    untie.
+    invs H.
+- destruct s.
+  + right.
+    untie.
+    invs H.
+  + destruct a, a0.
+    * destruct s.
+      --- left.
+          constructor.
+      --- right.
+          untie.
+          invs H.
+    * right.
+      untie.
+      invs H.
+    * right.
+      untie.
+      invs H.
+    * destruct s.
+      --- left.
+          constructor.
+      --- right.
+          untie.
+          invs H.
+- induction s.
+  + wreckit.
+    * left.
+      constructor.
+      exists [].
+      exists [].
+      exists eq_refl.
+      wreckit; assumption.
+    * right.
+      untie.
+      invs H.
+      wreckit.
+      listerine.
+      contradiction.
+    * right.
+      untie.
+      invs H.
+      wreckit.
+      listerine.
+      contradiction.
+    * right.
+      untie.
+      invs H.
+      wreckit.
+      listerine.
+      contradiction.
+  + simpl.
+    left.
+    * constructor.
+
+
+        concat s t =
+          or (concat (derive_def s a) t)
+             (concat (delta_def s) (derive_def t a))
+          (* if nullabe s *)
+        concat s t =
+          or (concat (derive_def s a) t)
+             (derive_def t a)
+          (* else if not nullable s *)
+        concat s t =
+          concat (derive_def s a) t
+
+
+    listerine.
+- admit.
+- simpl.
+  wreckit.
+  + right.
+    untie.
+    invs H.
+    wreckit.
+    contradiction.
+  + right.
+    untie.
+    invs H.
+    wreckit.
+    contradiction.
+  + right.
+    untie.
+    invs H.
+    wreckit.
+    contradiction.
+  + left.
+    constructor.
+    wreckit.
+    * assumption.
+    * assumption.
+Qed.
+
+
+
+
+Admitted.
+
+Definition not_seqs (R: seqs) : seqs :=
+  nor_seqs R R.
+
+Theorem double_neg_implies:
+  forall (r: regex) (s: seq),
+  ((~ ~ (s `elem` {{ r }})) -> (s `elem` {{ r }})).
+Proof.
+  intros.
+  specialize (denotation_is_decidable r s).
+  intros.
+  unfold not in *.
+  destruct H0 as [x | not_x].
+  - exact x.
+  - apply H in not_x.
+    induction not_x.
+Qed.
+
+Theorem not_seqs_not_seqs: forall (r: regex),
+  not_seqs (not_seqs {{r}})
+  {<->}
+  {{r}}.
+Proof.
+intros.
+split; specialize (denotation_is_decidable r s); intros.
+- wreckit.
+  + assumption.
+  + invs H0.
+    wreckit.
+    unfold not in L.
+    exfalso.
+    apply L.
+    constructor.
+    wreckit.
+    assumption.
+- constructor.
+  wreckit.
+  + unfold not.
+    intros.
+    invs H.
+    wreckit.
+    contradiction.
+  + contradiction.
 Qed.
 
 Theorem concat_seqs_emptyset_l_is_emptyset: forall (r: seqs),
