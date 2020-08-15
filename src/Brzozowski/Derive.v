@@ -135,28 +135,6 @@ split;
   assumption.
 Qed.
 
-Definition derive_step:
-  forall (r: regex) (a: alphabet) (s: seq)
-  , s `elem` derive_seqs_a {{ r }} a
-  -> (a :: s) `elem` {{ r }}.
-Proof.
-intros.
-unfold derive_seqs_a in H.
-assumption.
-Qed.
-
-Definition derive_step2:
-  forall (r: regex) (a: alphabet) (s: seq)
-  , s `elem` derive_seqs_a {{ r }} a
-  \/ s `notelem` derive_seqs_a {{ r }} a
-  -> (a :: s) `elem` {{ r }}
-  \/ (a :: s) `notelem` {{ r }}.
-Proof.
-intros.
-unfold derive_seqs_a in H.
-assumption.
-Qed.
-
 Theorem derive_seqs_step: forall (R: seqs) (a: alphabet) (s: seq),
   derive_seqs R (a :: s) {<->} derive_seqs (derive_seqs_a R a) s.
 Proof.
