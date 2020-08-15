@@ -228,11 +228,6 @@ Fixpoint denote_regex (r: regex): seqs :=
   end
 where "{{ r }}" := (denote_regex r).
 
-(* Definition seq_nullable (r: regex):
-  [] `elem` {{ delta_def r }} \/
-  forall (s: seq), s `notelem` {{ delta_def r }}.
-Admitted. *)
-
 Theorem notelem_emptyset: forall (s: seq),
   s `notelem` emptyset_seqs.
 Proof.
@@ -352,7 +347,7 @@ constructor.
 reflexivity.
 Qed.
 
-Theorem denotation_is_decidable_on_empty_string (r: regex):
+Lemma denotation_is_decidable_on_empty_string (r: regex):
   [] `elem` {{ r }} \/ [] `notelem` {{ r }}.
 Proof.
 intros.
@@ -387,7 +382,7 @@ Abort.
 Definition not_seqs (R: seqs) : seqs :=
   nor_seqs R R.
 
-Theorem double_negation:
+Theorem not_not_regex_is_regex:
   forall (r: regex) (s: seq),
   ((~ ~ (s `elem` {{ r }})) -> (s `elem` {{ r }})).
 Proof.
@@ -402,7 +397,7 @@ Proof.
     induction not_x.
 Abort.
 
-Theorem not_seqs_not_seqs: forall (r: regex),
+Theorem not_seqs_not_seqs_is_seqs: forall (r: regex),
   not_seqs (not_seqs {{r}})
   {<->}
   {{r}}.
