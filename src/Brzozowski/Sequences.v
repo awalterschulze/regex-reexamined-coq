@@ -240,7 +240,48 @@ intros.
 untie.
 Qed.
 
-Theorem denotation_nor_is_decidable (p q: regex) (s: seq):
+Lemma denotation_emptyset_is_decidable (s: seq):
+  s `elem` {{ emptyset }} \/ s `notelem` {{ emptyset }}.
+Proof.
+right.
+apply notelem_emptyset.
+Qed.
+
+Lemma denotation_lambda_is_decidable (s: seq):
+  s `elem` {{ lambda }} \/ s `notelem` {{ lambda }}.
+Proof.
+destruct s.
+- left. constructor.
+- right. untie. invs H.
+Qed.
+
+Lemma denotation_symbol_is_decidable (s: seq) (a: alphabet):
+  s `elem` {{ symbol a }} \/ s `notelem` {{ symbol a }}.
+Proof.
+destruct s.
+- right. untie. invs H.
+- destruct a, a0.
+  + destruct s.
+    * left.
+      constructor.
+    * right.
+      untie.
+      invs H.
+  + right.
+    untie.
+    invs H.
+  + right.
+    untie.
+    invs H.
+  + destruct s.
+    * left.
+      constructor.
+    * right.
+      untie.
+      invs H.
+Qed.
+
+Lemma denotation_nor_is_decidable (p q: regex) (s: seq):
   s `elem` {{ p }} \/ s `notelem` {{ p }} ->
   s `elem` {{ q }} \/ s `notelem` {{ q }} ->
   s `elem` {{ nor p q }} \/ s `notelem` {{ nor p q }}.
@@ -270,46 +311,59 @@ wreckit.
   * assumption.
 Qed.
 
+Lemma denotation_concat_is_decidable_for_empty_string (p q: regex):
+  [] `elem` {{ p }} \/ [] `notelem` {{ p }} ->
+  [] `elem` {{ q }} \/ [] `notelem` {{ q }} ->
+  [] `elem` {{ concat p q }} \/ [] `notelem` {{ concat p q }}.
+Proof.
+intros.
+wreckit.
+- left.
+  constructor.
+  exists [].
+  exists [].
+  exists eq_refl.
+  wreckit; assumption.
+- right.
+  untie.
+  invs H.
+  wreckit.
+  listerine.
+  contradiction.
+- right.
+  untie.
+  invs H.
+  wreckit.
+  listerine.
+  contradiction.
+- right.
+  untie.
+  invs H.
+  wreckit.
+  listerine.
+  contradiction.
+Qed.
+
+Lemma denotation_star_is_decidable_for_empty_string (r: regex):
+  [] `elem` {{ star r }} \/ [] `notelem` {{ star r }}.
+Proof.
+left.
+constructor.
+reflexivity.
+Qed.
+
 Theorem denotation_is_decidable_on_empty_string (r: regex):
   [] `elem` {{ r }} \/ [] `notelem` {{ r }}.
 Proof.
 intros.
 induction r.
-- right.
-  apply notelem_emptyset.
-- left.
-  constructor.
-- right.
-  untie.
-  invs H.
-- wreckit.
-  + left.
-    constructor.
-    exists [].
-    exists [].
-    exists eq_refl.
-    wreckit; assumption.
-  + right.
-    untie.
-    invs H.
-    wreckit.
-    listerine.
-    contradiction.
-  + right.
-    untie.
-    invs H.
-    wreckit.
-    listerine.
-    contradiction.
-  + right.
-    untie.
-    invs H.
-    wreckit.
-    listerine.
-    contradiction.
-- left.
-  constructor.
-  reflexivity.
+- apply denotation_emptyset_is_decidable.
+- apply denotation_lambda_is_decidable.
+- apply denotation_symbol_is_decidable.
+- apply denotation_concat_is_decidable_for_empty_string.
+  + assumption.
+  + assumption.
+- apply denotation_star_is_decidable_for_empty_string.
 - apply denotation_nor_is_decidable.
   + assumption.
   + assumption.
@@ -321,150 +375,32 @@ Proof.
 induction s.
 - apply denotation_is_decidable_on_empty_string.
 - induction r.
-  + admit.
-  + admit.
-  + admit.
+  + apply denotation_emptyset_is_decidable.
+  + apply denotation_lambda_is_decidable.
+  + apply denotation_symbol_is_decidable.
   + wreckit.
-    invs B.
-    wreckit.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-intros.
-induction r.
-- right.
-  apply notelem_emptyset.
-- destruct s.
-  + left.
-    constructor.
-  + right.
-    untie.
-    invs H.
-- destruct s.
-  + right.
-    untie.
-    invs H.
-  + destruct a, a0.
-    * destruct s.
-      --- left.
-          constructor.
-      --- right.
-          untie.
-          invs H.
-    * right.
-      untie.
-      invs H.
-    * right.
-      untie.
-      invs H.
-    * destruct s.
-      --- left.
-          constructor.
-      --- right.
-          untie.
-          invs H.
-- induction s.
-  + wreckit.
-    * left.
-      constructor.
-      exists [].
-      exists [].
-      exists eq_refl.
-      wreckit; assumption.
-    * right.
-      untie.
-      invs H.
+    * invs B.
       wreckit.
-      listerine.
-      contradiction.
-    * right.
-      untie.
-      invs H.
-      wreckit.
-      listerine.
-      contradiction.
-    * right.
-      untie.
-      invs H.
-      wreckit.
-      listerine.
-      contradiction.
-  + simpl.
-    left.
-    * constructor.
-
-
-        concat s t =
-          or (concat (derive_def s a) t)
-             (concat (delta_def s) (derive_def t a))
-          (* if nullabe s *)
-        concat s t =
-          or (concat (derive_def s a) t)
-             (derive_def t a)
-          (* else if not nullable s *)
-        concat s t =
-          concat (derive_def s a) t
-
-
-    listerine.
-- admit.
-- simpl.
-  wreckit.
-  + right.
-    untie.
-    invs H.
-    wreckit.
-    contradiction.
-  + right.
-    untie.
-    invs H.
-    wreckit.
-    contradiction.
-  + right.
-    untie.
-    invs H.
-    wreckit.
-    contradiction.
-  + left.
-    constructor.
-    wreckit.
-    * assumption.
-    * assumption.
-Qed.
-
-
-
-
-Admitted.
+(* TODO: Help Wanted *)
+Abort.
 
 Definition not_seqs (R: seqs) : seqs :=
   nor_seqs R R.
 
-Theorem double_neg_implies:
+Theorem double_negation:
   forall (r: regex) (s: seq),
   ((~ ~ (s `elem` {{ r }})) -> (s `elem` {{ r }})).
 Proof.
   intros.
-  specialize (denotation_is_decidable r s).
-  intros.
+  assert (s `elem` {{ r }} \/ s `notelem` {{ r }}).
+  - admit. (* TODO: apply denotation_is_decidable *)
+  - intros.
   unfold not in *.
   destruct H0 as [x | not_x].
-  - exact x.
-  - apply H in not_x.
+  + exact x.
+  + apply H in not_x.
     induction not_x.
-Qed.
+Abort.
 
 Theorem not_seqs_not_seqs: forall (r: regex),
   not_seqs (not_seqs {{r}})
@@ -472,8 +408,11 @@ Theorem not_seqs_not_seqs: forall (r: regex),
   {{r}}.
 Proof.
 intros.
-split; specialize (denotation_is_decidable r s); intros.
-- wreckit.
+split.
+- assert (s `elem` {{ r }} \/ s `notelem` {{ r }}).
+  admit. (* TODO: apply denotation_is_decidable *)
+  intros.
+  wreckit.
   + assumption.
   + invs H0.
     wreckit.
@@ -483,7 +422,10 @@ split; specialize (denotation_is_decidable r s); intros.
     constructor.
     wreckit.
     assumption.
-- constructor.
+- assert (s `elem` {{ r }} \/ s `notelem` {{ r }}).
+  admit. (* TODO: apply denotation_is_decidable *)
+  intros.
+  constructor.
   wreckit.
   + unfold not.
     intros.
@@ -491,7 +433,7 @@ split; specialize (denotation_is_decidable r s); intros.
     wreckit.
     contradiction.
   + contradiction.
-Qed.
+Abort.
 
 Theorem concat_seqs_emptyset_l_is_emptyset: forall (r: seqs),
   concat_seqs emptyset_seqs r
