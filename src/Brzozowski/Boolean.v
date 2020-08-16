@@ -9,7 +9,7 @@ Require Import Brzozowski.Regex.
 Require Import Brzozowski.Sequences.
 
 (* the *intersection* $P \& Q$, *)
-Theorem elem_intersection: forall (p q: regex) (s: seq),
+Theorem elem_intersection: forall (p q: regex) (s: str),
   s `elem` {{p}} ->
   s `elem` {{q}} ->
   s `elem` {{and p q}}.
@@ -28,7 +28,7 @@ constructor.
   contradiction.
 Qed.
 
-Theorem elem_union_l: forall (p q: regex) (s: seq),
+Theorem elem_union_l: forall (p q: regex) (s: str),
   s `elem` {{p}} ->
   s `elem` {{or p q}}.
 Proof.
@@ -52,14 +52,14 @@ constructor.
   contradiction.
 Qed.
 
-Theorem elem_union_r: forall (p q: regex) (s: seq),
+Theorem elem_union_r: forall (p q: regex) (s: str),
   s `elem` {{q}} ->
   s `elem` {{or p q}}.
 Proof.
 (* TODO: Good First Issue *)
 Abort.
 
-Theorem elem_complement: forall (p: regex) (s: seq),
+Theorem elem_complement: forall (p: regex) (s: str),
   s `notelem` {{p}} ->
   s `elem` {{complement p}}.
 Proof.
@@ -72,7 +72,7 @@ unfold not.
 assumption.
 Qed.
 
-Theorem notelem_complement: forall (p: regex) (s: seq),
+Theorem notelem_complement: forall (p: regex) (s: str),
   s `elem` {{p}} ->
   s `notelem` {{complement p}}.
 Proof.
@@ -84,7 +84,7 @@ inversion H1.
 contradiction.
 Qed.
 
-Theorem elem_complement_emptyset: forall (s: seq),
+Theorem elem_complement_emptyset: forall (s: str),
   s `elem` {{complement emptyset}}.
 Proof.
 intros.
@@ -97,7 +97,7 @@ intros.
 inversion H.
 Qed.
 
-Theorem notelem_emptyset: forall (s: seq),
+Theorem notelem_emptyset: forall (s: str),
   s `notelem` {{emptyset}}.
 Proof.
 intros.
@@ -107,7 +107,7 @@ intros.
 inversion H.
 Qed.
 
-Theorem notelem_intersection_l: forall (p q: regex) (s: seq),
+Theorem notelem_intersection_l: forall (p q: regex) (s: str),
   s `notelem` {{p}} ->
   s `notelem` {{and p q}}.
 Proof.
@@ -125,7 +125,7 @@ unfold not.
 assumption.
 Qed.
 
-Theorem notelem_intersection_r: forall (p q: regex) (s: seq),
+Theorem notelem_intersection_r: forall (p q: regex) (s: str),
     s `notelem` {{q}} ->
     s `notelem` {{and p q}}.
 Proof.
@@ -145,7 +145,7 @@ unfold not.
 assumption.
 Qed.
 
-Theorem notelem_union: forall (p q: regex) (s: seq),
+Theorem notelem_union: forall (p q: regex) (s: str),
     s `notelem` {{p}} ->
     s `notelem` {{q}}->
     s `notelem` {{or p q}}.
@@ -163,7 +163,7 @@ unfold not.
 constructor; assumption.
 Qed.
 
-Lemma elem_or_notelem_symbol: forall (a: alphabet) (s: seq),
+Lemma elem_or_notelem_symbol: forall (a: alphabet) (s: str),
   s `elem` {{symbol a}} \/ s `notelem` {{symbol a}}.
 Proof.
 induction s.
@@ -183,7 +183,7 @@ induction s.
     inversion H.
 Qed.   
 
-Lemma elem_or_notelem_emptyset: forall (s: seq),
+Lemma elem_or_notelem_emptyset: forall (s: str),
   s `elem` {{emptyset}} \/ s `notelem` {{emptyset}}.
 Proof.
 intros.
@@ -193,7 +193,7 @@ intros.
 inversion H.
 Qed.
 
-Lemma elem_or_notelem_lambda: forall (s: seq),
+Lemma elem_or_notelem_lambda: forall (s: str),
   s `elem` {{lambda}} \/ s `notelem` {{lambda}}.
 Proof.
 intros.
@@ -202,25 +202,25 @@ induction s.
 - right. unfold not. intros. inversion H.
 Qed.
 
-Lemma elem_or_notelem_concat: forall (r1 r2: regex) (s: seq),
+Lemma elem_or_notelem_concat: forall (r1 r2: regex) (s: str),
   s `elem` {{concat r1 r2}} \/ s `notelem` {{concat r1 r2}}.
 Proof.
 (* TODO: Help Wanted *)
 Abort.
 
-Lemma elem_or_notelem_star: forall (r: regex) (s: seq),
+Lemma elem_or_notelem_star: forall (r: regex) (s: str),
   s `elem` {{star r}} \/ s `notelem` {{star r}}.
 Proof.
 (* TODO: Help Wanted *)
 Abort.
 
-Lemma elem_or_notelem_nor: forall (r1 r2: regex) (s: seq),
+Lemma elem_or_notelem_nor: forall (r1 r2: regex) (s: str),
   s `elem` {{nor r1 r2}} \/ s `notelem` {{nor r1 r2}}.
 Proof.
 (* TODO: Help Wanted *)
 Abort.
 
-Theorem elem_or_notelem : forall (r: regex) (s: seq),
+Theorem elem_or_notelem : forall (r: regex) (s: str),
     s `elem` {{r}} \/ s `notelem` {{r}}.
 Proof.
 induction r.

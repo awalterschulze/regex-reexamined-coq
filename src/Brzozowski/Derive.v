@@ -18,7 +18,7 @@ Given a set $R$ of sequences and a finite sequence $s$,
 the derivative of $R$ with respect to $s$ is denoted by $D_s R$ and is
 $D_s R = \{t | s.t \in R \}$.
 *)
-Definition derive_lang (R: lang) (s: seq) (t: seq): Prop :=
+Definition derive_lang (R: lang) (s: str) (t: str): Prop :=
   (s ++ t) `elem` R.
 
 (* Part of THEOREM 3.2
@@ -54,7 +54,7 @@ For completeness, if $s = \lambda$, then $D_{\lambda} R = R$.
 The proof follows from Definition 3.1.
 *)
 Theorem derive_lang_is_recursive:
-  forall (R: lang) (init: seq) (last: alphabet),
+  forall (R: lang) (init: str) (last: alphabet),
   derive_lang R (init ++ [last]) {<->}
   derive_lang (derive_lang R init) [last].
 Proof.
@@ -73,7 +73,7 @@ split.
 Qed.
 
 Theorem derive_lang_is_recursive':
-  forall (R: lang) (head: alphabet) (tail: seq),
+  forall (R: lang) (head: alphabet) (tail: str),
   derive_lang R (head :: tail) {<->}
   derive_lang (derive_lang R [head]) tail.
 Proof.
@@ -94,7 +94,7 @@ Qed.
 (*
 D_a R = { t | a.t \in R}
 *)
-Definition derive_lang_a (R: lang) (a: alphabet) (t: seq): Prop :=
+Definition derive_lang_a (R: lang) (a: alphabet) (t: str): Prop :=
   (a :: t) `elem` R.
 
 Theorem derive_lang_a_single: forall (R: lang) (a: alphabet),
@@ -109,7 +109,7 @@ cbn.
 easy.
 Qed.
 
-Theorem derive_lang_single: forall (R: lang) (a: alphabet) (s s0: seq),
+Theorem derive_lang_single: forall (R: lang) (a: alphabet) (s s0: str),
   s0 `elem` derive_lang R (a :: s) <->
   (s ++ s0) `elem` derive_lang R (a :: []).
 Proof.
@@ -122,7 +122,7 @@ split;
   assumption.
 Qed.
 
-Theorem derive_lang_double: forall (R: lang) (a a0: alphabet) (s s0: seq),
+Theorem derive_lang_double: forall (R: lang) (a a0: alphabet) (s s0: str),
   s0 `elem` derive_lang R (a :: a0 :: s) <->
   (s ++ s0) `elem` derive_lang R (a :: a0 :: []).
 Proof.
@@ -135,7 +135,7 @@ split;
   assumption.
 Qed.
 
-Theorem derive_lang_step: forall (R: lang) (a: alphabet) (s: seq),
+Theorem derive_lang_step: forall (R: lang) (a: alphabet) (s: str),
   derive_lang R (a :: s) {<->} derive_lang (derive_lang_a R a) s.
 Proof.
 intros.
@@ -149,7 +149,7 @@ easy.
 Qed.
 
 (* Alternative inductive predicate for derive_lang *)
-Inductive derive_lang_a' (R: lang) (a: alphabet) (t: seq): Prop :=
+Inductive derive_lang_a' (R: lang) (a: alphabet) (t: str): Prop :=
   | mk_derive_lang:
     (a :: t) `elem` R ->
     t `elem` (derive_lang_a' R a)
@@ -220,7 +220,7 @@ split.
   inversion H.
 Qed.
 
-Theorem emptyset_terminates: forall (s: seq),
+Theorem emptyset_terminates: forall (s: str),
   derive_lang emptyset_lang s
   {<->}
   emptyset_lang.
@@ -461,7 +461,7 @@ Qed.
 
 (*
   Next consider:
-  derive_lang_a (R: lang) (a: alphabet) (t: seq): Prop :=
+  derive_lang_a (R: lang) (a: alphabet) (t: str): Prop :=
   (a :: t) `elem` R.
   derive_lang_a (concat_lang P Q)
   Let:
@@ -574,11 +574,11 @@ induction r; intros.
   + apply IHr2.
 Qed.
 
-Definition derive_defs (r: regex) (s: seq) : regex :=
+Definition derive_defs (r: regex) (s: str) : regex :=
   fold_left derive_def s r.
 
 (* derive_defs = fold_left derive_def s r. *)
-Theorem derive_defs_step: forall (r: regex) (a: alphabet) (s: seq),
+Theorem derive_defs_step: forall (r: regex) (a: alphabet) (s: str),
   derive_defs r (a :: s) =
   derive_defs (derive_def r a) s.
 Proof.
@@ -666,7 +666,7 @@ Qed.
 
 (* Part of Theorem 3.2 *)
 Theorem derive_lang_commutes_star:
-  forall (r: regex) (s: seq),
+  forall (r: regex) (s: str),
     (
       forall (r': regex) (a: alphabet),
       derive_lang_a {{r'}} a {<->} {{derive_def r' a}}
@@ -702,7 +702,7 @@ induction s.
     * apply DD0 in H2.
 Abort.
 
-Theorem commutes_emptyset: forall (s: seq),
+Theorem commutes_emptyset: forall (s: str),
   derive_lang {{ emptyset }} s
   {<->}
   {{ derive_defs emptyset s }}.
@@ -720,7 +720,7 @@ induction s.
     invs H.
 Qed.
 
-Theorem commutes_lambda: forall (s: seq),
+Theorem commutes_lambda: forall (s: str),
   derive_lang {{ lambda }} s
   {<->}
   {{ derive_defs lambda s }}.
@@ -746,7 +746,7 @@ split.
     invs H.
 Qed.
 
-Theorem commutes_symbol: forall (b: alphabet) (s: seq),
+Theorem commutes_symbol: forall (b: alphabet) (s: str),
   derive_lang {{ symbol b }} s
   {<->}
   {{ derive_defs (symbol b) s }}.
@@ -786,7 +786,7 @@ split.
     ).
 Qed.
 
-Theorem commutes_nor_emptyset_emptyset: forall (s: seq),
+Theorem commutes_nor_emptyset_emptyset: forall (s: str),
   derive_lang {{ nor emptyset emptyset }} s
   {<->}
   {{ derive_defs (nor emptyset emptyset) s }}.
@@ -801,7 +801,7 @@ split.
   constructor. wreckit. untie.
 Qed.
 
-Theorem commutes_nor_emptyset_lambda: forall (s: seq),
+Theorem commutes_nor_emptyset_lambda: forall (s: str),
   derive_lang {{ nor emptyset lambda }} s
   {<->}
   {{ derive_defs (nor emptyset lambda) s }}.
@@ -839,7 +839,7 @@ split.
       invs H0.
 Qed.
 
-Theorem derive_commutes: forall (r: regex) (s: seq),
+Theorem derive_commutes: forall (r: regex) (s: str),
   derive_lang {{ r }} s
   {<->}
   {{ derive_defs r s }}.
