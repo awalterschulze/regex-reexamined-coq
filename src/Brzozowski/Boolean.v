@@ -6,7 +6,7 @@ Require Import CoqStock.Listerine.
 
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Regex.
-Require Import Brzozowski.Sequences.
+Require Import Brzozowski.Language.
 
 (* the *intersection* $P \& Q$, *)
 Theorem elem_intersection: forall (p q: regex) (s: str),

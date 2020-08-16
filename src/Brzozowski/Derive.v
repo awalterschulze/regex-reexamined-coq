@@ -10,7 +10,7 @@ Require Import CoqStock.WreckIt.
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Delta.
 Require Import Brzozowski.Regex.
-Require Import Brzozowski.Sequences.
+Require Import Brzozowski.Language.
 
 (*
 **Definition 3.1.**

@@ -7,7 +7,7 @@ Require Import CoqStock.Listerine.
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Boolean.
 Require Import Brzozowski.Regex.
-Require Import Brzozowski.Sequences.
+Require Import Brzozowski.Language.
 
 (*
 The introduction of arbitrary Boolean functions enriches the language of regular expressions. 
