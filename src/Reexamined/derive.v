@@ -2,12 +2,13 @@ Require Import List.
 Require Import Bool.
 
 Require Import CoqStock.comparable.
+Require Import CoqStock.orb_simple.
+Require Import CoqStock.reduce_orb.
+
 Require Import Reexamined.compare_regex.
 Require Export Reexamined.derive_def.
 Require Import Reexamined.nullable.
-Require Import CoqStock.orb_simple.
 Require Import Reexamined.regex.
-Require Import CoqStock.reduce_orb.
 Require Import Reexamined.setoid.
 
 Theorem fail_is_terminating : forall {A: Type} {cmp: comparable A} (xs: list A),
@@ -52,7 +53,9 @@ Proof.
 unfold matchesb.
 induction xs.
 - simpl.
-  firstorder.
+  SearchPattern (?X && ?Y = ?Y && ?X).
+  intros.
+  apply andb_comm.
 - simpl.
   intros.
   apply IHxs.
@@ -65,7 +68,8 @@ Proof.
 unfold matchesb.
 induction xs.
 - simpl.
-  firstorder.
+  intros.
+  orb_simple.
 - simpl.
   intros.
   apply IHxs.
@@ -138,7 +142,7 @@ Proof.
 induction xs.
 - intros.
   cbn.
-  firstorder.
+  orb_simple.
 - intros.
   simpl_matchesb.
   case (nullable r), (nullable s);
@@ -202,7 +206,8 @@ Theorem concat_assoc: forall (xs: list A) (r s t: regex A),
   matchesb (concat (concat r s) t) xs = matchesb (concat r (concat s t)) xs.
 Proof.
   induction xs; intros; simpl_matchesb.
-  - firstorder.
+  - intros.
+    orb_simple.
   - destruct (nullable r), (nullable s);
       simpl_matchesb;
       repeat rewrite or_is_logical_or;
@@ -251,7 +256,8 @@ induction xs.
   destruct b.
   + rewrite nullable_fold.
     case (nullable(fold_left derive xs fail)).
-    * firstorder.
+    * intros.
+      orb_simple.
     * rewrite IHxs.
       rewrite fold_at_fail.
       simpl.
@@ -312,7 +318,8 @@ Proof.
 unfold matchesb.
 induction xs.
 - simpl.
-  firstorder.
+  intros.
+  orb_simple.
 - simpl.
   intros.
   apply IHxs.
@@ -326,7 +333,7 @@ unfold matchesb.
 induction xs.
 - simpl.
   intros.
-  firstorder.
+  orb_simple.
 - intros.
   apply IHxs.
 Qed.
@@ -345,7 +352,8 @@ Proof.
 unfold matchesb.
 induction xs.
 - simpl.
-  firstorder.
+  intros.
+  orb_simple.
 - intros.
   simpl.
   apply IHxs.

@@ -2,20 +2,21 @@ Set Implicit Arguments.
 Set Asymmetric Patterns.
 
 Require Import Bool.
+Require Import Lia.
 Require Import List.
-Require Import Omega.
 
 Require Import Coq.Program.Program.
 
 Require Import CoqStock.comparable.
-Require Import Reexamined.compare_regex.
 Require Import CoqStock.dup.
+Require Import CoqStock.orb_simple.
+Require Import CoqStock.sort.
+
+Require Import Reexamined.compare_regex.
 Require Import Reexamined.derive.
 Require Import Reexamined.nullable.
-Require Import CoqStock.orb_simple.
 Require Import Reexamined.regex.
 Require Import Reexamined.size.
-Require Import CoqStock.sort.
 
 (*
 Here we define smart_or and smart_or'.
@@ -557,32 +558,32 @@ which when simplified, look like:
 which is the same as:
 `x + S (y + z) < S (w + x + S (y + z))`
 This is true, but probably a large proof to do manually,
-so we use tactic omega to prove it for us.
+so we use tactic lia to prove it for us.
 *)
 
 Next Obligation.
 simpl.
-omega.
+lia.
 Qed.
 
 Next Obligation.
 simpl.
-omega.
+lia.
 Qed.
 
 Next Obligation.
 simpl.
-omega.
+lia.
 Qed.
 
 Next Obligation.
 simpl.
-omega.
+lia.
 Qed.
 
 Next Obligation.
 simpl.
-omega.
+lia.
 Qed.
 
 End merge_or_section.

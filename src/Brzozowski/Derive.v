@@ -574,7 +574,7 @@ induction r; intros.
   + apply IHr2.
 Qed.
 
-Fixpoint derive_defs (r: regex) (s: seq) : regex :=
+Definition derive_defs (r: regex) (s: seq) : regex :=
   fold_left derive_def s r.
 
 (* derive_defs = fold_left derive_def s r. *)
@@ -584,7 +584,6 @@ Theorem derive_defs_step: forall (r: regex) (a: alphabet) (s: seq),
 Proof.
 intros.
 destruct r; try (cbn; reflexivity).
-destruct a, a0; cbn; reflexivity.
 Qed.
 
 (* derive_defs = fold_left derive_def s r. *)
