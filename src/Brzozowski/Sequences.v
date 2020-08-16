@@ -10,9 +10,9 @@ Require Import CoqStock.WreckIt.
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Regex.
 
-(* A sequence is a list of characters or string. *)
+(* A string is a list of characters. *)
 Definition str := (list alphabet).
-(* A regular expression denotes a set of sequences called a _language_. *)
+(* A regular expression denotes a set of strings called a _language_. *)
 Definition lang := str -> Prop.
 Definition elem (l: lang) (s: str): Prop := l s.
 Notation "p `elem` P" := (elem P p) (at level 80).
@@ -110,7 +110,7 @@ Qed.
 
 (*
     *Star*. $P^{*} = \cup_{0}^{\infty} P^n$ , where $P^2 = P.P$, etc.
-    and $P^0 = \lambda$, the set consisting of the sequence of zero length.
+    and $P^0 = \lambda$, the set consisting of the string of zero length.
 *)
 Inductive star_lang (R: lang): lang :=
   | mk_star_zero : forall (s: str),

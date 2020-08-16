@@ -12,7 +12,7 @@ Require Import Brzozowski.Sequences.
 
 (*
     **Definition 3.2.**
-    Given any set $R$ of sequences we define $\delta(R)$ to be
+    Given any language $R$ we define $\delta(R)$ to be
 
     $$
     \begin{aligned}

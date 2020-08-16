@@ -14,7 +14,7 @@ Require Import Brzozowski.Sequences.
 
 (*
 **Definition 3.1.**
-Given a set $R$ of sequences and a finite sequence $s$,
+Given a language $R$ of and a finite sequence $s$,
 the derivative of $R$ with respect to $s$ is denoted by $D_s R$ and is
 $D_s R = \{t | s.t \in R \}$.
 *)
@@ -598,13 +598,13 @@ Qed.
 TODO: Help Wanted
 
 Prove that the derive square commutes
-Regex --denote_regex-{{}}-> Set Of Sequences
+Regex --denote_regex-{{}}-> Language
    |                            |
 derive_defs                  derive_lang
    |                            |
   \ /                          \ /
    .                            .
-Derived Regex---{{}}------> Derived Set Of Sequences
+Derived Regex---{{}}------> Derived Language
 *)
 
 Theorem derive_lang_commutes_empty: forall (r: regex),
