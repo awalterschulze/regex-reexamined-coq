@@ -1,8 +1,10 @@
 Require Import List.
 Import ListNotations.
 
-Require Import CoqStock.WreckIt.
+Require Import CoqStock.Invs.
 Require Import CoqStock.Listerine.
+Require Import CoqStock.Untie.
+Require Import CoqStock.WreckIt.
 
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Boolean.
@@ -136,35 +138,162 @@ elemt.
   listerine.
 Qed.
 
-Lemma test_notelem_x11star_1110: 
-    ([A1] ++ [A1] ++ [A1] ++ [A0]) `notelem` {{x11star}}.
+Lemma test_notelem_starx1_0:
+  [A0] `notelem` {{star x1}}.
 Proof.
-(* TODO: Good First Issue
-   first merge listerine
-*)
-Abort.
+untie.
+invs H.
+- listerine.
+- invs H0.
+  wreckit.
+  invs L.
+  listerine.
+Qed.
+
+Lemma test_notelem_starx1_10:
+  [A1; A0] `notelem` {{star x1}}.
+Proof.
+untie.
+invs H.
+- listerine.
+- invs H0.
+  wreckit.
+  listerine; (try invs L).
+  + apply test_notelem_starx1_0.
+    assumption.
+Qed.
+
+Lemma test_notelem_starx1_110:
+  [A1; A1; A0] `notelem` {{star x1}}.
+Proof.
+untie.
+invs H.
+- listerine.
+- invs H0.
+  wreckit.
+  listerine; (try invs L).
+  + apply test_notelem_starx1_10.
+    assumption. 
+Qed.    
+
+Lemma test_notelem_x11star_1110: 
+  ([A1] ++ [A1] ++ [A1] ++ [A0]) `notelem` {{x11star}}.
+Proof.
+untie.
+invs H.
+wreckit.
+listerine; (try invs L).
+- apply test_notelem_starx1_110.
+  assumption.
+Qed.
 
 Lemma test_elem_xI111I_1110: 
     ([A1] ++ [A1] ++ [A1] ++ [A0]) `elem` {{xI111I}}.
 Proof.
-(* TODO: Good First Issue
-   first merge listerine
-*)
-Abort.
+constructor.
+exists [].
+exists ([A1] ++ [A1] ++ [A1] ++ [A0]).
+exists eq_refl.
+split.
+- constructor.
+  wreckit.
+  untie.
+- constructor.
+  exists [A1].
+  exists ([A1] ++ [A1] ++ [A0]).
+  exists eq_refl.
+  split.
+  + constructor.
+  + constructor.
+    exists [A1].
+    exists ([A1] ++ [A0]).
+    exists eq_refl.
+    split.
+    * constructor.
+    * constructor.
+      exists [A1].
+      exists [A0].
+      exists eq_refl.
+      split.
+      --- constructor.
+      --- constructor.
+          wreckit.
+          untie.
+Qed.
 
 Theorem test_exampleR_1110_elem: 
     ([A1] ++ [A1] ++ [A1] ++ [A0]) `elem` {{exampleR}}.
 Proof.
-(* TODO: Good First Issue
-   first merge listerine
-*)
-Abort.
-
+constructor.
+split.
+- untie.
+  invs H.
+  wreckit.
+  apply L.
+  apply test_elem_xI111I_1110.
+- untie.
+  invs H.
+  wreckit.
+  apply L.
+  clear R.
+  clear L.
+  constructor.
+  wreckit.
+  untie.
+  invs H.
+  wreckit.
+  apply L.
+  clear L.
+  clear R.
+  constructor.
+  wreckit.
+  + untie.
+    apply test_notelem_xI01_1110.
+    assumption.
+  + untie.
+    apply test_notelem_x11star_1110.
+    assumption.
+Qed. 
 
 Theorem test_exampleR_111_notelem: 
     [A1; A1; A1] `notelem` {{exampleR}}.
 Proof.
-(* TODO: Good First Issue
-   first merge listerine
-*)
-Abort.
+untie.
+invs H.
+wreckit.
+apply R.
+constructor.
+wreckit.
+untie.
+invs H.
+wreckit.
+apply L0.
+constructor.
+wreckit.
+untie.
+invs H.
+wreckit.
+apply R1.
+constructor.
+exists [A1].
+exists [A1; A1].
+exists eq_refl.
+wreckit.
+- constructor.
+- apply mk_star_more.
+  constructor.
+  exists [A1].
+  exists [A1].
+  exists eq_refl.
+  wreckit.
+  + constructor.
+  + apply mk_star_more.
+    constructor.
+    exists [A1].
+    exists [].
+    exists eq_refl.
+    wreckit.
+    * constructor.
+    * constructor.
+      reflexivity.
+Qed.   
