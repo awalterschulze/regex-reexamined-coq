@@ -10,22 +10,22 @@ Require Import CoqStock.WreckIt.
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Regex.
 
-(* A sequence is a list of characters or string. *)
-Definition seq := (list alphabet).
-(* A regular expression denotes a set of sequences called a _language_. *)
-Definition lang := seq -> Prop.
-Definition elem (l: lang) (s: seq): Prop := l s.
+(* A string is a list of characters. *)
+Definition str := (list alphabet).
+(* A regular expression denotes a set of strings called a _language_. *)
+Definition lang := str -> Prop.
+Definition elem (l: lang) (s: str): Prop := l s.
 Notation "p `elem` P" := (elem P p) (at level 80).
 Notation "p `notelem` P" := (~ (elem P p)) (at level 80).
 
 Definition lang_if (s1 s2: lang): Prop :=
-  forall (s: seq),
+  forall (s: str),
   s `elem` s1 -> s `elem` s2.
 
 Notation "s1 {->} s2" := (lang_if s1 s2) (at level 80).
 
 Definition lang_iff (s1 s2: lang): Prop :=
-  forall (s: seq),
+  forall (s: str),
   s `elem` s1 <-> s `elem` s2.
 
 Notation "s1 {<->} s2" := (lang_iff s1 s2) (at level 80).
@@ -75,10 +75,10 @@ Existing Instance lang_setoid.
 
 (* Concatenation*. $(P.Q) = \{ s | s = p.q; p \in P, q \in Q \}$. *)
 Inductive concat_lang (P Q: lang): lang :=
-  | mk_concat: forall (s: seq),
+  | mk_concat: forall (s: str),
     (exists
-      (p: seq)
-      (q: seq)
+      (p: str)
+      (q: str)
       (pqs: p ++ q = s),
       p `elem` P /\
       q `elem` Q
@@ -110,12 +110,12 @@ Qed.
 
 (*
     *Star*. $P^{*} = \cup_{0}^{\infty} P^n$ , where $P^2 = P.P$, etc.
-    and $P^0 = \lambda$, the set consisting of the sequence of zero length.
+    and $P^0 = \lambda$, the set consisting of the string of zero length.
 *)
 Inductive star_lang (R: lang): lang :=
-  | mk_star_zero : forall (s: seq),
+  | mk_star_zero : forall (s: str),
     s = [] -> star_lang R s
-  | mk_star_more : forall (s: seq),
+  | mk_star_more : forall (s: str),
     s `elem` (concat_lang R (star_lang R)) ->
     star_lang R s
   .
@@ -182,7 +182,7 @@ Inductive emptyset_lang: lang :=
   (*
   This is equivalent to:
   ```
-  | mk_emptyset: forall (s: seq),
+  | mk_emptyset: forall (s: str),
     False ->
     emptyset_lang s
   ```
@@ -195,7 +195,7 @@ Inductive lambda_lang: lang :=
   This is equivalent to:
   ```
   | mk_lambda:
-    forall (s: seq),
+    forall (s: str),
     s = [] ->
     lambda_lang s
   ```
@@ -207,7 +207,7 @@ Inductive symbol_lang (a: alphabet): lang :=
   This is equivalent to:
   ```
   | mk_symbol:
-    forall (s: seq),
+    forall (s: str),
     s = [a] ->
     symbol_lang a s
   ```
@@ -228,21 +228,21 @@ Fixpoint denote_regex (r: regex): lang :=
   end
 where "{{ r }}" := (denote_regex r).
 
-Theorem notelem_emptyset: forall (s: seq),
+Theorem notelem_emptyset: forall (s: str),
   s `notelem` emptyset_lang.
 Proof.
 intros.
 untie.
 Qed.
 
-Lemma denotation_emptyset_is_decidable (s: seq):
+Lemma denotation_emptyset_is_decidable (s: str):
   s `elem` {{ emptyset }} \/ s `notelem` {{ emptyset }}.
 Proof.
 right.
 apply notelem_emptyset.
 Qed.
 
-Lemma denotation_lambda_is_decidable (s: seq):
+Lemma denotation_lambda_is_decidable (s: str):
   s `elem` {{ lambda }} \/ s `notelem` {{ lambda }}.
 Proof.
 destruct s.
@@ -250,7 +250,7 @@ destruct s.
 - right. untie. invs H.
 Qed.
 
-Lemma denotation_symbol_is_decidable (s: seq) (a: alphabet):
+Lemma denotation_symbol_is_decidable (s: str) (a: alphabet):
   s `elem` {{ symbol a }} \/ s `notelem` {{ symbol a }}.
 Proof.
 destruct s.
@@ -276,7 +276,7 @@ destruct s.
       invs H.
 Qed.
 
-Lemma denotation_nor_is_decidable (p q: regex) (s: seq):
+Lemma denotation_nor_is_decidable (p q: regex) (s: str):
   s `elem` {{ p }} \/ s `notelem` {{ p }} ->
   s `elem` {{ q }} \/ s `notelem` {{ q }} ->
   s `elem` {{ nor p q }} \/ s `notelem` {{ nor p q }}.
@@ -364,7 +364,7 @@ induction r.
   + assumption.
 Qed.
 
-Theorem denotation_is_decidable (r: regex) (s: seq):
+Theorem denotation_is_decidable (r: regex) (s: str):
   s `elem` {{ r }} \/ s `notelem` {{ r }}.
 Proof.
 induction s.
@@ -383,7 +383,7 @@ Definition not_lang (R: lang) : lang :=
   nor_lang R R.
 
 Theorem not_not_regex_is_regex:
-  forall (r: regex) (s: seq),
+  forall (r: regex) (s: str),
   ((~ ~ (s `elem` {{ r }})) -> (s `elem` {{ r }})).
 Proof.
   intros.
@@ -470,7 +470,7 @@ rewrite concat_lang_emptyset_l_is_emptyset.
 reflexivity.
 Qed.
 
-Theorem concat_lang_emptyset_l: forall (r: lang) (s: seq),
+Theorem concat_lang_emptyset_l: forall (r: lang) (s: str),
   s `notelem` concat_lang emptyset_lang r.
 Proof.
 intros.
@@ -494,7 +494,7 @@ split.
   invs H.
 Qed.
 
-Theorem concat_lang_emptyset_r: forall (r: lang) (s: seq),
+Theorem concat_lang_emptyset_r: forall (r: lang) (s: str),
   s `notelem` concat_lang r emptyset_lang.
 Proof.
 intros.

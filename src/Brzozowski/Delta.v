@@ -8,11 +8,11 @@ Require Import CoqStock.WreckIt.
 
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Regex.
-Require Import Brzozowski.Sequences.
+Require Import Brzozowski.Language.
 
 (*
     **Definition 3.2.**
-    Given any set $R$ of sequences we define $\delta(R)$ to be
+    Given any language $R$ we define $\delta(R)$ to be
 
     $$
     \begin{aligned}

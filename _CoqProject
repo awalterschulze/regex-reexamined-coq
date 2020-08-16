@@ -37,4 +37,4 @@ src/Brzozowski/Delta.v
 src/Brzozowski/Derive.v
 src/Brzozowski/ExampleR.v
 src/Brzozowski/Regex.v
-src/Brzozowski/Sequences.v
+src/Brzozowski/Language.v
