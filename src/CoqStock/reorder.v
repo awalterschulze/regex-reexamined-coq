@@ -501,7 +501,7 @@ Qed.
 (* to_tree_id converts a list to a tree.
    The final element in the tree is always the Identity element.
 *)
-Fixpoint to_tree_id (xs: list A) : tree A :=
+Definition to_tree_id (xs: list A) : tree A :=
   match xs with
   | nil => value Identity
   | (x'::xs') => bin (value x') (to_tree xs')

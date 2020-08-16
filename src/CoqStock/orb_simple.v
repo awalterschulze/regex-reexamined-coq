@@ -40,6 +40,8 @@ Ltac orb_simple := repeat
   || rewrite orb_diag
   || rewrite orb_false_r
   || rewrite orb_false_l
+  || rewrite orb_true_r
+  || rewrite orb_true_l
   ).
 
 Example example_tactic_or_cases_commutativity: forall (a b: bool),
@@ -87,6 +89,20 @@ Qed.
 Example example_tactic_or_cases_4: forall (a b c d: bool),
   a  || b || (c || d ) =
   a  || d || (b || (c || d )).
+Proof.
+intros.
+orb_simple.
+Qed.
+
+Example example_tactic_or_cases_false: forall (a: bool),
+  a || false = a.
+Proof.
+intros.
+orb_simple.
+Qed.
+
+Example example_tactic_or_cases_true: forall (a: bool),
+  true || a = true.
 Proof.
 intros.
 orb_simple.
