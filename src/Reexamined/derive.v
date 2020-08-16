@@ -2,7 +2,7 @@ Require Import List.
 Require Import Bool.
 
 Require Import CoqStock.comparable.
-Require Import CoqStock.orb_simple.
+Require Import CoqStock.Truthy.
 Require Import CoqStock.reduce_orb.
 
 Require Import Reexamined.compare_regex.
@@ -19,7 +19,7 @@ Qed.
 
 (* or_simple simplifies or expressions *)
 Ltac or_simple := repeat
-  (  orb_simple
+  (  truthy
   || rewrite or_is_logical_or
   || rewrite fail_is_terminating
   ).
@@ -69,7 +69,7 @@ unfold matchesb.
 induction xs.
 - simpl.
   intros.
-  orb_simple.
+  truthy.
 - simpl.
   intros.
   apply IHxs.
@@ -111,7 +111,7 @@ Theorem concat_or_distrib_r': forall
 Proof.
 induction xs.
 - intros. simpl_matchesb.
-  orb_simple.
+  truthy.
 - intros. simpl_matchesb.
   case (nullable r), (nullable s).
   + cbn.
@@ -142,7 +142,7 @@ Proof.
 induction xs.
 - intros.
   cbn.
-  orb_simple.
+  truthy.
 - intros.
   simpl_matchesb.
   case (nullable r), (nullable s);
@@ -151,7 +151,7 @@ induction xs.
     try rewrite concat_or_distrib_r';
     repeat rewrite or_is_logical_or;
     rewrite IHxs;
-    orb_simple).
+    truthy).
 Qed.
 
 (* fail.r = fail *)
@@ -198,7 +198,7 @@ Proof.
       try apply IHxs;
       try rewrite IHxs;
       repeat rewrite or_is_logical_or;
-      orb_simple.
+      truthy.
 Qed.
 
 (* (r.s).t = r.(s.t) *)
@@ -207,7 +207,7 @@ Theorem concat_assoc: forall (xs: list A) (r s t: regex A),
 Proof.
   induction xs; intros; simpl_matchesb.
   - intros.
-    orb_simple.
+    truthy.
   - destruct (nullable r), (nullable s);
       simpl_matchesb;
       repeat rewrite or_is_logical_or;
@@ -216,7 +216,7 @@ Proof.
       rewrite concat_or_distrib_r;
       repeat rewrite or_is_logical_or;
       rewrite IHxs;
-      orb_simple.
+      truthy.
 Qed.
 
 Lemma fold_at_fail : forall (xs : list A), (fold_left derive xs fail = fail).
@@ -257,7 +257,7 @@ induction xs.
   + rewrite nullable_fold.
     case (nullable(fold_left derive xs fail)).
     * intros.
-      orb_simple.
+      truthy.
     * rewrite IHxs.
       rewrite fold_at_fail.
       simpl.
@@ -319,7 +319,7 @@ unfold matchesb.
 induction xs.
 - simpl.
   intros.
-  orb_simple.
+  truthy.
 - simpl.
   intros.
   apply IHxs.
@@ -333,7 +333,7 @@ unfold matchesb.
 induction xs.
 - simpl.
   intros.
-  orb_simple.
+  truthy.
 - intros.
   apply IHxs.
 Qed.
@@ -353,7 +353,7 @@ unfold matchesb.
 induction xs.
 - simpl.
   intros.
-  orb_simple.
+  truthy.
 - intros.
   simpl.
   apply IHxs.
