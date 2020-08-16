@@ -12,37 +12,37 @@ Require Import Brzozowski.Regex.
 
 (* A sequence is a list of characters or string. *)
 Definition seq := (list alphabet).
-(* A regular expression denotes a set of sequences. *)
-Definition seqs := seq -> Prop.
-Definition elem (ss: seqs) (s: seq): Prop := ss s.
+(* A regular expression denotes a set of sequences called a _language_. *)
+Definition lang := seq -> Prop.
+Definition elem (l: lang) (s: seq): Prop := l s.
 Notation "p `elem` P" := (elem P p) (at level 80).
 Notation "p `notelem` P" := (~ (elem P p)) (at level 80).
 
-Definition seqs_if (s1 s2: seqs): Prop :=
+Definition lang_if (s1 s2: lang): Prop :=
   forall (s: seq),
   s `elem` s1 -> s `elem` s2.
 
-Notation "s1 {->} s2" := (seqs_if s1 s2) (at level 80).
+Notation "s1 {->} s2" := (lang_if s1 s2) (at level 80).
 
-Definition seqs_iff (s1 s2: seqs): Prop :=
+Definition lang_iff (s1 s2: lang): Prop :=
   forall (s: seq),
   s `elem` s1 <-> s `elem` s2.
 
-Notation "s1 {<->} s2" := (seqs_iff s1 s2) (at level 80).
+Notation "s1 {<->} s2" := (lang_iff s1 s2) (at level 80).
 
-(* seqs_setoid makes it possible to use:
-  - rewrite for proven seqs_iff theorems
-  - reflexivity for seqs_iff relations where both sides are equal
-  see Example SeqsSetoidRewriteReflexivity
+(* lang_setoid makes it possible to use:
+  - rewrite for proven lang_iff theorems
+  - reflexivity for lang_iff relations where both sides are equal
+  see Example LangSetoidRewriteReflexivity
 *)
-Section SeqsSetoid.
+Section LangSetoid.
 
-Theorem seqs_iff_refl : forall A:seqs, A {<->} A.
+Theorem lang_iff_refl : forall A:lang, A {<->} A.
   Proof.
     split; auto.
   Qed.
 
-Theorem seqs_iff_trans : forall A B C:seqs, (A {<->} B) -> (B {<->} C) -> (A {<->} C).
+Theorem lang_iff_trans : forall A B C:lang, (A {<->} B) -> (B {<->} C) -> (A {<->} C).
   Proof.
     intros.
     unfold "{<->}" in *.
@@ -53,7 +53,7 @@ Theorem seqs_iff_trans : forall A B C:seqs, (A {<->} B) -> (B {<->} C) -> (A {<-
     apply iff_trans with (A := A s) (B := B s); assumption.
   Qed.
 
-Theorem seqs_iff_sym : forall A B:seqs, (A {<->} B) -> (B {<->} A).
+Theorem lang_iff_sym : forall A B:lang, (A {<->} B) -> (B {<->} A).
   Proof.
     intros.
     unfold "{<->}" in *.
@@ -64,17 +64,17 @@ Theorem seqs_iff_sym : forall A B:seqs, (A {<->} B) -> (B {<->} A).
     assumption.
   Qed.
 
-Add Parametric Relation: seqs seqs_iff
-  reflexivity proved by seqs_iff_refl
-  symmetry proved by seqs_iff_sym
-  transitivity proved by seqs_iff_trans as seqs_setoid.
+Add Parametric Relation: lang lang_iff
+  reflexivity proved by lang_iff_refl
+  symmetry proved by lang_iff_sym
+  transitivity proved by lang_iff_trans as lang_setoid.
 
-End SeqsSetoid.
+End LangSetoid.
 
-Existing Instance seqs_setoid.
+Existing Instance lang_setoid.
 
 (* Concatenation*. $(P.Q) = \{ s | s = p.q; p \in P, q \in Q \}$. *)
-Inductive concat_seqs (P Q: seqs): seqs :=
+Inductive concat_lang (P Q: lang): lang :=
   | mk_concat: forall (s: seq),
     (exists
       (p: seq)
@@ -83,14 +83,14 @@ Inductive concat_seqs (P Q: seqs): seqs :=
       p `elem` P /\
       q `elem` Q
     ) ->
-    concat_seqs P Q s
+    concat_lang P Q s
   .
 
 (*
-   concat_seqs_morph allows rewrite to work inside concat_seqs parameters
+   concat_lang_morph allows rewrite to work inside concat_lang parameters
 *)
-Add Parametric Morphism: concat_seqs
-  with signature seqs_iff ==> seqs_iff ==> seqs_iff as concat_seqs_morph.
+Add Parametric Morphism: concat_lang
+  with signature lang_iff ==> lang_iff ==> lang_iff as concat_lang_morph.
 Proof.
 intros.
 constructor; constructor; invs H1; wreckit;
@@ -112,19 +112,19 @@ Qed.
     *Star*. $P^{*} = \cup_{0}^{\infty} P^n$ , where $P^2 = P.P$, etc.
     and $P^0 = \lambda$, the set consisting of the sequence of zero length.
 *)
-Inductive star_seqs (R: seqs): seqs :=
+Inductive star_lang (R: lang): lang :=
   | mk_star_zero : forall (s: seq),
-    s = [] -> star_seqs R s
+    s = [] -> star_lang R s
   | mk_star_more : forall (s: seq),
-    s `elem` (concat_seqs R (star_seqs R)) ->
-    star_seqs R s
+    s `elem` (concat_lang R (star_lang R)) ->
+    star_lang R s
   .
 
 (*
-   star_seqs_morph allows rewrite to work inside star_seqs parameters
+   star_lang_morph allows rewrite to work inside star_lang parameters
 *)
-Add Parametric Morphism: star_seqs
-  with signature seqs_iff ==> seqs_iff as star_seqs_morph.
+Add Parametric Morphism: star_lang
+  with signature lang_iff ==> lang_iff as star_lang_morph.
 Proof.
 (* TODO: Help Wanted *)
 Abort.
@@ -134,18 +134,18 @@ Abort.
     Of course, all the laws of Boolean algebra apply.
     `nor` is used to emulate `f`, since nor can be used to emulate all boolean functions.
 *)
-Inductive nor_seqs (P Q: seqs): seqs :=
+Inductive nor_lang (P Q: lang): lang :=
   | mk_nor : forall s,
     s `notelem` P /\ s `notelem` Q ->
-    nor_seqs P Q s
+    nor_lang P Q s
   .
 
 (*
-   nor_seqs_morph allows rewrite to work inside nor_seqs parameters
-   see Example NorSeqsMorphSetoidRewrite
+   nor_lang_morph allows rewrite to work inside nor_lang parameters
+   see Example NorLangMorphSetoidRewrite
 *)
-Add Parametric Morphism: nor_seqs
-  with signature seqs_iff ==> seqs_iff ==> seqs_iff as nor_seqs_morph.
+Add Parametric Morphism: nor_lang
+  with signature lang_iff ==> lang_iff ==> lang_iff as nor_lang_morph.
 Proof.
 intros.
 unfold "{<->}" in *.
@@ -175,21 +175,21 @@ constructor;
   assumption.
 Qed.
 
-Existing Instance nor_seqs_morph_Proper.
+Existing Instance nor_lang_morph_Proper.
 
-Inductive emptyset_seqs: seqs :=
+Inductive emptyset_lang: lang :=
   .
   (*
   This is equivalent to:
   ```
   | mk_emptyset: forall (s: seq),
     False ->
-    emptyset_seqs s
+    emptyset_lang s
   ```
   *)
 
-Inductive lambda_seqs: seqs :=
-  | mk_lambda: lambda_seqs []
+Inductive lambda_lang: lang :=
+  | mk_lambda: lambda_lang []
   .
   (*
   This is equivalent to:
@@ -197,19 +197,19 @@ Inductive lambda_seqs: seqs :=
   | mk_lambda:
     forall (s: seq),
     s = [] ->
-    lambda_seqs s
+    lambda_lang s
   ```
   *)
 
-Inductive symbol_seqs (a: alphabet): seqs :=
-  | mk_symbol: symbol_seqs a [a].
+Inductive symbol_lang (a: alphabet): lang :=
+  | mk_symbol: symbol_lang a [a].
   (*
   This is equivalent to:
   ```
   | mk_symbol:
     forall (s: seq),
     s = [a] ->
-    symbol_seqs a s
+    symbol_lang a s
   ```
   *)
 
@@ -217,19 +217,19 @@ Inductive symbol_seqs (a: alphabet): seqs :=
   Here we use a mix of Fixpoint and Inductive predicates to define the denotation of regular expressions.
 *)
 Reserved Notation "{{ r }}" (r at level 60, no associativity).
-Fixpoint denote_regex (r: regex): seqs :=
+Fixpoint denote_regex (r: regex): lang :=
   match r with
-  | emptyset => emptyset_seqs
-  | lambda => lambda_seqs
-  | symbol y => symbol_seqs y
-  | concat r1 r2 => concat_seqs {{r1}} {{r2}}
-  | star r1 => star_seqs {{r1}}
-  | nor r1 r2 => nor_seqs {{r1}} {{r2}}
+  | emptyset => emptyset_lang
+  | lambda => lambda_lang
+  | symbol y => symbol_lang y
+  | concat r1 r2 => concat_lang {{r1}} {{r2}}
+  | star r1 => star_lang {{r1}}
+  | nor r1 r2 => nor_lang {{r1}} {{r2}}
   end
 where "{{ r }}" := (denote_regex r).
 
 Theorem notelem_emptyset: forall (s: seq),
-  s `notelem` emptyset_seqs.
+  s `notelem` emptyset_lang.
 Proof.
 intros.
 untie.
@@ -379,8 +379,8 @@ induction s.
 (* TODO: Help Wanted *)
 Abort.
 
-Definition not_seqs (R: seqs) : seqs :=
-  nor_seqs R R.
+Definition not_lang (R: lang) : lang :=
+  nor_lang R R.
 
 Theorem not_not_regex_is_regex:
   forall (r: regex) (s: seq),
@@ -397,8 +397,8 @@ Proof.
     induction not_x.
 Abort.
 
-Theorem not_seqs_not_seqs_is_seqs: forall (r: regex),
-  not_seqs (not_seqs {{r}})
+Theorem not_lang_not_lang_is_lang: forall (r: regex),
+  not_lang (not_lang {{r}})
   {<->}
   {{r}}.
 Proof.
@@ -430,10 +430,10 @@ split.
   + contradiction.
 Abort.
 
-Theorem concat_seqs_emptyset_l_is_emptyset: forall (r: seqs),
-  concat_seqs emptyset_seqs r
+Theorem concat_lang_emptyset_l_is_emptyset: forall (r: lang),
+  concat_lang emptyset_lang r
   {<->}
-  emptyset_seqs.
+  emptyset_lang.
 Proof.
 split.
 - intros.
@@ -445,33 +445,33 @@ split.
 Qed.
 
 (*
-  The implementation of Setoid for seqs allows the use of rewrite and reflexivity.
+  The implementation of Setoid for lang allows the use of rewrite and reflexivity.
 *)
-Example SeqsSetoidRewriteReflexivity: forall (r: seqs),
-  concat_seqs emptyset_seqs r
+Example LangSetoidRewriteReflexivity: forall (r: lang),
+  concat_lang emptyset_lang r
   {<->}
-  emptyset_seqs.
+  emptyset_lang.
 Proof.
 intros.
-rewrite concat_seqs_emptyset_l_is_emptyset.
+rewrite concat_lang_emptyset_l_is_emptyset.
 reflexivity.
 Qed.
 
 (*
-  The implementation of not_seqs_morph allows the use of rewrite inside nor_seqs parameters.
+  The implementation of not_lang_morph allows the use of rewrite inside nor_lang parameters.
 *)
-Example NorSeqsMorphSetoidRewrite: forall (r s: seqs),
-  nor_seqs (concat_seqs emptyset_seqs r) s
+Example NorLangMorphSetoidRewrite: forall (r s: lang),
+  nor_lang (concat_lang emptyset_lang r) s
   {<->}
-  nor_seqs emptyset_seqs s.
+  nor_lang emptyset_lang s.
 Proof.
 intros.
-rewrite concat_seqs_emptyset_l_is_emptyset.
+rewrite concat_lang_emptyset_l_is_emptyset.
 reflexivity.
 Qed.
 
-Theorem concat_seqs_emptyset_l: forall (r: seqs) (s: seq),
-  s `notelem` concat_seqs emptyset_seqs r.
+Theorem concat_lang_emptyset_l: forall (r: lang) (s: seq),
+  s `notelem` concat_lang emptyset_lang r.
 Proof.
 intros.
 untie.
@@ -480,10 +480,10 @@ wreckit.
 invs L.
 Qed.
 
-Theorem concat_seqs_emptyset_r_is_emptyset: forall (r: seqs),
-  concat_seqs r emptyset_seqs
+Theorem concat_lang_emptyset_r_is_emptyset: forall (r: lang),
+  concat_lang r emptyset_lang
   {<->}
-  emptyset_seqs.
+  emptyset_lang.
 Proof.
 split.
 - intros.
@@ -494,8 +494,8 @@ split.
   invs H.
 Qed.
 
-Theorem concat_seqs_emptyset_r: forall (r: seqs) (s: seq),
-  s `notelem` concat_seqs r emptyset_seqs.
+Theorem concat_lang_emptyset_r: forall (r: lang) (s: seq),
+  s `notelem` concat_lang r emptyset_lang.
 Proof.
 intros.
 untie.
@@ -504,8 +504,8 @@ wreckit.
 invs R.
 Qed.
 
-Theorem concat_seqs_lambda_l_is_l: forall (r: seqs),
-  concat_seqs lambda_seqs r
+Theorem concat_lang_lambda_l_is_l: forall (r: lang),
+  concat_lang lambda_lang r
   {<->}
   r.
 Proof.
@@ -527,8 +527,8 @@ split.
   + assumption.
 Qed.
 
-Theorem concat_seqs_lambda_r_is_r: forall (r: seqs),
-  concat_seqs r lambda_seqs
+Theorem concat_lang_lambda_r_is_r: forall (r: lang),
+  concat_lang r lambda_lang
   {<->}
   r.
 Proof.
