@@ -6,7 +6,7 @@ src/CoqStock/compare_nat.v
 src/CoqStock/dup.v
 src/CoqStock/DubStep.v
 src/CoqStock/list_set.v
-src/CoqStock/orb_simple.v
+src/CoqStock/Truthy.v
 src/CoqStock/reorder.v
 src/CoqStock/reduce_orb.v
 src/CoqStock/sort.v

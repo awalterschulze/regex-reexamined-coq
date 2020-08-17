@@ -7,9 +7,9 @@ Require Import List.
 
 Require Import Coq.Program.Program.
 
+Require Import CoqStock.Truthy.
 Require Import CoqStock.comparable.
 Require Import CoqStock.dup.
-Require Import CoqStock.orb_simple.
 Require Import CoqStock.sort.
 
 Require Import Reexamined.compare_regex.
