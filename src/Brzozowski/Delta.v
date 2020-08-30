@@ -187,7 +187,7 @@ Abort.
   \end{aligned}
   $$
 
-  where $\&$ and $+$ is defined for $\delta$ similar to 
+  where $\&$ and $+$ is defined for $\delta$ similar to
   $\lambda$ being True and $\emptyset$ being False in a boolean equation.
 
   $$
@@ -238,7 +238,7 @@ Theorem delta_and_is_and:
 Proof.
 intros.
 invs delta_p; invs delta_q; cbn; constructor;
-  try (constructor; split); 
+  try (constructor; split);
   untie;
   invs H1;
   wreckit;
@@ -282,7 +282,7 @@ invs delta_p; cbn; constructor.
   constructor.
   wreckit.
   assumption.
-Qed. 
+Qed.
 
 Theorem delta_or_lambda: forall (p q: regex),
     delta p lambda ->
@@ -541,5 +541,127 @@ inversion_clear H.
       -- reflexivity.
     * reflexivity.
 Qed.
-    
-    
+
+Theorem delta_split (r: regex):
+  exists
+    (p q: regex),
+    delta r p /\
+    delta q emptyset /\
+    {{r}} {<->} {{or p q}}
+  .
+Proof.
+induction r.
+- exists emptyset.
+  exists emptyset.
+  split.
+  apply delta_emptyset_is_emptyset.
+  split.
+  apply delta_emptyset_is_emptyset.
+  split; intros.
+  + constructor.
+    wreckit.
+    untie.
+  + invs H.
+    wreckit.
+    exfalso.
+    apply L.
+    constructor.
+    wreckit.
+    untie.
+- exists lambda.
+  exists emptyset.
+  split.
+  apply delta_lambda_is_lambda.
+  split.
+  apply delta_emptyset_is_emptyset.
+  split; intros.
+  constructor.
+  split.
+  untie.
+  invs H0.
+  wreckit.
+  apply L.
+  assumption.
+  untie.
+  invs H0.
+  wreckit.
+  apply L.
+  assumption.
+  invs H.
+  wreckit.
+  destruct s.
+  + constructor.
+  + exfalso.
+    apply L.
+    constructor.
+    wreckit.
+    untie.
+    invs H.
+    untie.
+- exists emptyset.
+  exists (symbol a).
+  split.
+  apply delta_symbol_is_emptyset.
+  split.
+  apply delta_symbol_is_emptyset.
+  split.
+  intros.
+  constructor.
+  split.
+  untie.
+  invs H0.
+  wreckit.
+  apply R.
+  assumption.
+  untie.
+  invs H0.
+  wreckit.
+  contradiction.
+  intros.
+  invs H.
+  wreckit.
+  destruct s.
+  exfalso.
+  apply L.
+  constructor.
+  wreckit.
+  untie.
+  untie.
+  invs H.
+  destruct s.
+  + destruct a, a0.
+    * constructor.
+    * exfalso.
+      apply L.
+      constructor.
+      wreckit.
+      untie.
+      untie.
+      invs H.
+    * exfalso.
+      apply L.
+      constructor.
+      wreckit.
+      untie.
+      untie.
+      invs H.
+    * constructor.
+  + exfalso.
+    apply L.
+    constructor.
+    wreckit.
+    untie.
+    untie.
+    invs H.
+- wreckit.
+  exists (delta_and x1 x).
+  exists (concat x2 x0). (* or maybe (concat x2 r2) *)
+  split.
+  + apply delta_def_implies_delta.
+    apply delta_implies_delta_def in L1.
+    apply delta_implies_delta_def in L2.
+    apply delta_implies_delta_def in L.
+    apply delta_implies_delta_def in L0.
+    subst.
+Abort.
+
