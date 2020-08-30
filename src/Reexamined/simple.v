@@ -4,6 +4,7 @@ Set Asymmetric Patterns.
 Require Import List.
 
 Require Import CoqStock.comparable.
+
 Require Import Reexamined.compare_regex.
 Require Import Reexamined.derive.
 Require Import Reexamined.nullable.
@@ -37,6 +38,7 @@ induction r, s; simpl; try easy.
     simpl in Heqc.
     rewrite <- Heqc.
     firstorder.
+    discriminate.
   + simpl.
     firstorder.
     unfold Logic.not.

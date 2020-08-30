@@ -15,7 +15,7 @@ Require Import Reexamined.smart_or.
    This way we don't have to apply simplification after derivation.
    We hope this will also make it easier to prove things.
 *)
-Fixpoint sderive {A: Type} {cmp: comparable A} (r: regex A) (x: A) : regex A :=
+Definition sderive {A: Type} {cmp: comparable A} (r: regex A) (x: A) : regex A :=
   match r with
   | fail => fail
   | empty => fail

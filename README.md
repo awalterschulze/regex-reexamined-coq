@@ -15,8 +15,8 @@ We try to prove some things that are mentioned in the papers as a way to teach o
 
 ## Setup
 
-1. Install Coq 8.11.1
-2. Remember to set coq in your PATH. For example, in your `~/.bash_profile` add `PATH="/Applications/CoqIDE_8.11.1.app/Contents/Resources/bin/:${PATH}"` and run `$ source ~/.bash_profile`.
+1. Install Coq 8.12.0
+2. Remember to set coq in your PATH. For example, in your `~/.bash_profile` add `PATH="/Applications/CoqIDE_8.12.0.app/Contents/Resources/bin/:${PATH}"` and run `$ source ~/.bash_profile`.
 3. Run make in this folder.
 
 Note:
@@ -27,7 +27,14 @@ Note:
 
 Please read the [contributing guidelines](https://github.com/awalterschulze/regex-reexamined-coq/blob/master/CONTRIBUTING.md).  They are short and shouldn't be surprising.
 
-## Streaming
+## Regenerate Makefile
 
-  - We stream our pair programming sessions most Saturday 14:00 - 19:00 London time on [Twitch](https://www.twitch.tv/awalterschulze).
-  - The schedule is posted as meetups events on [meetup.com](https://www.meetup.com/London-TyDD/)
+Coq version upgrade requires regenerating the Makefile with the following command:
+
+```
+$ coq_makefile -f _CoqProject -o Makefile
+```
+
+## Pair Programming
+
+Join us in a pair programming session. The schedule is posted as meetups events on [meetup.com](https://www.meetup.com/London-TyDD/)

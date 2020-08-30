@@ -1,5 +1,5 @@
-(* orb_simple is a module specifically created for the orb_simple tactic,
-   which simplifies orb expressions.
+(* truthy is a module specifically created for the truthy tactic,
+   which simplifies orb and andb expressions.
 *)
 
 Set Implicit Arguments.
@@ -30,64 +30,81 @@ Add Ring bool_semi_ring: bool_semi_ring
   (decidable bool_eq_ok, constants [bool_cst]).
 
 (*
-orb_simple is a tactic that repeatedly applies:
+truthy is a tactic that repeatedly applies:
   - the semi ring with orb tactic
   - removes duplicates in or expressions
   - removes all false values in or expressions
+  - returns true, if a true is found in an or expression
 *)
-Ltac orb_simple := repeat
+Ltac truthy := repeat
   ( ring
   || rewrite orb_diag
   || rewrite orb_false_r
   || rewrite orb_false_l
+  || rewrite orb_true_r
+  || rewrite orb_true_l
   ).
 
-Example example_tactic_or_cases_commutativity: forall (a b: bool),
+Example example_or_commutativity: forall (a b: bool),
   a || b = b || a.
 Proof.
 intros.
-orb_simple.
+truthy.
 Qed.
 
-Example example_tactic_or_cases_idempotency_1: forall (a b: bool),
+Example example_or_idempotency_1: forall (a b: bool),
   a || (a || b) = a || b.
 Proof.
 intros.
-orb_simple.
+truthy.
 Qed.
 
-Example example_tactic_or_cases_idempotency_2: forall (a b: bool),
+Example example_or_idempotency_2: forall (a b: bool),
   a || b || a = a || b.
 Proof.
 intros.
-orb_simple.
+truthy.
 Qed.
 
-Example example_tactic_or_cases_associativity_1: forall (a b c: bool),
+Example example_or_associativity_1: forall (a b c: bool),
   a || b || c = a || (b || c).
 Proof.
 intros.
-orb_simple.
+truthy.
 Qed.
 
-Example example_tactic_or_cases_associativity_2: forall (a b c: bool),
+Example example_or_associativity_2: forall (a b c: bool),
   a || (b || c) = b || (a || c).
 Proof.
 intros.
-orb_simple.
+truthy.
 Qed.
 
-Example example_tactic_or_cases_3: forall (a b c: bool),
+Example example_or_3: forall (a b c: bool),
   a || b || (a || c) = a || (b || c).
 Proof.
 intros.
-orb_simple.
+truthy.
 Qed.
 
-Example example_tactic_or_cases_4: forall (a b c d: bool),
+Example example_or_4: forall (a b c d: bool),
   a  || b || (c || d ) =
   a  || d || (b || (c || d )).
 Proof.
 intros.
-orb_simple.
+truthy.
+Qed.
+
+Example example_or_false: forall (a: bool),
+  a || false = a.
+Proof.
+intros.
+truthy.
+Qed.
+
+Example example_or_true: forall (a: bool),
+  true || a = true.
+Proof.
+intros.
+truthy.
 Qed.

@@ -8,11 +8,11 @@ Require Import CoqStock.WreckIt.
 
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Regex.
-Require Import Brzozowski.Sequences.
+Require Import Brzozowski.Language.
 
 (*
     **Definition 3.2.**
-    Given any set $R$ of sequences we define $\delta(R)$ to be
+    Given any language $R$ we define $\delta(R)$ to be
 
     $$
     \begin{aligned}
@@ -36,7 +36,7 @@ delta_and is only true when both regexes are true, where
 true = lambda
 false = emptyset
 *)
-Fixpoint delta_and (p q: regex): regex :=
+Definition delta_and (p q: regex): regex :=
   match (p, q) with
   | (lambda, lambda) => lambda
   | _ => emptyset
@@ -47,7 +47,7 @@ delta_nor is only true when both regexes are false, where
 true = lambda
 false = emptyset
 *)
-Fixpoint delta_nor (p q: regex): regex :=
+Definition delta_nor (p q: regex): regex :=
   match (p, q) with
   | (emptyset, emptyset) => lambda
   | _ => emptyset
@@ -203,7 +203,7 @@ delta_or is only true when one of the regexes are true, where
 true = lambda
 false = emptyset
 *)
-Fixpoint delta_or (p q: regex): regex :=
+Definition delta_or (p q: regex): regex :=
   match (p, q) with
   | (lambda, _) => lambda
   | (_, lambda) => lambda
@@ -253,7 +253,7 @@ delta_not is only true if input is false and vice versa, where
 true = lambda
 false = emptyset
 *)
-Fixpoint delta_not (p: regex): regex :=
+Definition delta_not (p: regex): regex :=
   match p with
   | lambda => emptyset
   | _ => lambda
