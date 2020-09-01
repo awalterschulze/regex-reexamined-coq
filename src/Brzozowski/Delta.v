@@ -187,7 +187,7 @@ Abort.
   \end{aligned}
   $$
 
-  where $\&$ and $+$ is defined for $\delta$ similar to 
+  where $\&$ and $+$ is defined for $\delta$ similar to
   $\lambda$ being True and $\emptyset$ being False in a boolean equation.
 
   $$
@@ -238,7 +238,7 @@ Theorem delta_and_is_and:
 Proof.
 intros.
 invs delta_p; invs delta_q; cbn; constructor;
-  try (constructor; split); 
+  try (constructor; split);
   untie;
   invs H1;
   wreckit;
@@ -282,7 +282,7 @@ invs delta_p; cbn; constructor.
   constructor.
   wreckit.
   assumption.
-Qed. 
+Qed.
 
 Theorem delta_or_lambda: forall (p q: regex),
     delta p lambda ->
@@ -324,7 +324,14 @@ Proof.
 (* TODO: Good First Issue *)
 Abort.
 
-Theorem delta_and_emptyset_r: forall (p q: regex),
+Theorem delta_and_l_emptyset: forall (p q: regex),
+  delta p emptyset ->
+  delta (and p q) emptyset.
+Proof.
+(* TODO: Good First Issue *)
+Abort.
+
+Theorem delta_and_emptyset_l: forall (p q: regex),
     delta p emptyset ->
     delta q lambda ->
     delta (and p q) emptyset.
@@ -332,21 +339,40 @@ Proof.
 (* TODO: Good First Issue *)
 Abort.
 
-Theorem delta_and_emptyset_l: forall (p q: regex),
+Theorem delta_and_r_emptyset: forall (p q: regex),
+  delta q emptyset ->
+  delta (and p q) emptyset.
+Proof.
+intros.
+constructor.
+untie.
+invs H0.
+wreckit.
+apply R.
+invs H.
+constructor.
+split; assumption.
+Qed.
+
+Theorem delta_and_emptyset_r: forall (p q: regex),
     delta p lambda ->
     delta q emptyset ->
     delta (and p q) emptyset.
 Proof.
-(* TODO: Good First Issue *)
-Abort.
+intros.
+apply delta_and_r_emptyset.
+assumption.
+Qed.
 
 Theorem delta_and_emptyset: forall (p q: regex),
     delta p emptyset ->
     delta q emptyset ->
     delta (and p q) emptyset.
 Proof.
-(* TODO: Good First Issue *)
-Abort.
+intros.
+apply delta_and_r_emptyset.
+assumption.
+Qed.
 
 Theorem delta_not_emptyset: forall (r: regex),
     delta r lambda ->
@@ -362,6 +388,13 @@ clear H2.
 subst.
 inversion H3.
 contradiction.
+Qed.
+
+Theorem delta_not_lambda_emptyset:
+  delta (complement lambda) emptyset.
+Proof.
+apply delta_not_emptyset.
+apply delta_lambda_is_lambda.
 Qed.
 
 Theorem delta_not_lambda: forall (r: regex),
@@ -541,5 +574,3 @@ inversion_clear H.
       -- reflexivity.
     * reflexivity.
 Qed.
-    
-    
