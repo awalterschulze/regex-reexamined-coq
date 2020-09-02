@@ -340,19 +340,6 @@ wreckit.
   contradiction.
 Qed.
 
-Definition regex_is_decidable (r: regex) :=
-    (forall s: str, s `elem` {{r}} \/ s `notelem` {{r}}).
-
-Lemma denotation_concat_is_decidable (p q: regex) :
-   (regex_is_decidable p) ->
-   (regex_is_decidable q) ->
-   (regex_is_decidable (concat p q)).
-Proof.
-unfold regex_is_decidable in *.
-intros.
-dubstep denote_regex.
-(* TODO: Help Wanted *)
-Abort.
 
 Lemma denotation_star_is_decidable_for_empty_string (r: regex):
   [] `elem` {{ star r }} \/ [] `notelem` {{ star r }}.
