@@ -2,6 +2,7 @@ Require Import List.
 Import ListNotations.
 Require Import Setoid.
 
+Require Import CoqStock.DubStep.
 Require Import CoqStock.Invs.
 Require Import CoqStock.Listerine.
 Require Import CoqStock.Untie.
@@ -339,6 +340,20 @@ wreckit.
   contradiction.
 Qed.
 
+Definition regex_is_decidable (r: regex) :=
+    (forall s: str, s `elem` {{r}} \/ s `notelem` {{r}}).
+
+Lemma denotation_concat_is_decidable (p q: regex) :
+   (regex_is_decidable p) ->
+   (regex_is_decidable q) ->
+   (regex_is_decidable (concat p q)).
+Proof.
+unfold regex_is_decidable in *.
+intros.
+dubstep denote_regex.
+(* TODO: Help Wanted *)
+Abort.
+
 Lemma denotation_star_is_decidable_for_empty_string (r: regex):
   [] `elem` {{ star r }} \/ [] `notelem` {{ star r }}.
 Proof.
@@ -367,16 +382,21 @@ Qed.
 Theorem denotation_is_decidable (r: regex) (s: str):
   s `elem` {{ r }} \/ s `notelem` {{ r }}.
 Proof.
-induction s.
-- apply denotation_is_decidable_on_empty_string.
-- induction r.
-  + apply denotation_emptyset_is_decidable.
-  + apply denotation_lambda_is_decidable.
-  + apply denotation_symbol_is_decidable.
-  + wreckit.
-    * invs B.
-      wreckit.
-(* TODO: Help Wanted *)
+generalize dependent s.
+induction r.
+- apply denotation_emptyset_is_decidable.
+- apply denotation_lambda_is_decidable.
+- intros. apply denotation_symbol_is_decidable.
+- admit. (* TODO: Help Wanted *)
+  (* apply denotation_concat_is_decidable.
+  + assumption.
+  + assumption.
+  *)
+- admit. (* TODO: Help Wanted *)
+- intros.
+  specialize IHr1 with s.
+  specialize IHr2 with s.
+  apply denotation_nor_is_decidable; assumption.
 Abort.
 
 Definition not_lang (R: lang) : lang :=
