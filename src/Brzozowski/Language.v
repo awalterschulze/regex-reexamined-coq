@@ -11,6 +11,8 @@ Require Import CoqStock.WreckIt.
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Regex.
 
+Require Import Lia.
+
 (* A string is a list of characters. *)
 Definition str := (list alphabet).
 (* A regular expression denotes a set of strings called a _language_. *)
@@ -343,8 +345,6 @@ Qed.
 Definition regex_is_decidable (r: regex) :=
     (forall s: str, s `elem` {{r}} \/ s `notelem` {{r}}).
 
-Require Import Lia.
-
 Lemma length_zero_string_is_empty (s : str) :
   length s <= 0 -> s = [].
 Proof.
@@ -354,61 +354,6 @@ Proof.
   rewrite length_zero_iff_nil in *.
   assumption.
 Qed.
-
-
-Lemma denotation_concat_is_decidable_helper (p q: regex):
-  regex_is_decidable p ->
-  regex_is_decidable q ->
-  (forall (s: str) (n : nat),
-      (* prove about only a subset of all splittings *)
-      (forall (s1 s2: str),
-          s = s1 ++ s2 ->
-          length s1 <= n ->
-          (* matches concat, or does not match concat pairwise *)
-          (
-            (s1 `elem` {{ p }} /\ s2 `elem` {{ q }}) (* matches pairwise *)
-              \/ (s1 `notelem` {{ p }} \/ s2 `notelem` {{ q }}) (* does not match pairwise *)
-  ))).
-Proof.
-  intros Hdecp Hdecq s n s1 s2 Hconc Hlen.
-  induction n.
-  - (* case that s1 is empty string *)
-    apply length_zero_string_is_empty in Hlen.
-    subst.
-    (* Need to: desctruct decidability for p on emptystring, and q on s2 *)
-    destruct (Hdecp []);
-      destruct (Hdecq s2);
-      auto. (* now just some lefts and rights *)
-  - (* if length s1 <= n, we are done *)
-    assert (length s1 <= n \/ length s1 = S n) as Hlen' by lia.
-    destruct Hlen' as [Hlen' | Hlen'].
-    exact (IHn Hlen').
-    (* now the case where length s1 = S n *)
-    destruct (Hdecp s1); destruct (Hdecq s2); auto.
-Qed.
-(* TODO: think about the above lemma again. It feels a bit like
- I wouldn't have needed to use induction... *)
-
-
-Lemma denotation_concat_is_decidable_helper_plus (p q: regex):
-  regex_is_decidable p ->
-  regex_is_decidable q ->
-  (forall (s: str),
-      (* prove about only a subset of all splittings *)
-      (forall (s1 s2: str),
-          s = s1 ++ s2 ->
-          (* matches concat, or does not match concat pairwise *)
-          (
-            (s1 `elem` {{ p }} /\ s2 `elem` {{ q }}) (* matches pairwise *)
-              \/ (s1 `notelem` {{ p }} \/ s2 `notelem` {{ q }}) (* does not match pairwise *)
-  ))).
-Proof.
-  intros Hdecp Hdecq s s1 s2 Hconc.
-  cut (length s1 <= length s).
-  intros.
-  eapply (denotation_concat_is_decidable_helper p q Hdecp Hdecq s (length s)); try assumption.
-  Admitted. (* TODO: this should be easy *)
-
 
 Lemma split_string_lemma (s : str) (n : nat):
   forall (s1 s2: str),
@@ -437,9 +382,18 @@ Proof.
   split; auto.
 Qed.
 
+Lemma substrings_have_smaller_length (s s1 s2: str):
+  s = s1 ++ s2 -> length s1 <= length s.
+Proof.
+  intro H.
+  assert (length s1 + length s2 = length s).
+  replace s with (s1 ++ s2) by assumption.
+  symmetry.
+  exact (app_length s1 s2).
+  lia.
+Qed.
 
-
-Lemma denotation_concat_is_decidable_helper_attempt2 (p q: regex):
+Lemma denotation_concat_is_decidable_helper (p q: regex):
   regex_is_decidable p ->
   regex_is_decidable q ->
   (forall (s: str) (n : nat),
@@ -485,23 +439,22 @@ Proof.
       intros.
       auto.
 
-  -
+  - (* induction step *)
     set (l1 := firstn (S n) s).
     set (l2 := skipn (S n) s).
 
-    (* lots of case distinctions: *)
-
+    (* case distinction on the induction hyptohesis (which is an or) *)
     destruct IHn as [IHnAllNoMatch | IHnExistsMatch ].
 
     (* The case where there is already a match with a smaller split. *)
-    Focus 2.
+    2: {
     right.
     destruct IHnExistsMatch as [s1 IHn1].
     destruct IHn1 as [s2 IHn].
     exists s1. exists s2.
     destruct IHn as [H0 [H1 [H2 H3]]].
     repeat split; try assumption.
-    lia.
+    lia. }
 
 
     (* If none of the earlier splits match. *)
@@ -556,18 +509,6 @@ Proof.
 
 Qed.
 
-Lemma substrings_have_smaller_length (s s1 s2: str):
-  s = s1 ++ s2 -> length s1 <= length s.
-Proof.
-  intro H.
-  assert (length s1 + length s2 = length s).
-  replace s with (s1 ++ s2) by assumption.
-  symmetry.
-  exact (app_length s1 s2).
-  lia.
-Qed.
-
-
 Lemma denotation_concat_is_decidable (p q: regex):
   regex_is_decidable p ->
   regex_is_decidable q ->
@@ -576,8 +517,7 @@ Proof.
   intros Hdecp Hdecq.
   unfold regex_is_decidable.
   intro s.
-  Print denotation_concat_is_decidable_helper_attempt2.
-  destruct (denotation_concat_is_decidable_helper_attempt2 p q Hdecp Hdecq s (length s))
+  destruct (denotation_concat_is_decidable_helper p q Hdecp Hdecq s (length s))
   as [HAllDontMatch | HExistsMatch].
 
   - right.
