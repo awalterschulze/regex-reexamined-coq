@@ -236,156 +236,6 @@ intros.
 untie.
 Qed.
 
-Lemma denotation_emptyset_is_decidable (s: str):
-  s `elem` {{ emptyset }} \/ s `notelem` {{ emptyset }}.
-Proof.
-right.
-apply notelem_emptyset.
-Qed.
-
-Lemma denotation_lambda_is_decidable (s: str):
-  s `elem` {{ lambda }} \/ s `notelem` {{ lambda }}.
-Proof.
-destruct s.
-- left. constructor.
-- right. untie. invs H.
-Qed.
-
-Lemma denotation_symbol_is_decidable (s: str) (a: alphabet):
-  s `elem` {{ symbol a }} \/ s `notelem` {{ symbol a }}.
-Proof.
-destruct s.
-- right. untie. invs H.
-- destruct a, a0.
-  + destruct s.
-    * left.
-      constructor.
-    * right.
-      untie.
-      invs H.
-  + right.
-    untie.
-    invs H.
-  + right.
-    untie.
-    invs H.
-  + destruct s.
-    * left.
-      constructor.
-    * right.
-      untie.
-      invs H.
-Qed.
-
-Lemma denotation_nor_is_decidable (p q: regex) (s: str):
-  s `elem` {{ p }} \/ s `notelem` {{ p }} ->
-  s `elem` {{ q }} \/ s `notelem` {{ q }} ->
-  s `elem` {{ nor p q }} \/ s `notelem` {{ nor p q }}.
-Proof.
-simpl.
-intros.
-wreckit.
-- right.
-  untie.
-  invs H.
-  wreckit.
-  contradiction.
-- right.
-  untie.
-  invs H.
-  wreckit.
-  contradiction.
-- right.
-  untie.
-  invs H.
-  wreckit.
-  contradiction.
-- left.
-  constructor.
-  wreckit.
-  * assumption.
-  * assumption.
-Qed.
-
-Lemma denotation_concat_is_decidable_for_empty_string (p q: regex):
-  [] `elem` {{ p }} \/ [] `notelem` {{ p }} ->
-  [] `elem` {{ q }} \/ [] `notelem` {{ q }} ->
-  [] `elem` {{ concat p q }} \/ [] `notelem` {{ concat p q }}.
-Proof.
-intros.
-wreckit.
-- left.
-  constructor.
-  exists [].
-  exists [].
-  exists eq_refl.
-  wreckit; assumption.
-- right.
-  untie.
-  invs H.
-  wreckit.
-  listerine.
-  contradiction.
-- right.
-  untie.
-  invs H.
-  wreckit.
-  listerine.
-  contradiction.
-- right.
-  untie.
-  invs H.
-  wreckit.
-  listerine.
-  contradiction.
-Qed.
-
-
-Lemma denotation_star_is_decidable_for_empty_string (r: regex):
-  [] `elem` {{ star r }} \/ [] `notelem` {{ star r }}.
-Proof.
-left.
-constructor.
-reflexivity.
-Qed.
-
-Lemma denotation_is_decidable_on_empty_string (r: regex):
-  [] `elem` {{ r }} \/ [] `notelem` {{ r }}.
-Proof.
-intros.
-induction r.
-- apply denotation_emptyset_is_decidable.
-- apply denotation_lambda_is_decidable.
-- apply denotation_symbol_is_decidable.
-- apply denotation_concat_is_decidable_for_empty_string.
-  + assumption.
-  + assumption.
-- apply denotation_star_is_decidable_for_empty_string.
-- apply denotation_nor_is_decidable.
-  + assumption.
-  + assumption.
-Qed.
-
-Theorem denotation_is_decidable (r: regex) (s: str):
-  s `elem` {{ r }} \/ s `notelem` {{ r }}.
-Proof.
-generalize dependent s.
-induction r.
-- apply denotation_emptyset_is_decidable.
-- apply denotation_lambda_is_decidable.
-- intros. apply denotation_symbol_is_decidable.
-- admit. (* TODO: Help Wanted *)
-  (* apply denotation_concat_is_decidable.
-  + assumption.
-  + assumption.
-  *)
-- admit. (* TODO: Help Wanted *)
-- intros.
-  specialize IHr1 with s.
-  specialize IHr2 with s.
-  apply denotation_nor_is_decidable; assumption.
-Abort.
-
 Definition not_lang (R: lang) : lang :=
   nor_lang R R.
 
@@ -404,40 +254,7 @@ Proof.
     induction not_x.
 Abort.
 
-Theorem not_lang_not_lang_is_lang: forall (r: regex),
-  not_lang (not_lang {{r}})
-  {<->}
-  {{r}}.
-Proof.
-intros.
-split.
-- assert (s `elem` {{ r }} \/ s `notelem` {{ r }}).
-  admit. (* TODO: apply denotation_is_decidable *)
-  intros.
-  wreckit.
-  + assumption.
-  + invs H0.
-    wreckit.
-    unfold not in L.
-    exfalso.
-    apply L.
-    constructor.
-    wreckit.
-    assumption.
-- assert (s `elem` {{ r }} \/ s `notelem` {{ r }}).
-  admit. (* TODO: apply denotation_is_decidable *)
-  intros.
-  constructor.
-  wreckit.
-  + unfold not.
-    intros.
-    invs H.
-    wreckit.
-    contradiction.
-  + contradiction.
-Abort.
-
-Theorem concat_lang_emptyset_l_is_emptyset: forall (r: lang),
+Example lemma_for_setoid_example_concat_lang_emptyset_l_is_emptyset: forall (r: lang),
   concat_lang emptyset_lang r
   {<->}
   emptyset_lang.
@@ -460,7 +277,7 @@ Example LangSetoidRewriteReflexivity: forall (r: lang),
   emptyset_lang.
 Proof.
 intros.
-rewrite concat_lang_emptyset_l_is_emptyset.
+rewrite lemma_for_setoid_example_concat_lang_emptyset_l_is_emptyset.
 reflexivity.
 Qed.
 
@@ -473,87 +290,7 @@ Example NorLangMorphSetoidRewrite: forall (r s: lang),
   nor_lang emptyset_lang s.
 Proof.
 intros.
-rewrite concat_lang_emptyset_l_is_emptyset.
+rewrite lemma_for_setoid_example_concat_lang_emptyset_l_is_emptyset.
 reflexivity.
 Qed.
 
-Theorem concat_lang_emptyset_l: forall (r: lang) (s: str),
-  s `notelem` concat_lang emptyset_lang r.
-Proof.
-intros.
-untie.
-invs H.
-wreckit.
-invs L.
-Qed.
-
-Theorem concat_lang_emptyset_r_is_emptyset: forall (r: lang),
-  concat_lang r emptyset_lang
-  {<->}
-  emptyset_lang.
-Proof.
-split.
-- intros.
-  invs H.
-  wreckit.
-  invs R.
-- intros.
-  invs H.
-Qed.
-
-Theorem concat_lang_emptyset_r: forall (r: lang) (s: str),
-  s `notelem` concat_lang r emptyset_lang.
-Proof.
-intros.
-untie.
-invs H.
-wreckit.
-invs R.
-Qed.
-
-Theorem concat_lang_lambda_l_is_l: forall (r: lang),
-  concat_lang lambda_lang r
-  {<->}
-  r.
-Proof.
-split.
-- intros.
-  invs H.
-  wreckit.
-  subst.
-  inversion_clear L.
-  cbn.
-  assumption.
-- intros.
-  constructor.
-  exists [].
-  exists s.
-  exists eq_refl.
-  split.
-  + constructor.
-  + assumption.
-Qed.
-
-Theorem concat_lang_lambda_r_is_r: forall (r: lang),
-  concat_lang r lambda_lang
-  {<->}
-  r.
-Proof.
-split.
-- intros.
-  invs H.
-  wreckit.
-  subst.
-  inversion_clear R.
-  listerine.
-  assumption.
-- intros.
-  constructor.
-  exists s.
-  exists [].
-  assert (s ++ [] = s). listerine. reflexivity.
-  exists H0.
-  split.
-  + assumption.
-  + constructor.
-Qed.

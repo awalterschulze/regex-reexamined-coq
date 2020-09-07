@@ -2,12 +2,17 @@ Require Import List.
 Import ListNotations.
 Require Import Setoid.
 
+Require Import CoqStock.DubStep.
+Require Import CoqStock.Invs.
+Require Import CoqStock.Listerine.
+Require Import CoqStock.Untie.
+Require Import CoqStock.WreckIt.
+
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Language.
 Require Import Brzozowski.Regex.
 
 Require Import Lia.
-
 
 Definition regex_is_decidable (r: regex) :=
     (forall s: str, s `elem` {{r}} \/ s `notelem` {{r}}).
@@ -205,3 +210,153 @@ Proof.
     exists s1. exists s2. exists Hconcat.
     split; assumption.
 Qed.
+
+Lemma denotation_emptyset_is_decidable (s: str):
+  s `elem` {{ emptyset }} \/ s `notelem` {{ emptyset }}.
+Proof.
+right.
+apply notelem_emptyset.
+Qed.
+
+Lemma denotation_lambda_is_decidable (s: str):
+  s `elem` {{ lambda }} \/ s `notelem` {{ lambda }}.
+Proof.
+destruct s.
+- left. constructor.
+- right. untie. invs H.
+Qed.
+
+Lemma denotation_symbol_is_decidable (s: str) (a: alphabet):
+  s `elem` {{ symbol a }} \/ s `notelem` {{ symbol a }}.
+Proof.
+destruct s.
+- right. untie. invs H.
+- destruct a, a0.
+  + destruct s.
+    * left.
+      constructor.
+    * right.
+      untie.
+      invs H.
+  + right.
+    untie.
+    invs H.
+  + right.
+    untie.
+    invs H.
+  + destruct s.
+    * left.
+      constructor.
+    * right.
+      untie.
+      invs H.
+Qed.
+
+Lemma denotation_nor_is_decidable (p q: regex) (s: str):
+  s `elem` {{ p }} \/ s `notelem` {{ p }} ->
+  s `elem` {{ q }} \/ s `notelem` {{ q }} ->
+  s `elem` {{ nor p q }} \/ s `notelem` {{ nor p q }}.
+Proof.
+simpl.
+intros.
+wreckit.
+- right.
+  untie.
+  invs H.
+  wreckit.
+  contradiction.
+- right.
+  untie.
+  invs H.
+  wreckit.
+  contradiction.
+- right.
+  untie.
+  invs H.
+  wreckit.
+  contradiction.
+- left.
+  constructor.
+  wreckit.
+  * assumption.
+  * assumption.
+Qed.
+
+Lemma denotation_concat_is_decidable_for_empty_string (p q: regex):
+  [] `elem` {{ p }} \/ [] `notelem` {{ p }} ->
+  [] `elem` {{ q }} \/ [] `notelem` {{ q }} ->
+  [] `elem` {{ concat p q }} \/ [] `notelem` {{ concat p q }}.
+Proof.
+intros.
+wreckit.
+- left.
+  constructor.
+  exists [].
+  exists [].
+  exists eq_refl.
+  wreckit; assumption.
+- right.
+  untie.
+  invs H.
+  wreckit.
+  listerine.
+  contradiction.
+- right.
+  untie.
+  invs H.
+  wreckit.
+  listerine.
+  contradiction.
+- right.
+  untie.
+  invs H.
+  wreckit.
+  listerine.
+  contradiction.
+Qed.
+
+
+Lemma denotation_star_is_decidable_for_empty_string (r: regex):
+  [] `elem` {{ star r }} \/ [] `notelem` {{ star r }}.
+Proof.
+left.
+constructor.
+reflexivity.
+Qed.
+
+Lemma denotation_is_decidable_on_empty_string (r: regex):
+  [] `elem` {{ r }} \/ [] `notelem` {{ r }}.
+Proof.
+intros.
+induction r.
+- apply denotation_emptyset_is_decidable.
+- apply denotation_lambda_is_decidable.
+- apply denotation_symbol_is_decidable.
+- apply denotation_concat_is_decidable_for_empty_string.
+  + assumption.
+  + assumption.
+- apply denotation_star_is_decidable_for_empty_string.
+- apply denotation_nor_is_decidable.
+  + assumption.
+  + assumption.
+Qed.
+
+Theorem denotation_is_decidable (r: regex) (s: str):
+  s `elem` {{ r }} \/ s `notelem` {{ r }}.
+Proof.
+generalize dependent s.
+induction r.
+- apply denotation_emptyset_is_decidable.
+- apply denotation_lambda_is_decidable.
+- intros. apply denotation_symbol_is_decidable.
+- admit. (* TODO: Help Wanted *)
+  (* apply denotation_concat_is_decidable.
+  + assumption.
+  + assumption.
+  *)
+- admit. (* TODO: Help Wanted *)
+- intros.
+  specialize IHr1 with s.
+  specialize IHr2 with s.
+  apply denotation_nor_is_decidable; assumption.
+Abort.
