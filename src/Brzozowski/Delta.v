@@ -1,6 +1,7 @@
 Require Import List.
 Import ListNotations.
 
+Require Import CoqStock.DubStep.
 Require Import CoqStock.Invs.
 Require Import CoqStock.Listerine.
 Require Import CoqStock.Untie.
@@ -574,3 +575,168 @@ inversion_clear H.
       -- reflexivity.
     * reflexivity.
 Qed.
+
+Theorem delta_is_lambda_or_emptyset (r: regex):
+  delta_def r = lambda \/ delta_def r = emptyset.
+Proof.
+induction r.
+- right.
+  cbn; reflexivity.
+- left.
+  cbn; reflexivity.
+- right.
+  cbn; reflexivity.
+- wreckit; (cbn;
+    try rewrite B0;
+    try rewrite B);
+    auto.
+- left.
+  cbn.
+  reflexivity.
+- wreckit; (cbn;
+    try rewrite B0;
+    try rewrite B);
+  auto.
+Qed.
+
+(*
+delta_split_lambda_or splits a regular expression into
+a possible lambda and the regular expression that does not match lambda.
+This theorem is needed for finding the derive function for the concat operator.
+Let:
+  P = delta_def(P) or P_0
+  where delta_def(P_0) = emptyset
+=>
+Let:
+  R = P or Q
+  P = delta_def(R)
+  where delta_def(Q) = emptyset
+*)
+Theorem delta_split_lambda_or (r: regex):
+  exists
+    (p q: regex),
+    delta r p /\
+    delta q emptyset /\
+    {{r}} {<->} {{or p q}}.
+Proof.
+induction r.
+- exists emptyset.
+  exists emptyset.
+  split.
+  apply delta_emptyset_is_emptyset.
+  split.
+  apply delta_emptyset_is_emptyset.
+  split; intros.
+  + constructor.
+    wreckit.
+    untie.
+  + invs H.
+    wreckit.
+    exfalso.
+    apply L.
+    constructor.
+    wreckit.
+    untie.
+- exists lambda.
+  exists emptyset.
+  split.
+  apply delta_lambda_is_lambda.
+  split.
+  apply delta_emptyset_is_emptyset.
+  split; intros.
+  constructor.
+  split.
+  untie.
+  invs H0.
+  wreckit.
+  apply L.
+  assumption.
+  untie.
+  invs H0.
+  wreckit.
+  apply L.
+  assumption.
+  invs H.
+  wreckit.
+  destruct s.
+  + constructor.
+  + exfalso.
+    apply L.
+    constructor.
+    wreckit.
+    untie.
+    invs H.
+    untie.
+- exists emptyset.
+  exists (symbol a).
+  split.
+  apply delta_symbol_is_emptyset.
+  split.
+  apply delta_symbol_is_emptyset.
+  split.
+  intros.
+  constructor.
+  split.
+  untie.
+  invs H0.
+  wreckit.
+  apply R.
+  assumption.
+  untie.
+  invs H0.
+  wreckit.
+  contradiction.
+  intros.
+  invs H.
+  wreckit.
+  destruct s.
+  exfalso.
+  apply L.
+  constructor.
+  wreckit.
+  untie.
+  untie.
+  invs H.
+  destruct s.
+  + destruct a, a0.
+    * constructor.
+    * exfalso.
+      apply L.
+      constructor.
+      wreckit.
+      untie.
+      untie.
+      invs H.
+    * exfalso.
+      apply L.
+      constructor.
+      wreckit.
+      untie.
+      untie.
+      invs H.
+    * constructor.
+  + exfalso.
+    apply L.
+    constructor.
+    wreckit.
+    untie.
+    untie.
+    invs H.
+- wreckit.
+  exists (delta_and x1 x).
+  exists (concat x2 x0). (* or maybe (concat x2 r2) *)
+  apply delta_implies_delta_def in L1.
+  apply delta_implies_delta_def in L2.
+  apply delta_implies_delta_def in L.
+  apply delta_implies_delta_def in L0.
+  split.
+  + apply delta_def_implies_delta.
+    subst.
+    dubstep delta_def.
+    reflexivity.
+  + admit.
+- admit.
+- admit.
+(* TODO: Help Wanted *)
+Abort.
+
