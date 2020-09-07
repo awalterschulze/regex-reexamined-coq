@@ -11,6 +11,7 @@ src/CoqStock/reorder.v
 src/CoqStock/reduce_orb.v
 src/CoqStock/sort.v
 src/CoqStock/Invs.v
+src/CoqStock/Lem.v
 src/CoqStock/Listerine.v
 src/CoqStock/Untie.v
 src/CoqStock/WreckIt.v
@@ -33,6 +34,7 @@ src/Reexamined/smart_or.v
 
 src/Brzozowski/Alphabet.v
 src/Brzozowski/Boolean.v
+src/Brzozowski/Decidable.v
 src/Brzozowski/Delta.v
 src/Brzozowski/Derive.v
 src/Brzozowski/ExampleR.v
