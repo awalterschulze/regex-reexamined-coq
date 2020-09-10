@@ -7,6 +7,7 @@ Require Import Psatz.
 Require Import Lia.
 
 Require Import CoqStock.comparable.
+Require Import CoqStock.DubStep.
 
 (* is_sorted is a property that says whether a list is sorted *)
 Inductive is_sorted {A: Type} {cmp: comparable A} : list A -> Prop :=
@@ -99,10 +100,15 @@ Lemma tail_of_is_sortedb_is_sortedb:
   (xs: list A),
   is_sortedb (x :: xs) -> is_sortedb xs.
 Proof.
-(* TODO: Good First Issue
-By Admitting this we previously let a bug slip through
- *)
-Abort.
+  intros.
+  dubstep @is_sortedb in H.
+  induction xs.
+  - trivial.
+  - destruct (compare x a).
+    + trivial.
+    + trivial.
+    + contradiction.
+Qed.
 
 Lemma tail_of_is_sorted''_is_sorted'':
   forall {A: Type}
