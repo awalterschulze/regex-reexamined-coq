@@ -117,8 +117,12 @@ Lemma tail_of_is_sorted''_is_sorted'':
   (xs: list A),
   is_sorted'' (x :: xs) -> is_sorted'' xs.
 Proof.
-(* TODO: Good First Issue *)
-Abort.
+intros.
+induction xs.
+- exact empty_sorted''.
+- inversion H.
+  all: destruct H1; auto.
+Qed.
 
 Lemma list_inductive_equality: forall {A: Type} {cmp: comparable A} (x y: A) (xs ys: list A),
     ( (x::xs) = (y::ys)) <-> (x = y /\ (xs = ys)).
