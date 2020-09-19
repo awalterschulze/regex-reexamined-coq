@@ -17,6 +17,7 @@ Require Import Lia.
 Definition regex_is_decidable (r: regex) :=
     (forall s: str, s `elem` {{r}} \/ s `notelem` {{r}}).
 
+(* TODO: move into listerine *)
 Lemma length_zero_string_is_empty (s : str) :
   length s <= 0 -> s = [].
 Proof.
@@ -27,6 +28,9 @@ Proof.
   assumption.
 Qed.
 
+Print List.
+
+(* TODO: move into listerine *)
 Lemma split_string_lemma (s : str) (n : nat):
   forall (s1 s2: str),
     length s1 = n ->
@@ -54,6 +58,7 @@ Proof.
   split; auto.
 Qed.
 
+(* TODO: move into listerine *)
 Lemma substrings_have_smaller_length (s s1 s2: str):
   s = s1 ++ s2 -> length s1 <= length s.
 Proof.
@@ -180,6 +185,23 @@ Proof.
 *)
 
 Qed.
+
+
+
+(*
+
+(s : str)
+
+s `elem` (concat p q)
+or not
+s `elem` (concat p q)
+
+
+
+
+
+*)
+
 
 Lemma denotation_concat_is_decidable (p q: regex):
   regex_is_decidable p ->
@@ -324,6 +346,175 @@ constructor.
 reflexivity.
 Qed.
 
+
+Lemma denotation_star_is_decidable_helper (r: regex) (k: nat) (s: str) (a: alphabet):
+  regex_is_decidable r ->
+  (forall (s': str),
+      length s' < length (a::s) -> (
+        s' `elem` {{star r}}
+           \/ s' `notelem` {{star r}})) ->
+      (forall (s1 s2: str),
+          length s1 <= k ->
+          (a::s) = a::s1 ++ s2 ->
+          (* does not match concat pairwise *)
+          ((a::s1 `notelem` {{ r }} \/ s2 `notelem` {{ star r }})))
+      \/ (exists (s1 s2: str),
+            length s1 <= k /\
+            (a::s) = a::s1 ++ s2 /\
+            (a::s1 `elem` {{ r }} /\ s2 `elem` {{ star r }})).
+Proof.
+  intro Hdecr.
+  intro Hdecstarr.
+  induction k.
+  -
+    unfold regex_is_decidable in Hdecr.
+    specialize Hdecr with [a].
+    destruct Hdecr as [ Hrmatch | Hrnomatch ].
+    + destruct (Hdecstarr s) as [ Hstarmatch | Hstarnomatch].
+      * admit.
+      * right.
+        exists [].
+        exists s.
+        wreckit.
+        -- now listerine.
+        -- now listerine.
+        -- assumption.
+        -- assumption.
+      * admit.
+    + destruct (Hdecstarr s) as [ Hstarmatch | Hstarnomatch].
+      * admit.
+      * left.
+        admit.
+      * left. admit.
+
+  -
+    unfold regex_is_decidable in Hdecr.
+    destruct IHk as [ IHallnomatch | IHexistsmatch ].
+    + (* only check case length s1 = S k *)
+
+      (* s = a::s1 ++ s2
+      where length s1 = k + 1
+
+so s1 = (skipn 1 (firstn (k + 2) s))
+
+       *)
+      set (s1 := (firstn (S k) s)).
+      set (s2 := (skipn (S k) s)).
+
+      specialize Hdecr with (a::s1).
+      destruct Hdecr as [ Hrmatch | Hrnomatch ].
+      *
+        destruct (Hdecstarr s2) as [ Hstarmatch | Hstarnomatch ].
+        -- admit.
+        --
+          right.
+          exists s1.
+          exists s2.
+          wreckit.
+          ++ admit.
+          ++ admit.
+          ++ assumption.
+          ++ assumption.
+        --
+          left.
+          intros s1' s2'.
+          intro Hlen.
+          intro Happ.
+          inversion Hlen.
+          ++
+            replace s1' with s1.
+            replace s2' with s2.
+            right. assumption.
+
+            (* admit; use listerine *)
+            admit.
+            admit.
+
+          ++ specialize IHallnomatch with s1' s2'.
+             apply IHallnomatch.
+             assumption.
+             assumption.
+
+      * admit. (* probably (almost) copy of the above *)
+    +
+      right.
+
+      destruct IHexistsmatch as [ s1 [ s2 [Hlen] ] ].
+      destruct H as [ Happ [ Hstart Htail ]].
+      exists s1.
+      exists s2.
+
+      wreckit.
+      * lia.
+      * assumption.
+      * assumption.
+      * assumption.
+(* TODO: Good First Issue *)
+Abort.
+
+
+Lemma denotation_star_is_decidable_for_small_strings (r: regex) (n: nat):
+  (regex_is_decidable r)
+  -> (forall (s: str),
+        length s <= n
+        ->
+        (s `elem` {{star r}}
+            \/ s `notelem` {{star r}})).
+Proof.
+  intro Hdec.
+  induction n.
+  - intros s Hlen.
+    apply length_zero_string_is_empty in Hlen.
+    subst.
+    apply denotation_star_is_decidable_for_empty_string.
+  -
+    intros s Hlen.
+
+    (* TODO: NEXT STEP: use the denotation_star_is_decidable_helper
+to prove this. Then use this to prove denotation_star_is_decidable
+     *)
+
+
+    (*
+
+Let s = s1 ++ s2
+
+then ....
+
+     *)
+
+
+    (*
+we know: doesn't match empty (b/c of length)
+
+we know: (concat r (star r)) is decidable
+
+take any splitting s = s1 ++ s2
+where s1 matches r and s1 is not empty
+(But: also need: there are only finitely many such splittings. (Need this
+for constructivity (no excluded middle).))
+
+For every splitting s = s1 ++ s2
+where ...
+
+we want to prove:
+     s1
+
+
+
+
+     *)
+
+Abort.
+
+Lemma denotation_star_is_decidable (r: regex):
+  regex_is_decidable r -> regex_is_decidable (star r).
+Proof.
+  (* TODO: Help Wanted *)
+  (* See NEXT STEP above in denotation_star_is_decidable_for_small_strings
+for our idea on how to prove this. *)
+Abort.
+
 Lemma denotation_is_decidable_on_empty_string (r: regex):
   [] `elem` {{ r }} \/ [] `notelem` {{ r }}.
 Proof.
@@ -349,11 +540,10 @@ induction r.
 - apply denotation_emptyset_is_decidable.
 - apply denotation_lambda_is_decidable.
 - intros. apply denotation_symbol_is_decidable.
-- admit. (* TODO: Help Wanted *)
-  (* apply denotation_concat_is_decidable.
-  + assumption.
-  + assumption.
-  *)
+-
+  intros. apply denotation_concat_is_decidable;
+  unfold regex_is_decidable;
+  assumption.
 - admit. (* TODO: Help Wanted *)
 - intros.
   specialize IHr1 with s.
