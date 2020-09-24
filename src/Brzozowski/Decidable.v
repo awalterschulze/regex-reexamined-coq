@@ -450,7 +450,7 @@ so s1 = (skipn 1 (firstn (k + 2) s))
       * assumption.
       * assumption.
 (* TODO: Good First Issue *)
-Abort.
+Admitted.
 
 
 Lemma denotation_star_is_decidable_for_small_strings (r: regex) (n: nat):
@@ -467,8 +467,23 @@ Proof.
     apply length_zero_string_is_empty in Hlen.
     subst.
     apply denotation_star_is_decidable_for_empty_string.
-  -
-    intros s Hlen.
+  - intros s Hlen.
+    destruct s.
+    + apply denotation_star_is_decidable_for_empty_string.
+    + simpl in Hlen.
+      apply (denotation_star_is_decidable_helper r n s a) in Hdec.
+      * wreckit.
+        --- right.
+            untie.
+            inversion H.
+            +++ discriminate.
+            +++ invs H0.
+                wreckit.
+
+
+
+
+      * intros. apply IHn. admit.
 
     (* TODO: NEXT STEP: use the denotation_star_is_decidable_helper
 to prove this. Then use this to prove denotation_star_is_decidable
@@ -540,8 +555,7 @@ induction r.
 - apply denotation_emptyset_is_decidable.
 - apply denotation_lambda_is_decidable.
 - intros. apply denotation_symbol_is_decidable.
--
-  intros. apply denotation_concat_is_decidable;
+- intros. apply denotation_concat_is_decidable;
   unfold regex_is_decidable;
   assumption.
 - admit. (* TODO: Help Wanted *)

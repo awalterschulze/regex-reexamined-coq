@@ -109,6 +109,100 @@ constructor; constructor; invs H1; wreckit;
     assumption.
 Qed.
 
+Inductive concat_prefix_not_empty_lang (P Q: lang): lang :=
+  | mk_concat_prefix_is_not_empty: forall (s: str),
+    (exists
+      (p: str)
+      (a: alphabet)
+      (q: str)
+      (pqs: (a :: p) ++ q = s),
+      (a :: p) `elem` P /\
+      q `elem` Q
+    ) ->
+    concat_prefix_not_empty_lang P Q s
+  .
+
+Theorem concat_prefix_not_empty_lang_is_concat_lang:
+  forall (P Q: lang) (s: str),
+  concat_prefix_not_empty_lang P Q s ->
+  concat_lang P Q s.
+Proof.
+intros.
+inversion H.
+wreckit.
+subst.
+constructor.
+exists (x0 :: x).
+exists x1.
+exists eq_refl.
+wreckit; assumption.
+Qed.
+
+Theorem concat_lang_is_concat_prefix_not_empty_lang:
+  forall (P Q: lang) (s: str),
+  [] `notelem` P ->
+  concat_lang P Q s ->
+  concat_prefix_not_empty_lang P Q s.
+Proof.
+intros.
+inversion H0.
+wreckit.
+subst.
+destruct x.
+- contradiction.
+- constructor.
+  exists x.
+  exists a.
+  exists x0.
+  exists eq_refl.
+  wreckit; assumption.
+Qed.
+
+(*
+   concat_prefix_not_empty_lang_morph allows rewrite to work inside concat_prefix_not_empty_lang parameters
+*)
+Add Parametric Morphism: concat_prefix_not_empty_lang
+  with signature lang_iff ==> lang_iff ==> lang_iff as concat_prefix_not_empty_lang_morph.
+Proof.
+intros P P'.
+intros Piff.
+intros Q Q'.
+intros Qiff.
+unfold "{<->}" in *.
+unfold "`elem`" in *.
+split.
+- intro H.
+  invs H.
+  destruct H0 as [p [a [q [splt [Pmatch Qmatch]]]]].
+  constructor.
+  exists p.
+  exists a.
+  exists q.
+  exists splt.
+  wreckit.
+  + specialize Piff with (a :: p).
+    apply Piff.
+    assumption.
+  + specialize Qiff with q.
+    apply Qiff.
+    assumption.
+- intro H.
+  invs H.
+  destruct H0 as [p [a [q [splt [Pmatch Qmatch]]]]].
+  constructor.
+  exists p.
+  exists a.
+  exists q.
+  exists splt.
+  wreckit.
+  + specialize Piff with (a :: p).
+    apply Piff.
+    assumption.
+  + specialize Qiff with q.
+    apply Qiff.
+    assumption.
+Qed.
+
 (*
     *Star*. $P^{*} = \cup_{0}^{\infty} P^n$ , where $P^2 = P.P$, etc.
     and $P^0 = \lambda$, the set consisting of the string of zero length.
@@ -117,9 +211,64 @@ Inductive star_lang (R: lang): lang :=
   | mk_star_zero : forall (s: str),
     s = [] -> star_lang R s
   | mk_star_more : forall (s: str),
-    s `elem` (concat_lang R (star_lang R)) ->
+    s `elem` (concat_prefix_not_empty_lang R (star_lang R)) ->
     star_lang R s
   .
+
+Inductive star_lang' (R: lang): lang :=
+  | mk_star_zero' : forall (s: str),
+    s = [] -> star_lang' R s
+  | mk_star_more' : forall (s: str),
+    s `elem` (concat_lang R (star_lang' R)) ->
+    star_lang' R s
+  .
+
+Theorem star_is_star:
+  forall (R: lang),
+  star_lang R {<->} star_lang' R.
+Proof.
+(* TODO: Help Wanted *)
+Abort.
+
+Theorem n_morph:
+  forall (x y : lang) (s: str) (n: nat) (L: length s <= n),
+  (x {<->} y)
+  -> (s `elem` star_lang x <-> s `elem` star_lang y).
+Proof.
+intros R R' s n L Riff.
+unfold "{<->}" in *.
+unfold "`elem`" in *.
+generalize dependent s.
+induction n.
+- admit.
+- split.
+  + intro H.
+    inversion H.
+    * apply mk_star_zero.
+      assumption.
+    * apply mk_star_more.
+      unfold "`elem`" in *.
+      induction H0.
+      constructor.
+      destruct H0 as [p [a [q [splt [Pmatch Qmatch]]]]].
+      exists p.
+      exists a.
+      exists q.
+      exists splt.
+      unfold "`elem`" in *.
+      apply (Riff (a :: p)) in Pmatch.
+      wreckit.
+      --- assumption.
+      --- subst.
+          specialize IHn with q.
+          assert (length q <= n).
+          +++ admit.
+          +++ apply IHn in H0.
+              apply H0.
+              assumption.
+  + admit.
+(* TODO: Good First Issue *)
+Abort.
 
 (*
    star_lang_morph allows rewrite to work inside star_lang parameters
@@ -127,7 +276,17 @@ Inductive star_lang (R: lang): lang :=
 Add Parametric Morphism: star_lang
   with signature lang_iff ==> lang_iff as star_lang_morph.
 Proof.
-(* TODO: Help Wanted *)
+intros R R' Riff.
+unfold "{<->}" in *.
+intro s.
+set (n := length s).
+apply (n_morph R R' s (length s)).
+- trivial.
+- unfold "{<->}" in *.
+  intro s0.
+  specialize Riff with s0.
+  assumption.
+(* TODO: Good First Issue *)
 Abort.
 
 (*
@@ -294,3 +453,6 @@ rewrite lemma_for_setoid_example_concat_lang_emptyset_l_is_emptyset.
 reflexivity.
 Qed.
 
+https://www.universiteitleiden.nl/en/research/research-projects/science/algant+
+
+http://algant.eu/
