@@ -215,6 +215,10 @@ Inductive star_lang (R: lang): lang :=
     star_lang R s
   .
 
+(*
+  star_lang' is the original definition of star_lang,
+  but contains more recursion, since it allows R to match the empty string.
+*)
 Inductive star_lang' (R: lang): lang :=
   | mk_star_zero' : forall (s: str),
     s = [] -> star_lang' R s
@@ -223,6 +227,10 @@ Inductive star_lang' (R: lang): lang :=
     star_lang' R s
   .
 
+(*
+  star_is_star shows that the new definition of star_lang and
+  the original definition of star_lang' are equivalent.
+*)
 Theorem star_is_star:
   forall (R: lang),
   star_lang R {<->} star_lang' R.
@@ -230,7 +238,7 @@ Proof.
 (* TODO: Help Wanted *)
 Abort.
 
-Theorem n_morph:
+Theorem star_lang_morph_helper:
   forall (x y : lang) (s: str) (n: nat) (L: length s <= n),
   (x {<->} y)
   -> (s `elem` star_lang x <-> s `elem` star_lang y).
@@ -280,12 +288,13 @@ intros R R' Riff.
 unfold "{<->}" in *.
 intro s.
 set (n := length s).
-apply (n_morph R R' s (length s)).
+(* TODO: apply star_lang_morph_helper, but first prove it *)
+(* apply (star_lang_morph_helper R R' s (length s)).
 - trivial.
 - unfold "{<->}" in *.
   intro s0.
   specialize Riff with s0.
-  assumption.
+  assumption. *)
 (* TODO: Good First Issue *)
 Abort.
 
@@ -452,7 +461,3 @@ intros.
 rewrite lemma_for_setoid_example_concat_lang_emptyset_l_is_emptyset.
 reflexivity.
 Qed.
-
-https://www.universiteitleiden.nl/en/research/research-projects/science/algant+
-
-http://algant.eu/

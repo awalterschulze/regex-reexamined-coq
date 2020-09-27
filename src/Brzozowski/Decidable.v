@@ -28,8 +28,6 @@ Proof.
   assumption.
 Qed.
 
-Print List.
-
 (* TODO: move into listerine *)
 Lemma split_string_lemma (s : str) (n : nat):
   forall (s1 s2: str),
@@ -450,7 +448,7 @@ so s1 = (skipn 1 (firstn (k + 2) s))
       * assumption.
       * assumption.
 (* TODO: Good First Issue *)
-Admitted.
+Abort.
 
 
 Lemma denotation_star_is_decidable_for_small_strings (r: regex) (n: nat):
@@ -471,19 +469,20 @@ Proof.
     destruct s.
     + apply denotation_star_is_decidable_for_empty_string.
     + simpl in Hlen.
-      apply (denotation_star_is_decidable_helper r n s a) in Hdec.
+      (* TODO: apply denotation_star_is_decidable_helper, but first prove it *)
+      (* apply (denotation_star_is_decidable_helper r n s a) in Hdec.
       * wreckit.
         --- right.
             untie.
             inversion H.
             +++ discriminate.
             +++ invs H0.
-                wreckit.
+                wreckit. 
 
 
 
 
-      * intros. apply IHn. admit.
+      * intros. apply IHn. admit. *)
 
     (* TODO: NEXT STEP: use the denotation_star_is_decidable_helper
 to prove this. Then use this to prove denotation_star_is_decidable

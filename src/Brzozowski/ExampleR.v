@@ -282,14 +282,16 @@ wreckit.
 - constructor.
 - apply mk_star_more.
   constructor.
-  exists [A1].
+  exists [].
+  exists A1.
   exists [A1].
   exists eq_refl.
   wreckit.
   + constructor.
   + apply mk_star_more.
     constructor.
-    exists [A1].
+    exists [].
+    exists A1.
     exists [].
     exists eq_refl.
     wreckit.
