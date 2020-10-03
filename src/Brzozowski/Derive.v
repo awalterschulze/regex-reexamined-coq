@@ -175,7 +175,8 @@ split.
   + apply mk_star_more.
     subst.
     constructor.
-    exists [a].
+    exists [].
+    exists a.
     exists [].
     exists eq_refl.
     split.
@@ -191,15 +192,17 @@ split.
     inversion L.
     subst.
     constructor.
-    exists [a].
-    exists (a :: x0).
+    exists [].
+    exists x0.
+    exists (x0 :: x1).
     exists eq_refl.
     split.
     -- constructor.
     -- apply mk_star_more.
        constructor.
-       exists [a].
+       exists [].
        exists x0.
+       exists x1.
        exists eq_refl.
        split.
        ++ constructor.
