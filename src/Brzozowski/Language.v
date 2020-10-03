@@ -216,16 +216,244 @@ Inductive star_lang (R: lang): lang :=
   .
 
 (*
-  star_lang' is the original definition of star_lang,
+  star_lang_concat is the original definition of star_lang,
   but contains more recursion, since it allows R to match the empty string.
 *)
-Inductive star_lang' (R: lang): lang :=
+Inductive star_lang_concat (R: lang): lang :=
   | mk_star_zero' : forall (s: str),
-    s = [] -> star_lang' R s
+    s = [] -> star_lang_concat R s
   | mk_star_more' : forall (s: str),
-    s `elem` (concat_lang R (star_lang' R)) ->
-    star_lang' R s
+    (exists
+      (p: str)
+      (q: str)
+      (pqs: p ++ q = s),
+      p `elem` R /\
+      q `elem` star_lang_concat R
+    )
+    ->
+    star_lang_concat R s
   .
+
+Inductive star_lang_q (R: lang): lang :=
+  | mk_star_zero_q : forall (s: str),
+    s = [] -> star_lang_q R s
+  | mk_star_more_q : forall (s: str) (p: str) (q: str),
+      p ++ q = s ->
+      p `elem` R ->
+      q `elem` star_lang_q R ->
+      s `elem` star_lang_q R
+  .
+
+Print star_lang_concat_ind.
+
+  (*
+  star_lang_concat_ind =
+  fun (R : lang) (P : str -> Prop) (f : forall s : str, s = [] -> P s)
+    (f0 : forall s : str,
+        (exists (p q : str) (_ : p ++ q = s),
+             (p `elem` R) /\ q `elem` star_lang_concat R) ->
+          P s) (s : str) (s0 : star_lang_concat R s) =>
+  match s0 in (star_lang_concat _ s1) return (P s1) with
+  | mk_star_zero' _ x x0 => f x x0
+  | mk_star_more' _ x x0 => f0 x x0
+  end
+       : forall (R : lang) (P : str -> Prop),
+         (forall s : str, s = [] -> P s) ->
+         (forall s : str,
+          (exists (p q : str) (_ : p ++ q = s),
+             (p `elem` R) /\ q `elem` star_lang_concat R) ->
+          P s) ->
+          forall s : str, star_lang_concat R s
+          -> P s
+  *)
+
+Lemma our_better_induction_principle:
+ forall (R : lang) (P : str -> Prop),
+ (forall s : str, s = [] -> P s) ->
+ (forall s: str,
+ (exists (p q: str) (_: p ++ q = s),
+   p `elem` R /\
+   q `elem` star_lang_concat R /\
+   P q)
+      -> P s
+ ) ->
+ forall s: str, star_lang_concat R s
+ -> P s.
+Proof.
+intros R P.
+refine (
+  (fix f (s: str) (Hbase: P []) Hind (x: star_lang_concat R s) {struct x}: P s  := _
+  match x with
+  | mk_star_zero' _ s _ => _
+  | mk_star_more' _ s _ => _
+  end) _ _ _ _
+).
+
+
+(*
+
+Fixpoint nat_simple_rec (A:Type) (exp1-basecase:A) (exp2: nat->A  -> A) (x:nat)
+  : A :=
+  match x with
+  | O => exp1
+  | S p => exp2 p (nat_simple_rec A exp1 exp2 p)
+  end.
+
+
+*)
+
+
+intros.
+invs H1.
+- apply H. reflexivity.
+- specialize H0 with s.
+  generalize H0.
+
+  apply H0.
+
+
+ forall s p q : str,
+  p ++ q = s ->
+  p `elem` R ->
+  q `elem` star_lang_q R ->
+  P q ->
+  P s) ->
+forall s : str, star_lang_q R s
+-> P s
+Print star_lang_q_ind.
+
+(*
+star_lang_q_ind =
+fun (R : lang) (P : str -> Prop) (f : forall s : str, s = [] -> P s)
+  (f0 : forall s p q : str,
+	    p ++ q = s -> p `elem` R -> q `elem` star_lang_q R -> P q -> P s) =>
+fix F (s : str) (s0 : star_lang_q R s) {struct s0} : P s :=
+  match s0 in (star_lang_q _ s1) return (P s1) with
+  | mk_star_zero_q _ s1 e => f s1 e
+  | mk_star_more_q _ s1 p q e e0 e1 => f0 s1 p q e e0 e1 (F q e1)
+  end
+     : forall (R : lang) (P : str -> Prop),
+       (forall s : str, s = [] -> P s) ->
+       (forall s p q : str,
+        p ++ q = s ->
+        p `elem` R ->
+        q `elem` star_lang_q R ->
+        P q ->
+        P s) ->
+       forall s : str, star_lang_q R s
+       -> P s
+*)
+
+Lemma star_lang_q_helper:
+  forall (R: lang) (s: str),
+  star_lang_concat R s -> star_lang_q R s.
+Proof.
+intros.
+invs H.
+- admit.
+- destruct H0.
+  wreckit.
+  eapply mk_star_more_q.
+  + apply x1.
+  + assumption.
+  +
+
+
+
+Lemma star_lang_q_helper:
+  forall (R: lang) (s: str),
+  star_lang_q R s -> star_lang R s.
+Proof.
+intros.
+induction H.
+- constructor.
+  assumption.
+- destruct p.
+  + subst.
+    cbn.
+    assumption.
+  + apply mk_star_more.
+    constructor.
+    exists p.
+    exists a.
+    exists q.
+    exists H.
+    split.
+    * assumption.
+    * assumption.
+Qed.
+
+
+Inductive depth (R: lang) : str -> nat -> Prop :=
+ | depth_zero : forall (s: str),
+   s = [] -> depth R s 0
+ | depth_more : forall (s: str) (d: nat) (p: str) (q: str),
+      p ++ q = s ->
+      p `elem` R ->
+      depth (star_lang R) q d ->
+   depth R s (S d)
+ .
+
+Lemma star_is_star_helper:
+ forall (R: lang) (s: str),
+ star_lang' R s ->
+ (exists
+   (d: nat),
+   depth R s d
+ ).
+Proof.
+intros.
+
+induction s.
+- exists 0. constructor. reflexivity.
+- invs H.
+ + listerine.
+ + invs H0.
+   wreckit.
+   destruct x.
+   * listerine.
+
+Inductive star_lang_max_depth (R: lang): nat -> lang :=
+  | mk_star_zero'' : forall (s: str),
+    s = [] -> star_lang_max_depth R 0 s
+  | mk_star_more'' : forall (s: str) (depth: nat),
+    s `elem` (concat_lang R (star_lang_max_depth R depth)) ->
+    star_lang_max_depth R (S depth) s
+  .
+
+
+
+
+
+
+Lemma star_is_star_depth_helper:
+  forall (R: lang) (depth: nat) (s: str),
+  star_lang_max_depth R depth s -> star_lang R s.
+Proof.
+induction depth.
+- intros.
+  invs H.
+  constructor.
+  reflexivity.
+- intros.
+  invs H.
+  invs H1.
+  wreckit.
+  apply IHdepth in R0.
+  destruct x.
+  + subst.
+    cbn.
+    assumption.
+  + apply mk_star_more.
+    constructor.
+    exists x.
+    exists a.
+    exists x0.
+    exists x1.
+    split.
+    * assumption.
+    * assumption.
+Qed.
 
 (*
   star_is_star shows that the new definition of star_lang and
@@ -235,6 +463,28 @@ Theorem star_is_star:
   forall (R: lang),
   star_lang R {<->} star_lang' R.
 Proof.
+intros.
+split.
+- admit.
+- intros.
+  induction H.
+  + admit.
+  + invs H.
+  induction s.
+  + constructor.
+    reflexivity.
+  +
+  induction H.
+  + subst.
+    constructor.
+    reflexivity.
+  + induction H0.
+    wreckit.
+    apply mk_star_more.
+    constructor.
+
+    constructor.
+
 (* TODO: Help Wanted *)
 Abort.
 
