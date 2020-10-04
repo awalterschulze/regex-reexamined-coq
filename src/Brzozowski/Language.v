@@ -203,216 +203,220 @@ split.
     assumption.
 Qed.
 
+
 (*
-    *Star*. $P^{*} = \cup_{0}^{\infty} P^n$ , where $P^2 = P.P$, etc.
-    and $P^0 = \lambda$, the set consisting of the string of zero length.
+
+Different possible definitions of star_lang:
+
+- allowing empty prefixes in `mk_star_more` or not
+- using an existence statement or not
+
+This gives 4 equivalent definitions.
+
+The definitions that use an existence statement (e.g. the existence statement
+that is part of `concat_lang` and `concat_prefix_not_empty_lang`) require you to
+prove your own induction principle, because Coq is not smart enough to figure it
+out by itself. The definitions that allow empty prefixes make induction more
+difficult if the regular expression matches the empty string.
+
+Therefore, the easiest definition is the one that does not have an empty prefix
+and that does not allow empty prefixes, and I suggest that we use that one as
+our main definition.
+
+Below, we define all these definitions and prove their equivalence. As part of
+the proofs, we prove a stronger induction principle for the two definitions that
+use an existence statement.
+
 *)
+
+(* Most convenient definition. *)
 Inductive star_lang (R: lang): lang :=
-  | mk_star_zero : forall (s: str),
-    s = [] -> star_lang R s
-  | mk_star_more : forall (s: str),
-    s `elem` (concat_prefix_not_empty_lang R (star_lang R)) ->
-    star_lang R s
-  .
+  (* Note to Walter: I've decided to use `star_lang R []`, because otherwise
+   when I use the tactic constructor, it always applies the wrong constructor. *)
+  | mk_star_zero : star_lang R []
+  | mk_star_more : forall (s p q: str),
+      p ++ q = s ->
+      p <> [] ->
+      p `elem` R ->
+      q `elem` (star_lang R) ->
+      s `elem` star_lang R.
 
 (*
   star_lang_concat is the original definition of star_lang,
   but contains more recursion, since it allows R to match the empty string.
 *)
-Inductive star_lang_concat (R: lang): lang :=
-  | mk_star_zero' : forall (s: str),
-    s = [] -> star_lang_concat R s
-  | mk_star_more' : forall (s: str),
-    (exists
-      (p: str)
-      (q: str)
-      (pqs: p ++ q = s),
-      p `elem` R /\
-      q `elem` star_lang_concat R
-    )
-    ->
-    star_lang_concat R s
-  .
-
-Inductive star_lang_q (R: lang): lang :=
-  | mk_star_zero_q : forall (s: str),
-    s = [] -> star_lang_q R s
-  | mk_star_more_q : forall (s: str) (p: str) (q: str),
+(* The definition allowing empty prefixes. *)
+Inductive star_lang_empty (R: lang): lang :=
+  | mk_star_zero_empty : forall (s: str),
+      s = [] -> star_lang_empty R s
+  | mk_star_more_empty : forall (s p q: str),
       p ++ q = s ->
       p `elem` R ->
-      q `elem` star_lang_q R ->
-      s `elem` star_lang_q R
-  .
+      q `elem` (star_lang_empty R) ->
+      s `elem` star_lang_empty R.
 
-Print star_lang_concat_ind.
+(*
+    *Star*. $P^{*} = \cup_{0}^{\infty} P^n$ , where $P^2 = P.P$, etc.
+    and $P^0 = \lambda$, the set consisting of the string of zero length.
+*)
+(* Definition using the existence statement (hidden in `concat_prefix_not_empty_lang`). *)
+Inductive star_lang_ex (R: lang): lang :=
+  | mk_star_zero_ex : forall (s: str),
+      s = [] -> star_lang_ex R s
+  | mk_star_more_ex : forall (s: str),
+      s `elem` (concat_prefix_not_empty_lang R (star_lang_ex R)) ->
+      star_lang_ex R s.
 
-  (*
-  star_lang_concat_ind =
-  fun (R : lang) (P : str -> Prop) (f : forall s : str, s = [] -> P s)
-    (f0 : forall s : str,
-        (exists (p q : str) (_ : p ++ q = s),
-             (p `elem` R) /\ q `elem` star_lang_concat R) ->
-          P s) (s : str) (s0 : star_lang_concat R s) =>
-  match s0 in (star_lang_concat _ s1) return (P s1) with
-  | mk_star_zero' _ x x0 => f x x0
-  | mk_star_more' _ x x0 => f0 x x0
-  end
-       : forall (R : lang) (P : str -> Prop),
-         (forall s : str, s = [] -> P s) ->
-         (forall s : str,
-          (exists (p q : str) (_ : p ++ q = s),
-             (p `elem` R) /\ q `elem` star_lang_concat R) ->
-          P s) ->
-          forall s : str, star_lang_concat R s
-          -> P s
-  *)
+(* The definition allowing empty prefixes and using the existence statement (hidden in `concat_lang`). The most difficult definition to use in Coq, but arguably the closest to the mathematical definition. *)
+Inductive star_lang_ex_empty (R: lang): lang :=
+  | mk_star_zero_ex_empty : forall (s: str),
+      s = [] -> star_lang_ex_empty R s
+  | mk_star_more_ex_empty : forall (s: str),
+      s `elem` (concat_lang R (star_lang_ex_empty R)) ->
+      star_lang_ex_empty R s.
 
-Lemma our_better_induction_principle:
+Proposition star_lang_empty_equivalent (R: lang): forall (s: str),
+   s `elem` star_lang R <-> s `elem` star_lang_empty R.
+Proof.
+  split.
+  - intro Hmatch.
+    induction Hmatch.
+    + subst. now constructor.
+    + eapply (mk_star_more_empty R s); try (exact H); try assumption.
+  - intro Hmatch.
+    induction Hmatch as [| s p q Hp_match Hq_match IH].
+    + subst. now constructor.
+    + destruct p as [p | a p].
+      * (* If the prefix is empty, the induction hypothesis is exactly what we want. *)
+        subst.
+        cbn.
+        assumption.
+      * (* Otherwise, we only have to apply the constructor and use the IH. *)
+        apply (mk_star_more R s (a :: p) q); try assumption.
+        trivial.
+        listerine.
+Qed.
+
+Proposition star_lang_ex_ind_better:
  forall (R : lang) (P : str -> Prop),
- (forall s : str, s = [] -> P s) ->
- (forall s: str,
- (exists (p q: str) (_: p ++ q = s),
-   p `elem` R /\
-   q `elem` star_lang_concat R /\
-   P q)
-      -> P s
- ) ->
- forall s: str, star_lang_concat R s
- -> P s.
+   (* base case *)
+   P [] ->
+   (* induction step *)
+   (forall s: str, (exists (p q: str),
+                  p ++ q = s /\
+                  p <> [] /\
+                  p `elem` R /\
+                  q `elem` star_lang_ex R /\
+                  P q) ->
+              P s) ->
+   (* conclusion *)
+   forall s: str, star_lang_ex R s -> P s.
 Proof.
-intros R P.
+intros R P Hbase Hstep s0 Hs_match0.
 refine (
-  (fix f (s: str) (Hbase: P []) Hind (x: star_lang_concat R s) {struct x}: P s  := _
-  match x with
-  | mk_star_zero' _ s _ => _
-  | mk_star_more' _ s _ => _
-  end) _ _ _ _
+    (fix f s (Hs_match: star_lang_ex R s) {struct Hs_match}: P s  :=
+       _) s0 Hs_match0
 ).
+destruct Hs_match.
+- subst.
+  exact Hbase.
+- specialize Hstep with s.
+  destruct H as [s [p [a [q [Hconcat [Hp_match Hq_match]]]]]].
+  pose (f q Hq_match) as IH.
+  apply Hstep.
+  exists (a :: p).
+  exists q.
+  repeat split; try assumption.
+  listerine.
+Qed.
 
-
-(*
-
-Fixpoint nat_simple_rec (A:Type) (exp1-basecase:A) (exp2: nat->A  -> A) (x:nat)
-  : A :=
-  match x with
-  | O => exp1
-  | S p => exp2 p (nat_simple_rec A exp1 exp2 p)
-  end.
-
-
-*)
-
-
-intros.
-invs H1.
-- apply H. reflexivity.
-- specialize H0 with s.
-  generalize H0.
-
-  apply H0.
-
-
- forall s p q : str,
-  p ++ q = s ->
-  p `elem` R ->
-  q `elem` star_lang_q R ->
-  P q ->
-  P s) ->
-forall s : str, star_lang_q R s
--> P s
-Print star_lang_q_ind.
-
-(*
-star_lang_q_ind =
-fun (R : lang) (P : str -> Prop) (f : forall s : str, s = [] -> P s)
-  (f0 : forall s p q : str,
-	    p ++ q = s -> p `elem` R -> q `elem` star_lang_q R -> P q -> P s) =>
-fix F (s : str) (s0 : star_lang_q R s) {struct s0} : P s :=
-  match s0 in (star_lang_q _ s1) return (P s1) with
-  | mk_star_zero_q _ s1 e => f s1 e
-  | mk_star_more_q _ s1 p q e e0 e1 => f0 s1 p q e e0 e1 (F q e1)
-  end
-     : forall (R : lang) (P : str -> Prop),
-       (forall s : str, s = [] -> P s) ->
-       (forall s p q : str,
-        p ++ q = s ->
-        p `elem` R ->
-        q `elem` star_lang_q R ->
-        P q ->
-        P s) ->
-       forall s : str, star_lang_q R s
-       -> P s
-*)
-
-Lemma star_lang_q_helper:
-  forall (R: lang) (s: str),
-  star_lang_concat R s -> star_lang_q R s.
+Proposition star_lang_ex_equivalent (R: lang): forall (s: str),
+    s `elem` star_lang R <-> s `elem` star_lang_ex R.
 Proof.
-intros.
-invs H.
-- admit.
-- destruct H0.
-  wreckit.
-  eapply mk_star_more_q.
-  + apply x1.
-  + assumption.
-  +
+  split.
+  - intro Hmatch.
+    induction Hmatch.
+    + subst. now constructor.
+    + eapply (mk_star_more_ex R s); try (exact H).
+      constructor.
+      destruct p as [p | a p].
+      * contradiction.
+      * exists p.
+        exists a.
+        exists q.
+        exists H.
+        split; assumption.
+  - intro Hmatch.
+    apply (star_lang_ex_ind_better R).
+    + now constructor.
+    + intros.
+      destruct H as [p [q [Hconcat [ Hnon_empty [ Hp_match [Hq_match IH]]]]]].
+      constructor 2 with (p := p) (q := q); assumption.
+    + assumption.
+Qed.
 
-
-
-Lemma star_lang_q_helper:
-  forall (R: lang) (s: str),
-  star_lang_q R s -> star_lang R s.
+Proposition star_lang_ex_empty_ind_better:
+ forall (R : lang) (P : str -> Prop),
+   (* base case *)
+   P [] ->
+   (* induction step *)
+   (forall s: str, (exists (p q: str),
+                  p ++ q = s /\
+                  p `elem` R /\
+                  q `elem` star_lang_ex_empty R /\
+                  P q) ->
+              P s) ->
+   (* conclusion *)
+   forall s: str, star_lang_ex_empty R s -> P s.
 Proof.
-intros.
-induction H.
-- constructor.
-  assumption.
-- destruct p.
-  + subst.
-    cbn.
-    assumption.
-  + apply mk_star_more.
-    constructor.
-    exists p.
-    exists a.
-    exists q.
-    exists H.
-    split.
-    * assumption.
-    * assumption.
+intros R P Hbase Hstep s0 Hs_match0.
+refine (
+    (fix f s (Hs_match: star_lang_ex_empty R s) {struct Hs_match}: P s  :=
+       _) s0 Hs_match0
+).
+destruct Hs_match.
+- subst.
+  exact Hbase.
+- specialize Hstep with s.
+  destruct H as [s [p [q [Hconcat [Hp_match Hq_match]]]]].
+  pose (f q Hq_match) as IH.
+  apply Hstep.
+  exists p.
+  exists q.
+  repeat split; try assumption.
+Qed.
+
+Proposition star_lang_ex_empty_equivalent (R: lang): forall (s: str),
+    s `elem` star_lang R <-> s `elem` star_lang_ex_empty R.
+Proof.
+  split.
+  - intro Hmatch.
+    induction Hmatch.
+    + subst. now constructor.
+    + eapply (mk_star_more_ex_empty R s); try (exact H).
+      constructor.
+      destruct p as [p | a p].
+      * contradiction.
+      * exists (a :: p).
+        exists q.
+        exists H.
+        split; assumption.
+  - intro Hmatch.
+    apply (star_lang_ex_empty_ind_better R).
+    + now constructor.
+    + intros.
+      destruct H as [p [q [Hconcat [ Hp_match [Hq_match IH]]]]].
+      destruct p as [p | a p].
+      * subst. cbn. assumption.
+      * constructor 2 with (p := (a :: p)) (q := q); try assumption.
+        listerine.
+    + assumption.
 Qed.
 
 
-Inductive depth (R: lang) : str -> nat -> Prop :=
- | depth_zero : forall (s: str),
-   s = [] -> depth R s 0
- | depth_more : forall (s: str) (d: nat) (p: str) (q: str),
-      p ++ q = s ->
-      p `elem` R ->
-      depth (star_lang R) q d ->
-   depth R s (S d)
- .
-
-Lemma star_is_star_helper:
- forall (R: lang) (s: str),
- star_lang' R s ->
- (exists
-   (d: nat),
-   depth R s d
- ).
-Proof.
-intros.
-
-induction s.
-- exists 0. constructor. reflexivity.
-- invs H.
- + listerine.
- + invs H0.
-   wreckit.
-   destruct x.
-   * listerine.
-
+(* A fifth definition of star_lang: this definition includes a notion of
+"depth". It allows empty prefixes, but it uses an integer to keep track of the
+depth of the constructor tree. *)
 Inductive star_lang_max_depth (R: lang): nat -> lang :=
   | mk_star_zero'' : forall (s: str),
     s = [] -> star_lang_max_depth R 0 s
@@ -421,72 +425,41 @@ Inductive star_lang_max_depth (R: lang): nat -> lang :=
     star_lang_max_depth R (S depth) s
   .
 
-
-
-
-
-
-Lemma star_is_star_depth_helper:
+Lemma star_lang_depth_equivalent_helper:
   forall (R: lang) (depth: nat) (s: str),
   star_lang_max_depth R depth s -> star_lang R s.
 Proof.
-induction depth.
-- intros.
-  invs H.
-  constructor.
-  reflexivity.
-- intros.
-  invs H.
-  invs H1.
-  wreckit.
-  apply IHdepth in R0.
-  destruct x.
-  + subst.
-    cbn.
-    assumption.
-  + apply mk_star_more.
+    induction depth.
+  + intros.
+    invs H.
     constructor.
-    exists x.
-    exists a.
-    exists x0.
-    exists x1.
-    split.
-    * assumption.
-    * assumption.
+  + intros.
+    invs H.
+    invs H1.
+    wreckit.
+    apply IHdepth in R0.
+    destruct x.
+    * subst.
+      cbn.
+      assumption.
+    * apply mk_star_more with (p := (a ::x)) (q := x0).
+      assumption.
+      listerine.
+      assumption.
+      assumption.
 Qed.
 
-(*
-  star_is_star shows that the new definition of star_lang and
-  the original definition of star_lang' are equivalent.
-*)
-Theorem star_is_star:
-  forall (R: lang),
-  star_lang R {<->} star_lang' R.
+Lemma star_lang_depth_equivalent:
+  forall (R: lang) (s: str),
+    (exists (depth: nat), star_lang_max_depth R depth s) <-> star_lang R s.
 Proof.
-intros.
-split.
-- admit.
-- intros.
-  induction H.
-  + admit.
-  + invs H.
-  induction s.
-  + constructor.
-    reflexivity.
-  +
-  induction H.
-  + subst.
-    constructor.
-    reflexivity.
-  + induction H0.
-    wreckit.
-    apply mk_star_more.
-    constructor.
+(* TODO: Good First Issue
 
-    constructor.
-
-(* TODO: Help Wanted *)
+I don't think we need this lemma anymore, but it could be an interesting first
+issue, or an interesting exercise. (Maybe a difficult first issue, though.)
+*)
 Abort.
+
 
 Theorem star_lang_morph_helper:
   forall (x y : lang) (s: str) (n: nat) (L: length s <= n),
