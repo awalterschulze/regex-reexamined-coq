@@ -460,46 +460,30 @@ issue, or an interesting exercise. (Maybe a difficult first issue, though.)
 *)
 Abort.
 
+Lemma star_lang_morph_helper:
+  forall (x y : lang) (s: str),
+  (x {<->} y)
+  -> (s `elem` star_lang x -> s `elem` star_lang y).
+Proof.
+  intros.
+  induction H0.
+  - constructor.
+  - constructor 2 with (p := p) (q := q); try assumption.
+    + apply H. assumption.
+Qed.
 
-Theorem star_lang_morph_helper:
-  forall (x y : lang) (s: str) (n: nat) (L: length s <= n),
+Theorem star_lang_morph:
+  forall (x y : lang) (s: str),
   (x {<->} y)
   -> (s `elem` star_lang x <-> s `elem` star_lang y).
 Proof.
-intros R R' s n L Riff.
-unfold "{<->}" in *.
-unfold "`elem`" in *.
-generalize dependent s.
-induction n.
-- admit.
-- split.
-  + intro H.
-    inversion H.
-    * apply mk_star_zero.
-      assumption.
-    * apply mk_star_more.
-      unfold "`elem`" in *.
-      induction H0.
-      constructor.
-      destruct H0 as [p [a [q [splt [Pmatch Qmatch]]]]].
-      exists p.
-      exists a.
-      exists q.
-      exists splt.
-      unfold "`elem`" in *.
-      apply (Riff (a :: p)) in Pmatch.
-      wreckit.
-      --- assumption.
-      --- subst.
-          specialize IHn with q.
-          assert (length q <= n).
-          +++ admit.
-          +++ apply IHn in H0.
-              apply H0.
-              assumption.
-  + admit.
-(* TODO: Good First Issue *)
-Abort.
+  intros.
+  split.
+  - apply star_lang_morph_helper. assumption.
+  - apply star_lang_morph_helper.
+    symmetry.
+    assumption.
+Qed.
 
 (*
    star_lang_morph allows rewrite to work inside star_lang parameters
