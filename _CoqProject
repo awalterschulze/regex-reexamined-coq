@@ -37,7 +37,6 @@ src/Brzozowski/Boolean.v
 src/Brzozowski/Decidable.v
 src/Brzozowski/Delta.v
 src/Brzozowski/Derive.v
-src/Brzozowski/ExampleR.v
 src/Brzozowski/Language.v
 src/Brzozowski/Regex.v
 src/Brzozowski/Simplify.v
