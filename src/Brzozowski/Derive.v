@@ -164,50 +164,29 @@ Proof.
 split.
 - intros.
   inversion_clear H.
-  + inversion H0.
-  + inversion H0.
-    wreckit.
-    inversion L.
-    listerine.
-    assumption.
+  + cbn in *.
+    inversion H2.
+    subst. listerine. exact H3.
 - intros.
   inversion_clear H.
-  + apply mk_star_more.
-    subst.
+  + apply mk_star_more with (p := [a]) (q := []).
+    now listerine.
+    listerine.
     constructor.
-    exists [].
-    exists a.
-    exists [].
-    exists eq_refl.
-    split.
-    * constructor.
-    * apply mk_star_zero.
-      reflexivity.
-  + inversion_clear H0.
-    wreckit.
+    constructor.
+  + inversion H2.
     subst.
     unfold derive_lang.
     cbn.
-    apply mk_star_more.
-    inversion L.
-    subst.
+    apply mk_star_more with (p := [a]) (q := (a :: q)).
+    now listerine.
+    listerine.
     constructor.
-    exists [].
-    exists x0.
-    exists (x0 :: x1).
-    exists eq_refl.
-    split.
-    -- constructor.
-    -- apply mk_star_more.
-       constructor.
-       exists [].
-       exists x0.
-       exists x1.
-       exists eq_refl.
-       split.
-       ++ constructor.
-       ++ cbn in R.
-          exact R.
+    apply mk_star_more with (p := [a]) (q := q).
+    now listerine.
+    listerine.
+    constructor.
+    assumption.
 Qed.
 
 Theorem emptyset_terminates_a: forall (a: alphabet),

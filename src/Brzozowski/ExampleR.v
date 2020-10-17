@@ -118,7 +118,7 @@ cbn in x3.
 listerine.
 Qed.
 
-Lemma test_notelem_x11star_0: 
+Lemma test_notelem_x11star_0:
   [A0] `notelem` {{ x11star }}.
 Proof.
 elemt.
@@ -130,12 +130,8 @@ elemt.
   subst.
   elemt.
 - elemt.
-  wreckit.
-  subst.
-  inversion L.
-  inversion L0.
-  subst.
-  listerine.
+  + wreckit. subst. inversion H2. subst. cbn in x3. listerine.
+  + wreckit. subst. inversion H2. subst. cbn in x3. listerine.
 Qed.
 
 Lemma test_notelem_starx1_0:
@@ -144,10 +140,9 @@ Proof.
 untie.
 invs H.
 - listerine.
-- invs H0.
-  wreckit.
-  invs L.
-  listerine.
+  + apply H1.
+    reflexivity.
+  + inversion H2.
 Qed.
 
 Lemma test_notelem_starx1_10:
@@ -156,11 +151,11 @@ Proof.
 untie.
 invs H.
 - listerine.
-- invs H0.
-  wreckit.
-  listerine; (try invs L).
-  + apply test_notelem_starx1_0.
-    assumption.
+  + contradiction.
+  + invs H3.
+    invs H4.
+    listerine.
+  + invs H2.
 Qed.
 
 Lemma test_notelem_starx1_110:

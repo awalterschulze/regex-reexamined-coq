@@ -41,3 +41,4 @@ src/Brzozowski/ExampleR.v
 src/Brzozowski/Language.v
 src/Brzozowski/Regex.v
 src/Brzozowski/Simplify.v
+src/Brzozowski/StarLang.v

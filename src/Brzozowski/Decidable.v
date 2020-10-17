@@ -341,7 +341,6 @@ Lemma denotation_star_is_decidable_for_empty_string (r: regex):
 Proof.
 left.
 constructor.
-reflexivity.
 Qed.
 
 
