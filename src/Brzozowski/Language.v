@@ -203,80 +203,66 @@ split.
     assumption.
 Qed.
 
+
 (*
-    *Star*. $P^{*} = \cup_{0}^{\infty} P^n$ , where $P^2 = P.P$, etc.
-    and $P^0 = \lambda$, the set consisting of the string of zero length.
+
+Different possible definitions of star_lang:
+
+- allowing empty prefixes in `mk_star_more` or not
+- using an existence statement or not
+
+This gives 4 equivalent definitions.
+
+The definitions that use an existence statement (e.g. the existence statement
+that is part of `concat_lang` and `concat_prefix_not_empty_lang`) require you to
+prove your own induction principle, because Coq is not smart enough to figure it
+out by itself. The definitions that allow empty prefixes make induction more
+difficult if the regular expression matches the empty string.
+
+Therefore, the easiest definition is the one that does not have an existence
+statement and that does not allow empty prefixes, and I suggest that we use that
+one as our main definition.
+
+Below, we define all these definitions and prove their equivalence. As part of
+the proofs, we prove a stronger induction principle for the two definitions that
+use an existence statement.
+
 *)
+
+(* Most convenient definition. *)
 Inductive star_lang (R: lang): lang :=
-  | mk_star_zero : forall (s: str),
-    s = [] -> star_lang R s
-  | mk_star_more : forall (s: str),
-    s `elem` (concat_prefix_not_empty_lang R (star_lang R)) ->
-    star_lang R s
-  .
+  | mk_star_zero : star_lang R []
+  | mk_star_more : forall (s p q: str),
+      p ++ q = s ->
+      p <> [] ->
+      p `elem` R ->
+      q `elem` (star_lang R) ->
+      s `elem` star_lang R.
 
-(*
-  star_lang' is the original definition of star_lang,
-  but contains more recursion, since it allows R to match the empty string.
-*)
-Inductive star_lang' (R: lang): lang :=
-  | mk_star_zero' : forall (s: str),
-    s = [] -> star_lang' R s
-  | mk_star_more' : forall (s: str),
-    s `elem` (concat_lang R (star_lang' R)) ->
-    star_lang' R s
-  .
-
-(*
-  star_is_star shows that the new definition of star_lang and
-  the original definition of star_lang' are equivalent.
-*)
-Theorem star_is_star:
-  forall (R: lang),
-  star_lang R {<->} star_lang' R.
+Lemma star_lang_morph_helper:
+  forall (x y : lang) (s: str),
+  (x {<->} y)
+  -> (s `elem` star_lang x -> s `elem` star_lang y).
 Proof.
-(* TODO: Help Wanted *)
-Abort.
+  intros.
+  induction H0.
+  - constructor.
+  - constructor 2 with (p := p) (q := q); try assumption.
+    + apply H. assumption.
+Qed.
 
-Theorem star_lang_morph_helper:
-  forall (x y : lang) (s: str) (n: nat) (L: length s <= n),
+Theorem star_lang_morph:
+  forall (x y : lang) (s: str),
   (x {<->} y)
   -> (s `elem` star_lang x <-> s `elem` star_lang y).
 Proof.
-intros R R' s n L Riff.
-unfold "{<->}" in *.
-unfold "`elem`" in *.
-generalize dependent s.
-induction n.
-- admit.
-- split.
-  + intro H.
-    inversion H.
-    * apply mk_star_zero.
-      assumption.
-    * apply mk_star_more.
-      unfold "`elem`" in *.
-      induction H0.
-      constructor.
-      destruct H0 as [p [a [q [splt [Pmatch Qmatch]]]]].
-      exists p.
-      exists a.
-      exists q.
-      exists splt.
-      unfold "`elem`" in *.
-      apply (Riff (a :: p)) in Pmatch.
-      wreckit.
-      --- assumption.
-      --- subst.
-          specialize IHn with q.
-          assert (length q <= n).
-          +++ admit.
-          +++ apply IHn in H0.
-              apply H0.
-              assumption.
-  + admit.
-(* TODO: Good First Issue *)
-Abort.
+  intros.
+  split.
+  - apply star_lang_morph_helper. assumption.
+  - apply star_lang_morph_helper.
+    symmetry.
+    assumption.
+Qed.
 
 (*
    star_lang_morph allows rewrite to work inside star_lang parameters

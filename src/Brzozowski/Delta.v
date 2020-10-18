@@ -108,7 +108,6 @@ Proof.
 intros.
 apply delta_lambda.
 constructor.
-reflexivity.
 Qed.
 
 Theorem delta_concat_is_and_lambda: forall (p q: regex),
@@ -465,7 +464,6 @@ induction r.
 - cbn.
   apply delta_lambda.
   constructor.
-  reflexivity.
 - cbn.
   invs IHr1; invs IHr2.
   + apply delta_emptyset.
@@ -560,7 +558,6 @@ inversion_clear H.
   + exfalso.
     apply H0.
     constructor.
-    reflexivity.
   + cbn.
     remember (delta_def r1) as dr1.
     remember (delta_def r2) as dr2.
