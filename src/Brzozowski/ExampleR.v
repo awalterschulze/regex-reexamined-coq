@@ -12,9 +12,9 @@ Require Import Brzozowski.Regex.
 Require Import Brzozowski.Language.
 
 (*
-The introduction of arbitrary Boolean functions enriches the language of regular expressions. 
-For example, suppose we desire to represent the set of all sequences having three consecutive 1's 
-but not those ending in 01 or consisting of 1's only. 
+The introduction of arbitrary Boolean functions enriches the language of regular expressions.
+For example, suppose we desire to represent the set of all sequences having three consecutive 1's
+but not those ending in 01 or consisting of 1's only.
 The desired expression is easily seen to be:
 
 R = (I.1.1.1.I)\&(I.0.1+1.1^{*})'.
@@ -163,15 +163,13 @@ Lemma test_notelem_starx1_110:
 Proof.
 untie.
 invs H.
-- listerine.
-- invs H0.
-  wreckit.
-  listerine; (try invs L).
-  + apply test_notelem_starx1_10.
-    assumption. 
-Qed.    
+invs H2.
+listerine.
+apply test_notelem_starx1_10.
+assumption.
+Qed.
 
-Lemma test_notelem_x11star_1110: 
+Lemma test_notelem_x11star_1110:
   ([A1] ++ [A1] ++ [A1] ++ [A0]) `notelem` {{x11star}}.
 Proof.
 untie.
@@ -182,7 +180,7 @@ listerine; (try invs L).
   assumption.
 Qed.
 
-Lemma test_elem_xI111I_1110: 
+Lemma test_elem_xI111I_1110:
     ([A1] ++ [A1] ++ [A1] ++ [A0]) `elem` {{xI111I}}.
 Proof.
 constructor.
@@ -216,7 +214,7 @@ split.
           untie.
 Qed.
 
-Theorem test_exampleR_1110_elem: 
+Theorem test_exampleR_1110_elem:
     ([A1] ++ [A1] ++ [A1] ++ [A0]) `elem` {{exampleR}}.
 Proof.
 constructor.
@@ -248,9 +246,9 @@ split.
   + untie.
     apply test_notelem_x11star_1110.
     assumption.
-Qed. 
+Qed.
 
-Theorem test_exampleR_111_notelem: 
+Theorem test_exampleR_111_notelem:
     [A1; A1; A1] `notelem` {{exampleR}}.
 Proof.
 untie.
@@ -275,22 +273,15 @@ exists [A1; A1].
 exists eq_refl.
 wreckit.
 - constructor.
-- apply mk_star_more.
-  constructor.
-  exists [].
-  exists A1.
-  exists [A1].
-  exists eq_refl.
-  wreckit.
-  + constructor.
-  + apply mk_star_more.
+- apply mk_star_more with (p := [A1]) (q := [A1]).
+  + listerine. reflexivity.
+  + listerine.
+  + fold (denote_regex x1).
     constructor.
-    exists [].
-    exists A1.
-    exists [].
-    exists eq_refl.
-    wreckit.
+  + fold (denote_regex x1).
+    apply mk_star_more with (p := [A1]) (q := []).
+    * now listerine.
+    * listerine.
     * constructor.
     * constructor.
-      reflexivity.
-Qed.   
+Qed.
