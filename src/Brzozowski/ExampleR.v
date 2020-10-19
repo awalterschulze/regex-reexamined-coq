@@ -26,8 +26,8 @@ Definition xI01 := concat I (concat x0 x1).
 Definition x11star := concat x1 (star x1).
 Definition exampleR := and xI111I (complement (or xI01 x11star)).
 
-Lemma test_elem_xI01_101:
-  ([A1] ++ [A0] ++ [A1]) `elem` {{xI01}}.
+Lemma test_in_xI01_101:
+  ([A1] ++ [A0] ++ [A1]) \in {{xI01}}.
 Proof.
 unfold xI01.
 constructor.
@@ -38,7 +38,7 @@ exists H.
 constructor.
 - constructor.
   wreckit.
-  apply notelem_emptyset.
+  apply notin_emptyset.
 - constructor.
   exists [A0].
   exists [A1].
@@ -48,94 +48,93 @@ constructor.
   + constructor.
 Qed.
 
-Lemma test_notelem_xI01_101_false:
-  ([A1] ++ [A0] ++ [A1]) `notelem` {{xI01}}  -> False.
+Lemma test_notin_xI01_101_false:
+  ([A1] ++ [A0] ++ [A1]) \notin {{xI01}}  -> False.
 Proof.
 unfold not.
 intros.
 apply H.
-apply test_elem_xI01_101.
+apply test_in_xI01_101.
 Qed.
 
-Local Ltac elemt :=
+Local Ltac int :=
   match goal with
-  | [ H : _ `elem` _ |- _ ] =>
+  | [ H : _ \in _ |- _ ] =>
     inversion H; clear H
-  | [ |- context [_ `notelem` _ ] ] =>
+  | [ |- context [_ \notin _ ] ] =>
     unfold not; intros
   end.
 
 Lemma test_notleme_xI01_empty:
-    [] `notelem` {{xI01}}.
+    [] \notin {{xI01}}.
 Proof.
-elemt.
-elemt.
+int.
+int.
 wreckit.
-elemt.
+int.
 subst.
 cbn in x3.
-apply app_eq_nil in x3.
+listerine.
+invs R.
 wreckit.
-assert ([A0; A1] <> []).
-discriminate.
-subst.
-elemt.
-elemt.
-subst.
-contradiction.
+listerine.
+invs R.
 Qed.
 
-Lemma test_notelem_xI01_10:
-  ([A1] ++ [A0]) `notelem` {{xI01}}.
+Lemma test_notin_xI01_10:
+  ([A1] ++ [A0]) \notin {{xI01}}.
 Proof.
-elemt.
-elemt.
+int.
+int.
 wreckit.
-elemt.
+int.
 wreckit.
-elemt.
-elemt.
-elemt.
+int.
+int.
+int.
 wreckit.
 subst.
 assert (x ++ [A0] ++ [A1] <> [A1] ++ [A0]).
 listerine.
+apply H.
+listerine.
+- unfold "\notin" .
 contradiction.
 Qed.
 
-Lemma test_notelem_xI01_1110:
-  ([A1] ++ [A1] ++ [A1] ++ [A0]) `notelem` {{xI01}}.
+Lemma test_notin_xI01_1110:
+  ([A1] ++ [A1] ++ [A1] ++ [A0]) \notin {{xI01}}.
 Proof.
-elemt.
-elemt.
+int.
+int.
 wreckit.
-elemt.
+int.
 wreckit.
-elemt.
-elemt.
+int.
+int.
 subst.
 cbn in x3.
 listerine.
 Qed.
 
-Lemma test_notelem_x11star_0:
-  [A0] `notelem` {{ x11star }}.
+Lemma test_notin_x11star_0:
+  [A0] \notin {{ x11star }}.
 Proof.
-elemt.
-elemt.
+int.
+int.
 wreckit.
-elemt.
+int.
 - subst.
   listerine.
   subst.
-  elemt.
-- elemt.
+  int.
+- int.
   + wreckit. subst. inversion H2. subst. cbn in x3. listerine.
   + wreckit. subst. inversion H2. subst. cbn in x3. listerine.
 Qed.
 
-Lemma test_notelem_starx1_0:
-  [A0] `notelem` {{star x1}}.
+Lemma test_notin_starx1_0:
+  [A0] \notin {{star x1}}.
 Proof.
 untie.
 invs H.
@@ -145,8 +144,8 @@ invs H.
   + inversion H2.
 Qed.
 
-Lemma test_notelem_starx1_10:
-  [A1; A0] `notelem` {{star x1}}.
+Lemma test_notin_starx1_10:
+  [A1; A0] \notin {{star x1}}.
 Proof.
 untie.
 invs H.
@@ -158,30 +157,30 @@ invs H.
   + invs H2.
 Qed.
 
-Lemma test_notelem_starx1_110:
-  [A1; A1; A0] `notelem` {{star x1}}.
+Lemma test_notin_starx1_110:
+  [A1; A1; A0] \notin {{star x1}}.
 Proof.
 untie.
 invs H.
 invs H2.
 listerine.
-apply test_notelem_starx1_10.
+apply test_notin_starx1_10.
 assumption.
 Qed.
 
-Lemma test_notelem_x11star_1110:
-  ([A1] ++ [A1] ++ [A1] ++ [A0]) `notelem` {{x11star}}.
+Lemma test_notin_x11star_1110:
+  ([A1] ++ [A1] ++ [A1] ++ [A0]) \notin {{x11star}}.
 Proof.
 untie.
 invs H.
 wreckit.
 listerine; (try invs L).
-- apply test_notelem_starx1_110.
+- apply test_notin_starx1_110.
   assumption.
 Qed.
 
-Lemma test_elem_xI111I_1110:
-    ([A1] ++ [A1] ++ [A1] ++ [A0]) `elem` {{xI111I}}.
+Lemma test_in_xI111I_1110:
+    ([A1] ++ [A1] ++ [A1] ++ [A0]) \in {{xI111I}}.
 Proof.
 constructor.
 exists [].
@@ -214,8 +213,8 @@ split.
           untie.
 Qed.
 
-Theorem test_exampleR_1110_elem:
-    ([A1] ++ [A1] ++ [A1] ++ [A0]) `elem` {{exampleR}}.
+Theorem test_exampleR_1110_in:
+    ([A1] ++ [A1] ++ [A1] ++ [A0]) \in {{exampleR}}.
 Proof.
 constructor.
 split.
@@ -223,7 +222,7 @@ split.
   invs H.
   wreckit.
   apply L.
-  apply test_elem_xI111I_1110.
+  apply test_in_xI111I_1110.
 - untie.
   invs H.
   wreckit.
@@ -241,15 +240,15 @@ split.
   constructor.
   wreckit.
   + untie.
-    apply test_notelem_xI01_1110.
+    apply test_notin_xI01_1110.
     assumption.
   + untie.
-    apply test_notelem_x11star_1110.
+    apply test_notin_x11star_1110.
     assumption.
 Qed.
 
-Theorem test_exampleR_111_notelem:
-    [A1; A1; A1] `notelem` {{exampleR}}.
+Theorem test_exampleR_111_notin:
+    [A1; A1; A1] \notin {{exampleR}}.
 Proof.
 untie.
 invs H.

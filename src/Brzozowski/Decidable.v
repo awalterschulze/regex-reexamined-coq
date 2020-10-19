@@ -15,7 +15,7 @@ Require Import Brzozowski.Regex.
 Require Import Lia.
 
 Definition regex_is_decidable (r: regex) :=
-    (forall s: str, s `elem` {{r}} \/ s `notelem` {{r}}).
+    (forall s: str, s \in {{r}} \/ s \notin {{r}}).
 
 (* TODO: move into listerine *)
 Lemma length_zero_string_is_empty (s : str) :
@@ -79,11 +79,11 @@ Lemma denotation_concat_is_decidable_helper (p q: regex):
           s = s1 ++ s2 ->
           length s1 <= n ->
           (* does not match concat pairwise *)
-          ((s1 `notelem` {{ p }} \/ s2 `notelem` {{ q }})))
+          ((s1 \notin {{ p }} \/ s2 \notin {{ q }})))
       \/ (exists (s1 s2: str),
             s = s1 ++ s2 /\
             length s1 <= n /\
-            (s1 `elem` {{ p }} /\ s2 `elem` {{ q }}))).
+            (s1 \in {{ p }} /\ s2 \in {{ q }}))).
 Proof.
   intros Hdecp Hdecq s n.
   induction n.
@@ -190,9 +190,9 @@ Qed.
 
 (s : str)
 
-s `elem` (concat p q)
+s \in (concat p q)
 or not
-s `elem` (concat p q)
+s \in (concat p q)
 
 
 
@@ -232,14 +232,14 @@ Proof.
 Qed.
 
 Lemma denotation_emptyset_is_decidable (s: str):
-  s `elem` {{ emptyset }} \/ s `notelem` {{ emptyset }}.
+  s \in {{ emptyset }} \/ s \notin {{ emptyset }}.
 Proof.
 right.
-apply notelem_emptyset.
+apply notin_emptyset.
 Qed.
 
 Lemma denotation_lambda_is_decidable (s: str):
-  s `elem` {{ lambda }} \/ s `notelem` {{ lambda }}.
+  s \in {{ lambda }} \/ s \notin {{ lambda }}.
 Proof.
 destruct s.
 - left. constructor.
@@ -247,7 +247,7 @@ destruct s.
 Qed.
 
 Lemma denotation_symbol_is_decidable (s: str) (a: alphabet):
-  s `elem` {{ symbol a }} \/ s `notelem` {{ symbol a }}.
+  s \in {{ symbol a }} \/ s \notin {{ symbol a }}.
 Proof.
 destruct s.
 - right. untie. invs H.
@@ -273,9 +273,9 @@ destruct s.
 Qed.
 
 Lemma denotation_nor_is_decidable (p q: regex) (s: str):
-  s `elem` {{ p }} \/ s `notelem` {{ p }} ->
-  s `elem` {{ q }} \/ s `notelem` {{ q }} ->
-  s `elem` {{ nor p q }} \/ s `notelem` {{ nor p q }}.
+  s \in {{ p }} \/ s \notin {{ p }} ->
+  s \in {{ q }} \/ s \notin {{ q }} ->
+  s \in {{ nor p q }} \/ s \notin {{ nor p q }}.
 Proof.
 simpl.
 intros.
@@ -303,9 +303,9 @@ wreckit.
 Qed.
 
 Lemma denotation_concat_is_decidable_for_empty_string (p q: regex):
-  [] `elem` {{ p }} \/ [] `notelem` {{ p }} ->
-  [] `elem` {{ q }} \/ [] `notelem` {{ q }} ->
-  [] `elem` {{ concat p q }} \/ [] `notelem` {{ concat p q }}.
+  [] \in {{ p }} \/ [] \notin {{ p }} ->
+  [] \in {{ q }} \/ [] \notin {{ q }} ->
+  [] \in {{ concat p q }} \/ [] \notin {{ concat p q }}.
 Proof.
 intros.
 wreckit.
@@ -337,7 +337,7 @@ Qed.
 
 
 Lemma denotation_star_is_decidable_for_empty_string (r: regex):
-  [] `elem` {{ star r }} \/ [] `notelem` {{ star r }}.
+  [] \in {{ star r }} \/ [] \notin {{ star r }}.
 Proof.
 left.
 constructor.
@@ -348,17 +348,17 @@ Lemma denotation_star_is_decidable_helper (r: regex) (k: nat) (s: str) (a: alpha
   regex_is_decidable r ->
   (forall (s': str),
       length s' < length (a::s) -> (
-        s' `elem` {{star r}}
-           \/ s' `notelem` {{star r}})) ->
+        s' \in {{star r}}
+           \/ s' \notin {{star r}})) ->
       (forall (s1 s2: str),
           length s1 <= k ->
           (a::s) = a::s1 ++ s2 ->
           (* does not match concat pairwise *)
-          ((a::s1 `notelem` {{ r }} \/ s2 `notelem` {{ star r }})))
+          ((a::s1 \notin {{ r }} \/ s2 \notin {{ star r }})))
       \/ (exists (s1 s2: str),
             length s1 <= k /\
             (a::s) = a::s1 ++ s2 /\
-            (a::s1 `elem` {{ r }} /\ s2 `elem` {{ star r }})).
+            (a::s1 \in {{ r }} /\ s2 \in {{ star r }})).
 Proof.
   intro Hdecr.
   intro Hdecstarr.
@@ -455,8 +455,8 @@ Lemma denotation_star_is_decidable_for_small_strings (r: regex) (n: nat):
   -> (forall (s: str),
         length s <= n
         ->
-        (s `elem` {{star r}}
-            \/ s `notelem` {{star r}})).
+        (s \in {{star r}}
+            \/ s \notin {{star r}})).
 Proof.
   intro Hdec.
   induction n.
@@ -476,7 +476,7 @@ Proof.
             inversion H.
             +++ discriminate.
             +++ invs H0.
-                wreckit. 
+                wreckit.
 
 
 
@@ -529,7 +529,7 @@ for our idea on how to prove this. *)
 Abort.
 
 Lemma denotation_is_decidable_on_empty_string (r: regex):
-  [] `elem` {{ r }} \/ [] `notelem` {{ r }}.
+  [] \in {{ r }} \/ [] \notin {{ r }}.
 Proof.
 intros.
 induction r.
@@ -546,7 +546,7 @@ induction r.
 Qed.
 
 Theorem denotation_is_decidable (r: regex) (s: str):
-  s `elem` {{ r }} \/ s `notelem` {{ r }}.
+  s \in {{ r }} \/ s \notin {{ r }}.
 Proof.
 generalize dependent s.
 induction r.

@@ -15,19 +15,20 @@ Require Import Brzozowski.Regex.
 Definition str := (list alphabet).
 (* A regular expression denotes a set of strings called a _language_. *)
 Definition lang := str -> Prop.
-Definition elem (l: lang) (s: str): Prop := l s.
-Notation "p `elem` P" := (elem P p) (at level 80).
-Notation "p `notelem` P" := (~ (elem P p)) (at level 80).
+(* If the function from string to Prop can return an inhabitant of Prop,
+   then the string is in the set. *)
+Notation "str \in Lang" := (Lang str) (at level 80).
+Notation "str \notin Lang" := (~ (Lang str)) (at level 80).
 
 Definition lang_if (s1 s2: lang): Prop :=
   forall (s: str),
-  s `elem` s1 -> s `elem` s2.
+  s \in s1 -> s \in s2.
 
 Notation "s1 {->} s2" := (lang_if s1 s2) (at level 80).
 
 Definition lang_iff (s1 s2: lang): Prop :=
   forall (s: str),
-  s `elem` s1 <-> s `elem` s2.
+  s \in s1 <-> s \in s2.
 
 Notation "s1 {<->} s2" := (lang_iff s1 s2) (at level 80).
 
@@ -44,26 +45,24 @@ Theorem lang_iff_refl : forall A:lang, A {<->} A.
   Qed.
 
 Theorem lang_iff_trans : forall A B C:lang, (A {<->} B) -> (B {<->} C) -> (A {<->} C).
-  Proof.
-    intros.
-    unfold "{<->}" in *.
-    intros.
-    specialize H with s.
-    specialize H0 with s.
-    unfold "`elem`" in *.
-    apply iff_trans with (A := A s) (B := B s); assumption.
-  Qed.
+Proof.
+  intros.
+  unfold "{<->}" in *.
+  intros.
+  specialize H with s.
+  specialize H0 with s.
+  apply iff_trans with (A := s \in A) (B := s \in B); assumption.
+Qed.
 
 Theorem lang_iff_sym : forall A B:lang, (A {<->} B) -> (B {<->} A).
-  Proof.
-    intros.
-    unfold "{<->}" in *.
-    intros.
-    specialize H with s.
-    unfold "`elem`" in *.
-    apply iff_sym.
-    assumption.
-  Qed.
+Proof.
+  intros.
+  unfold "{<->}" in *.
+  intros.
+  specialize H with s.
+  apply iff_sym.
+  assumption.
+Qed.
 
 Add Parametric Relation: lang lang_iff
   reflexivity proved by lang_iff_refl
@@ -81,8 +80,8 @@ Inductive concat_lang (P Q: lang): lang :=
       (p: str)
       (q: str)
       (pqs: p ++ q = s),
-      p `elem` P /\
-      q `elem` Q
+      p \in P /\
+      q \in Q
     ) ->
     concat_lang P Q s
   .
@@ -116,8 +115,8 @@ Inductive concat_prefix_not_empty_lang (P Q: lang): lang :=
       (a: alphabet)
       (q: str)
       (pqs: (a :: p) ++ q = s),
-      (a :: p) `elem` P /\
-      q `elem` Q
+      (a :: p) \in P /\
+      q \in Q
     ) ->
     concat_prefix_not_empty_lang P Q s
   .
@@ -140,7 +139,7 @@ Qed.
 
 Theorem concat_lang_is_concat_prefix_not_empty_lang:
   forall (P Q: lang) (s: str),
-  [] `notelem` P ->
+  [] \notin P ->
   concat_lang P Q s ->
   concat_prefix_not_empty_lang P Q s.
 Proof.
@@ -169,7 +168,6 @@ intros Piff.
 intros Q Q'.
 intros Qiff.
 unfold "{<->}" in *.
-unfold "`elem`" in *.
 split.
 - intro H.
   invs H.
@@ -235,14 +233,14 @@ Inductive star_lang (R: lang): lang :=
   | mk_star_more : forall (s p q: str),
       p ++ q = s ->
       p <> [] ->
-      p `elem` R ->
-      q `elem` (star_lang R) ->
-      s `elem` star_lang R.
+      p \in R ->
+      q \in (star_lang R) ->
+      s \in star_lang R.
 
 Lemma star_lang_morph_helper:
   forall (x y : lang) (s: str),
   (x {<->} y)
-  -> (s `elem` star_lang x -> s `elem` star_lang y).
+  -> (s \in star_lang x -> s \in star_lang y).
 Proof.
   intros.
   induction H0.
@@ -254,7 +252,7 @@ Qed.
 Theorem star_lang_morph:
   forall (x y : lang) (s: str),
   (x {<->} y)
-  -> (s `elem` star_lang x <-> s `elem` star_lang y).
+  -> (s \in star_lang x <-> s \in star_lang y).
 Proof.
   intros.
   split.
@@ -291,7 +289,7 @@ Abort.
 *)
 Inductive nor_lang (P Q: lang): lang :=
   | mk_nor : forall s,
-    s `notelem` P /\ s `notelem` Q ->
+    s \notin P /\ s \notin Q ->
     nor_lang P Q s
   .
 
@@ -304,7 +302,6 @@ Add Parametric Morphism: nor_lang
 Proof.
 intros.
 unfold "{<->}" in *.
-unfold "`elem`" in *.
 intros.
 specialize H with s.
 specialize H0 with s.
@@ -313,7 +310,6 @@ constructor;
   constructor;
   wreckit;
     untie;
-    unfold "`elem`" in *;
     invs H1;
     wreckit.
 - apply L.
@@ -383,8 +379,8 @@ Fixpoint denote_regex (r: regex): lang :=
   end
 where "{{ r }}" := (denote_regex r).
 
-Theorem notelem_emptyset: forall (s: str),
-  s `notelem` emptyset_lang.
+Theorem notin_emptyset: forall (s: str),
+  s \notin emptyset_lang.
 Proof.
 intros.
 untie.
@@ -395,10 +391,10 @@ Definition not_lang (R: lang) : lang :=
 
 Theorem not_not_regex_is_regex:
   forall (r: regex) (s: str),
-  ((~ ~ (s `elem` {{ r }})) -> (s `elem` {{ r }})).
+  ((~ ~ (s \in {{ r }})) -> (s \in {{ r }})).
 Proof.
   intros.
-  assert (s `elem` {{ r }} \/ s `notelem` {{ r }}).
+  assert (s \in {{ r }} \/ s \notin {{ r }}).
   - admit. (* TODO: apply denotation_is_decidable *)
   - intros.
   unfold not in *.

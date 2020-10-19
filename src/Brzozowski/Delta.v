@@ -25,10 +25,10 @@ Require Import Brzozowski.Language.
 
 Inductive delta: regex -> regex -> Prop :=
   | delta_lambda (r: regex):
-    [] `elem` {{r}} ->
+    [] \in {{r}} ->
     delta r lambda
   | delta_emptyset (r: regex):
-    [] `notelem` {{r}} ->
+    [] \notin {{r}} ->
     delta r emptyset
     .
 

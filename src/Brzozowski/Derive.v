@@ -19,7 +19,7 @@ the derivative of $R$ with respect to $s$ is denoted by $D_s R$ and is
 $D_s R = \{t | s.t \in R \}$.
 *)
 Definition derive_lang (R: lang) (s: str) (t: str): Prop :=
-  (s ++ t) `elem` R.
+  (s ++ t) \in R.
 
 (* Part of THEOREM 3.2
    For completeness, if s = \lambda, then D_[] R = R
@@ -30,10 +30,8 @@ Proof.
 intros.
 unfold derive_lang.
 cbn.
-unfold "`elem`".
 unfold "{<->}".
 intros.
-unfold "`elem`".
 easy.
 Qed.
 
@@ -61,12 +59,12 @@ Proof.
 intros.
 split.
 - unfold derive_lang.
-  unfold "`elem`".
+
   intros.
   rewrite app_assoc.
   assumption.
 - unfold derive_lang.
-  unfold "`elem`".
+
   intros.
   rewrite app_assoc in H.
   assumption.
@@ -80,12 +78,12 @@ Proof.
 intros.
 split.
 - unfold derive_lang.
-  unfold "`elem`".
+
   intros.
   cbn in *.
   assumption.
 - unfold derive_lang.
-  unfold "`elem`".
+
   intros.
   cbn in *.
   assumption.
@@ -95,7 +93,7 @@ Qed.
 D_a R = { t | a.t \in R}
 *)
 Definition derive_lang_a (R: lang) (a: alphabet) (t: str): Prop :=
-  (a :: t) `elem` R.
+  (a :: t) \in R.
 
 Theorem derive_lang_a_single: forall (R: lang) (a: alphabet),
   derive_lang R [a] {<->} derive_lang_a R a.
@@ -110,27 +108,25 @@ easy.
 Qed.
 
 Theorem derive_lang_single: forall (R: lang) (a: alphabet) (s s0: str),
-  s0 `elem` derive_lang R (a :: s) <->
-  (s ++ s0) `elem` derive_lang R (a :: []).
+  s0 \in derive_lang R (a :: s) <->
+  (s ++ s0) \in derive_lang R (a :: []).
 Proof.
 intros.
 split;
   intros;
   unfold derive_lang in *;
-  unfold "`elem`" in *;
   listerine;
   assumption.
 Qed.
 
 Theorem derive_lang_double: forall (R: lang) (a a0: alphabet) (s s0: str),
-  s0 `elem` derive_lang R (a :: a0 :: s) <->
-  (s ++ s0) `elem` derive_lang R (a :: a0 :: []).
+  s0 \in derive_lang R (a :: a0 :: s) <->
+  (s ++ s0) \in derive_lang R (a :: a0 :: []).
 Proof.
 intros.
 split;
   intros;
   unfold derive_lang in *;
-  unfold "`elem`" in *;
   listerine;
   assumption.
 Qed.
@@ -142,7 +138,6 @@ intros.
 unfold derive_lang.
 unfold derive_lang_a.
 unfold "{<->}".
-unfold "`elem`".
 intros.
 listerine.
 easy.
@@ -151,8 +146,8 @@ Qed.
 (* Alternative inductive predicate for derive_lang *)
 Inductive derive_lang_a' (R: lang) (a: alphabet) (t: str): Prop :=
   | mk_derive_lang:
-    (a :: t) `elem` R ->
-    t `elem` (derive_lang_a' R a)
+    (a :: t) \in R ->
+    t \in (derive_lang_a' R a)
   .
 
 Theorem derive_lang_a_star_a:
@@ -444,24 +439,24 @@ Qed.
 (*
   Next consider:
   derive_lang_a (R: lang) (a: alphabet) (t: str): Prop :=
-  (a :: t) `elem` R.
+  (a :: t) \in R.
   derive_lang_a (concat_lang P Q)
   Let:
   P = delta_def(P) or P_0
   where delta_def(P_0) = emptyset
   Then:
   derive_lang_a (concat_lang P Q) a
-    {<->} {s | (a :: s) `elem` (concat_lang P Q)}
-    {<->} {s | (a :: s) `elem` (concat_lang (or_lang {{delta_def(P)}} P_0) Q)}
-    {<->} {u | (a :: u) `elem` (concat_lang {{delta_def(P)}} Q)}
+    {<->} {s | (a :: s) \in (concat_lang P Q)}
+    {<->} {s | (a :: s) \in (concat_lang (or_lang {{delta_def(P)}} P_0) Q)}
+    {<->} {u | (a :: u) \in (concat_lang {{delta_def(P)}} Q)}
           \/
-          {v | (a :: v) `elem` (concat_lang P_0 Q)}
+          {v | (a :: v) \in (concat_lang P_0 Q)}
     {<->} concat_lang {{delta_def(P)}} (derive_lang_a Q a)
           \/
-          {v_1 ++ v_2 | (a :: v_1) `elem` P_0, v_2 `elem` Q}
+          {v_1 ++ v_2 | (a :: v_1) \in P_0, v_2 \in Q}
     {<->} concat_lang {{delta_def(P)}} (derive_lang_a Q a)
           \/
-          concat_lang ({v_1 | (a :: v_1) `elem` P_0}) Q
+          concat_lang ({v_1 | (a :: v_1) \in P_0}) Q
     {<->} concat_lang {{delta_def(P)}} (derive_lang_a Q a)
           \/
           concat_lang (derive_lang_a P_0 a) Q.
@@ -599,10 +594,10 @@ intro s.
 remember (derive_lang_empty {{r}} s) as E; destruct E.
 split.
 - intros.
-  apply e.
+  apply d.
   assumption.
 - intros.
-  apply e0.
+  apply d0.
   assumption.
 Qed.
 
