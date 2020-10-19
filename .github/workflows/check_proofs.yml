@@ -10,9 +10,9 @@ jobs:
     - uses: actions/checkout@v2
     - name: set environment variables
       run: |
-        echo "::set-env name=CACHE_BIN::$GITHUB_WORKSPACE/.cache/bin"
-        echo "::set-env name=PATH::$GITHUB_WORKSPACE/.cache/bin:$PATH"
-        echo "::set-env name=OPAMROOT::$GITHUB_WORKSPACE/.cache/.opam"
+        echo "CACHE_BIN=$GITHUB_WORKSPACE/.cache/bin" >> $GITHUB_ENV
+        echo "OPAMROOT=$GITHUB_WORKSPACE/.cache/.opam" >> $GITHUB_ENV
+        echo "$GITHUB_WORKSPACE/.cache/bin" >> $GITHUB_PATH
     - name: Cache Opam
       id: cache-opam-pin
       uses: actions/cache@v1
