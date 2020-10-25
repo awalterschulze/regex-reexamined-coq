@@ -366,7 +366,7 @@ listerine.
   apply delta_implies_delta_def in H0.
   apply R2 in H1.
   apply R.
-  destruct_concat.
+  destruct_concat_lang.
   exists [].
   exists s.
   exists eq_refl.
@@ -376,7 +376,7 @@ listerine.
   + assumption.
 - apply R1 in H0.
   apply L.
-  destruct_concat.
+  destruct_concat_lang.
   exists L0.
   exists q.
   exists eq_refl.

@@ -29,7 +29,7 @@ Lemma test_elem_xI01_101:
   ([A1] ++ [A0] ++ [A1]) `elem` {{xI01}}.
 Proof.
 unfold xI01.
-destruct_concat.
+destruct_concat_lang.
 exists [A1].
 exists ([A0] ++ [A1]).
 assert ([A1] ++ [A0] ++ [A1] = [A1; A0; A1]). reflexivity.
@@ -38,7 +38,7 @@ constructor.
 - constructor.
   wreckit.
   apply notelem_emptyset.
-- destruct_concat.
+- destruct_concat_lang.
   exists [A0].
   exists [A1].
   exists eq_refl.
@@ -166,7 +166,7 @@ Qed.
 Lemma test_elem_xI111I_1110:
     ([A1] ++ [A1] ++ [A1] ++ [A0]) `elem` {{xI111I}}.
 Proof.
-destruct_concat.
+destruct_concat_lang.
 exists [].
 exists ([A1] ++ [A1] ++ [A1] ++ [A0]).
 exists eq_refl.
@@ -174,19 +174,19 @@ split.
 - constructor.
   wreckit.
   untie.
-- destruct_concat.
+- destruct_concat_lang.
   exists [A1].
   exists ([A1] ++ [A1] ++ [A0]).
   exists eq_refl.
   split.
   + constructor.
-  + destruct_concat.
+  + destruct_concat_lang.
     exists [A1].
     exists ([A1] ++ [A0]).
     exists eq_refl.
     split.
     * constructor.
-    * destruct_concat.
+    * destruct_concat_lang.
       exists [A1].
       exists [A0].
       exists eq_refl.
@@ -250,7 +250,7 @@ untie.
 invs H.
 wreckit.
 apply R1.
-destruct_concat.
+destruct_concat_lang.
 exists [A1].
 exists [A1; A1].
 exists eq_refl.

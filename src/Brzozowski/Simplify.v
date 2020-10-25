@@ -94,7 +94,7 @@ split.
   cbn.
   assumption.
 - intros.
-  destruct_concat.
+  destruct_concat_lang.
   exists [].
   exists s.
   exists eq_refl.
@@ -117,7 +117,7 @@ split.
   listerine.
   assumption.
 - intros.
-  destruct_concat.
+  destruct_concat_lang.
   exists s.
   exists [].
   assert (s ++ [] = s). listerine. reflexivity.

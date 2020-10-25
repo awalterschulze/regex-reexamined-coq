@@ -116,7 +116,7 @@ Theorem delta_concat_is_and_lambda: forall (p q: regex),
 Proof.
 intros.
 constructor.
-destruct_concat.
+destruct_concat_lang.
 exists [].
 exists [].
 assert ([] ++ [] = (@nil alphabet)). cbn. reflexivity.
@@ -139,7 +139,7 @@ Theorem delta_concat_is_and:
 Proof.
 intros.
 invs delta_p; invs delta_q; cbn; constructor; try untie.
-- destruct_concat.
+- destruct_concat_lang.
   exists []. exists []. exists eq_refl.
   split; assumption.
 - invs H1. wreckit. listerine. subst.
@@ -437,7 +437,7 @@ induction r.
   invs IHr1;
   invs IHr2.
   + apply delta_lambda.
-    destruct_concat.
+    destruct_concat_lang.
     exists [].
     exists [].
     exists eq_refl.
@@ -549,7 +549,7 @@ inversion_clear H.
       -- reflexivity.
       -- exfalso.
          apply H0.
-         destruct_concat.
+         destruct_concat_lang.
          exists [].
          exists [].
          exists eq_refl.

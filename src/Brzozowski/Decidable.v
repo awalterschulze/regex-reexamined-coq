@@ -173,7 +173,7 @@ Proof.
   - left.
     destruct HExistsMatch as [s1 [s2 [Hconcat [Hlen [Hmatchp Hmatchq]]]]].
     symmetry in Hconcat.
-    destruct_concat.
+    destruct_concat_lang.
     exists s1.
     exists s2.
     exists Hconcat.
@@ -259,7 +259,7 @@ Proof.
 intros.
 wreckit.
 - left.
-  destruct_concat.
+  destruct_concat_lang.
   exists [].
   exists [].
   exists eq_refl.
