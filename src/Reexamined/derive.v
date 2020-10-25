@@ -1,7 +1,7 @@
 Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
 
 Require Import CoqStock.comparable.
+Require Import CoqStock.List.
 Require Import CoqStock.reduce_orb.
 Require Import CoqStock.Truthy.
 

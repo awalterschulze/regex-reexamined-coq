@@ -1,7 +1,7 @@
 Require Import Coq.Bool.Bool.
-Require Import Coq.Lists.List.
 
 Require Import CoqStock.comparable.
+Require Import CoqStock.List.
 
 Require Import Reexamined.nullable.
 Require Import Reexamined.regex.

@@ -1,4 +1,5 @@
 Require Import CoqStock.comparable.
+Require Import CoqStock.List.
 
 (* A character for a regular expression is generic,
    but it needs to implement an interface.

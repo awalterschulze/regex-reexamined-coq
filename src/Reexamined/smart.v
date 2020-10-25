@@ -1,9 +1,8 @@
 Set Implicit Arguments.
 Set Asymmetric Patterns.
 
-Require Import Coq.Lists.List.
-
 Require Import CoqStock.comparable.
+Require Import CoqStock.List.
 
 Require Import Reexamined.compare_regex.
 Require Import Reexamined.derive.

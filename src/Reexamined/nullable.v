@@ -1,6 +1,5 @@
-Require Import Coq.Lists.List.
-
 Require Import CoqStock.comparable.
+Require Import CoqStock.List.
 
 Require Import Reexamined.regex.
 

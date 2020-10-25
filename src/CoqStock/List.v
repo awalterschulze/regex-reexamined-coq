@@ -1,9 +1,11 @@
-(* 
-Proofs about Lists that would be nice to have in a standard library.
+(*
+This module replaces the standard library's List module.
+It reexports Coq.Lists.List and Coq.Lists.List.ListNotations.
+It includes extra theorems about lists.
 *)
 
-Require Import Coq.Lists.List.
-Import Coq.Lists.List.ListNotations.
+Require Export Coq.Lists.List.
+Export Coq.Lists.List.ListNotations.
 Require Import Coq.micromega.Lia.
 
 Theorem length_zero_string_is_empty {A: Type} (xs: list A):

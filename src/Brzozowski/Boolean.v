@@ -1,7 +1,5 @@
-Require Import Coq.Lists.List.
-Import Coq.Lists.List.ListNotations.
-
 Require Import CoqStock.WreckIt.
+Require Import CoqStock.List.
 Require Import CoqStock.Listerine.
 
 Require Import Brzozowski.Alphabet.

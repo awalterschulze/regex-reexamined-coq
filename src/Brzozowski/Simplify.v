@@ -2,11 +2,9 @@
    Language definitions of regular expressions are equivalent.
 *)
 
-Require Import Coq.Lists.List.
-Import Coq.Lists.List.ListNotations.
-
 Require Import CoqStock.DubStep.
 Require Import CoqStock.Invs.
+Require Import CoqStock.List.
 Require Import CoqStock.Listerine.
 Require Import CoqStock.Untie.
 Require Import CoqStock.WreckIt.
