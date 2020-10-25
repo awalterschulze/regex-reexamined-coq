@@ -9,8 +9,8 @@
 Set Implicit Arguments.
 Set Asymmetric Patterns.
 
-Require Import List.
-Import ListNotations.
+Require Import Coq.Lists.List.
+Import Coq.Lists.List.ListNotations.
 
 Section list_set_eq.
   Context {A: Type}.

@@ -1,16 +1,15 @@
 Set Implicit Arguments.
 Set Asymmetric Patterns.
 
-Require Import Bool.
-Require Import Lia.
-Require Import List.
-
+Require Import Coq.Bool.Bool.
+Require Import Coq.micromega.Lia.
 Require Import Coq.Program.Program.
 
-Require Import CoqStock.Truthy.
 Require Import CoqStock.comparable.
 Require Import CoqStock.dup.
+Require Import CoqStock.List.
 Require Import CoqStock.sort.
+Require Import CoqStock.Truthy.
 
 Require Import Reexamined.compare_regex.
 Require Import Reexamined.derive.

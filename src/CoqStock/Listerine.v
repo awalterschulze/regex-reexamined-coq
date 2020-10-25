@@ -44,8 +44,8 @@ end.
 replace `inversion H; clear H; subst` with a theorem `apply NewTheorem in H`.
 *)
 
-Require Import List.
-Import ListNotations.
+Require Import Coq.Lists.List.
+Import Coq.Lists.List.ListNotations.
 
 (* list_empty:
    finds empty lists in the hypotheses and the goal and tries to apply an appropriate tactic:

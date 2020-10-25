@@ -2,6 +2,7 @@ Set Implicit Arguments.
 Set Asymmetric Patterns.
 
 Require Import CoqStock.comparable.
+
 Require Import Reexamined.compare_regex.
 Require Import Reexamined.nullable.
 Require Import Reexamined.regex.

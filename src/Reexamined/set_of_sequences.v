@@ -1,8 +1,7 @@
-Require Import List.
-Import ListNotations.
-
 Require Import CoqStock.comparable.
 Require Import CoqStock.compare_nat.
+Require Import CoqStock.List.
+
 Require Import Reexamined.regex.
 Require Import Reexamined.derive_def.
 

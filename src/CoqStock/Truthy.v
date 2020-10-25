@@ -5,8 +5,8 @@
 Set Implicit Arguments.
 Set Asymmetric Patterns.
 
-From Coq Require Import Ring.
-Require Import Bool.
+Require Import Coq.Bool.Bool.
+Require Import Coq.setoid_ring.Ring.
 
 (* bool_semi_ring creates a semi ring 
    , using `or` and `and` boolean expressions 

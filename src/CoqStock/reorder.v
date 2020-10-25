@@ -12,7 +12,8 @@ Then reordering the tree should result in the same answer.
 Set Implicit Arguments.
 Set Asymmetric Patterns.
 
-Require Import List.
+Require Import Coq.Lists.List.
+
 Require Import CoqStock.comparable.
 
 Section Reorder.

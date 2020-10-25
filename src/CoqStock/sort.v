@@ -1,10 +1,9 @@
 Set Implicit Arguments.
 Set Asymmetric Patterns.
 
-Require Import List.
-
-Require Import Psatz.
-Require Import Lia.
+Require Import Coq.Lists.List.
+Require Import Coq.micromega.Lia.
+Require Import Coq.micromega.Psatz.
 
 Require Import CoqStock.comparable.
 Require Import CoqStock.DubStep.

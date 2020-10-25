@@ -12,6 +12,7 @@ src/CoqStock/reduce_orb.v
 src/CoqStock/sort.v
 src/CoqStock/Invs.v
 src/CoqStock/Lem.v
+src/CoqStock/List.v
 src/CoqStock/Listerine.v
 src/CoqStock/Untie.v
 src/CoqStock/WreckIt.v

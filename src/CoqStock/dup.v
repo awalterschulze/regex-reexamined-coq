@@ -1,8 +1,8 @@
 Set Implicit Arguments.
 Set Asymmetric Patterns.
 
-Require Import List.
-Import ListNotations.
+Require Import Coq.Lists.List.
+Import Coq.Lists.List.ListNotations.
 
 Require Import CoqStock.comparable.
 Require Import CoqStock.sort.

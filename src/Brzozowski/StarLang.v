@@ -1,23 +1,74 @@
-Require Import List.
-Import ListNotations.
-Require Import Setoid.
-
-Require Import CoqStock.DubStep.
-Require Import CoqStock.Invs.
+Require Import CoqStock.List.
 Require Import CoqStock.Listerine.
-Require Import CoqStock.Untie.
-Require Import CoqStock.WreckIt.
 
 Require Import Brzozowski.Alphabet.
-Require Import Brzozowski.Regex.
-
-Require Import Language.
+Require Import Brzozowski.Language.
 
 (*
-  star_lang_concat is the original definition of star_lang,
-  but contains more recursion, since it allows R to match the empty string.
+This module shows off different possible definitions of star_lang and how they are all equivalent
+to the defintion we use in Language.v, namely `star_lang`.
+The 4 varieties include switching these options on and off:
+
+  - allowing empty prefixes in `mk_star_more`
+  - using an existence statement
+
+Where the definition of the `star_lang` we use in Language.v:
+
+  - does not allow empty prefixes in `mk_star_more`
+  - prefers using forall over existence
+
+The reason for preferring forall over existence in this case is that,
+the definitions that use an existence statement (e.g. the existence statement
+that is part of `concat_lang` and `concat_ex_prefix_not_empty_lang`) require you to
+prove your own induction principle, because Coq is not smart enough to figure it
+out by itself. The definitions that allow empty prefixes make induction more
+difficult if the regular expression matches the empty string.
+
+Therefore, the easiest definition is the one that does not have an existence
+statement and that does not allow empty prefixes, so we will use that as our main definition.
+
+Below, we define all these definitions and prove their equivalence. As part of
+the proofs, we prove a stronger induction principle for the two definitions that
+use an existence statement.
+
+For reference here follows our main definition of `star_lang`
+
+Inductive star_lang (R: lang): lang :=
+  | mk_star_zero : star_lang R []
+  | mk_star_more : forall (s p q: str),
+      p ++ q = s ->
+      p <> [] ->
+      p `elem` R ->
+      q `elem` (star_lang R) ->
+      s `elem` star_lang R.
+
+The other definitions are:
+  - star_lang_ex_empty
+  - star_lang_empty
+  - star_lang_ex
 *)
-(* The definition allowing empty prefixes. *)
+
+(*
+  star_lang_ex_empty is the original definition of star_lang:
+  - Uses existence
+  - Allows empty prefixes in mk_star_more
+  It contains more recursion, since it allows R to match the empty string.
+  The definition allowing empty prefixes and using the existence statement is hidden in `concat_lang`.
+  This is the most difficult definition to use in Coq, but arguably the closest to the mathematical definition:
+    *Star*. $P^{*} = \cup_{0}^{\infty} P^n$ , where $P^2 = P.P$, etc.
+    and $P^0 = \lambda$, the set consisting of the string of zero length.
+*)
+Inductive star_lang_ex_empty (R: lang): lang :=
+  | mk_star_zero_ex_empty : forall (s: str),
+    s = [] -> star_lang_ex_empty R s
+  | mk_star_more_ex_empty : forall (s: str),
+    s `elem` (concat_lang R (star_lang_ex_empty R)) ->
+    star_lang_ex_empty R s.
+
+(* star_lang_empty is a middle ground:
+  - Does not use existence
+  - Allows empty prefixes
+*)
 Inductive star_lang_empty (R: lang): lang :=
   | mk_star_zero_empty : forall (s: str),
       s = [] -> star_lang_empty R s
@@ -27,25 +78,35 @@ Inductive star_lang_empty (R: lang): lang :=
       q `elem` (star_lang_empty R) ->
       s `elem` star_lang_empty R.
 
-(*
-    *Star*. $P^{*} = \cup_{0}^{\infty} P^n$ , where $P^2 = P.P$, etc.
-    and $P^0 = \lambda$, the set consisting of the string of zero length.
+(* concat_ex_prefix_not_empty_lang is a helper for star_lang_ex
+   It uses existence to define concat and
+   the prefix language is not allowed to match the empty string
 *)
-(* Definition using the existence statement (hidden in `concat_prefix_not_empty_lang`). *)
+Inductive concat_ex_prefix_not_empty_lang (P Q: lang): lang :=
+  | mk_concat_prefix_is_not_empty: forall (s: str),
+    (exists
+      (p: str)
+      (a: alphabet)
+      (q: str)
+      (pqs: (a :: p) ++ q = s),
+      (a :: p) `elem` P /\
+      q `elem` Q
+    ) ->
+    concat_ex_prefix_not_empty_lang P Q s
+.
+
+(* star_lang_ex is another middle ground:
+  - Uses existence that is hidden in concat_ex_prefix_not_empty_lang
+  - Does not allow empty prefixes in mk_star_more, which is also hidden in concat_ex_prefix_not_empty_lang
+*)
 Inductive star_lang_ex (R: lang): lang :=
   | mk_star_zero_ex : forall (s: str),
       s = [] -> star_lang_ex R s
   | mk_star_more_ex : forall (s: str),
-      s `elem` (concat_prefix_not_empty_lang R (star_lang_ex R)) ->
+      s `elem` (concat_ex_prefix_not_empty_lang R (star_lang_ex R)) ->
       star_lang_ex R s.
 
-(* The definition allowing empty prefixes and using the existence statement (hidden in `concat_lang`). The most difficult definition to use in Coq, but arguably the closest to the mathematical definition. *)
-Inductive star_lang_ex_empty (R: lang): lang :=
-  | mk_star_zero_ex_empty : forall (s: str),
-      s = [] -> star_lang_ex_empty R s
-  | mk_star_more_ex_empty : forall (s: str),
-      s `elem` (concat_lang R (star_lang_ex_empty R)) ->
-      star_lang_ex_empty R s.
+(* The Propositions below shows how each of the 4 definitions are equivalent to star_lang. *)
 
 Proposition star_lang_empty_equivalent (R: lang): forall (s: str),
    s `elem` star_lang R <-> s `elem` star_lang_empty R.
@@ -58,7 +119,7 @@ Proof.
   - intro Hmatch.
     induction Hmatch as [| s p q Hp_match Hq_match IH].
     + subst. now constructor.
-    + destruct p as [p | a p].
+    + destruct p.
       * (* If the prefix is empty, the induction hypothesis is exactly what we want. *)
         subst.
         cbn.
@@ -69,7 +130,7 @@ Proof.
         listerine.
 Qed.
 
-Proposition star_lang_ex_ind_better:
+Local Proposition star_lang_ex_ind_better:
  forall (R : lang) (P : str -> Prop),
    (* base case *)
    P [] ->
@@ -111,7 +172,7 @@ Proof.
     + subst. now constructor.
     + eapply (mk_star_more_ex R s); try (exact H).
       constructor.
-      destruct p as [p | a p].
+      destruct p.
       * contradiction.
       * exists p.
         exists a.
@@ -127,7 +188,7 @@ Proof.
     + assumption.
 Qed.
 
-Proposition star_lang_ex_empty_ind_better:
+Local Proposition star_lang_ex_empty_ind_better:
  forall (R : lang) (P : str -> Prop),
    (* base case *)
    P [] ->
@@ -167,7 +228,7 @@ Proof.
     + subst. now constructor.
     + eapply (mk_star_more_ex_empty R s); try (exact H).
       constructor.
-      destruct p as [p | a p].
+      destruct p.
       * contradiction.
       * exists (a :: p).
         exists q.
@@ -178,56 +239,9 @@ Proof.
     + now constructor.
     + intros.
       destruct H as [p [q [Hconcat [ Hp_match [Hq_match IH]]]]].
-      destruct p as [p | a p].
+      destruct p.
       * subst. cbn. assumption.
       * constructor 2 with (p := (a :: p)) (q := q); try assumption.
         listerine.
     + assumption.
 Qed.
-
-
-(* A fifth definition of star_lang: this definition includes a notion of
-"depth". It allows empty prefixes, but it uses an integer to keep track of the
-depth of the constructor tree. *)
-Inductive star_lang_max_depth (R: lang): nat -> lang :=
-  | mk_star_zero'' : forall (s: str),
-    s = [] -> star_lang_max_depth R 0 s
-  | mk_star_more'' : forall (s: str) (depth: nat),
-    s `elem` (concat_lang R (star_lang_max_depth R depth)) ->
-    star_lang_max_depth R (S depth) s
-  .
-
-Lemma star_lang_depth_equivalent_helper:
-  forall (R: lang) (depth: nat) (s: str),
-  star_lang_max_depth R depth s -> star_lang R s.
-Proof.
-    induction depth.
-  + intros.
-    invs H.
-    constructor.
-  + intros.
-    invs H.
-    invs H1.
-    wreckit.
-    apply IHdepth in R0.
-    destruct x.
-    * subst.
-      cbn.
-      assumption.
-    * apply mk_star_more with (p := (a ::x)) (q := x0).
-      assumption.
-      listerine.
-      assumption.
-      assumption.
-Qed.
-
-Lemma star_lang_depth_equivalent:
-  forall (R: lang) (s: str),
-    (exists (depth: nat), star_lang_max_depth R depth s) <-> star_lang R s.
-Proof.
-(* TODO: Good First Issue
-
-I don't think we need this lemma anymore, but it could be an interesting first
-issue, or an interesting exercise. (Maybe a difficult first issue, though.)
-*)
-Abort.
