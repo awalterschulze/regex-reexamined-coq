@@ -1,12 +1,12 @@
-Require Import List.
-Import ListNotations.
-Require Import Setoid.
+Require Import Coq.Lists.List.
+Import Coq.Lists.List.ListNotations.
 
 Require Import CoqStock.DubStep.
 Require Import CoqStock.Invs.
 Require Import CoqStock.Listerine.
 Require Import CoqStock.Untie.
 Require Import CoqStock.WreckIt.
+Require Import CoqStock.List.
 
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Language.
@@ -16,57 +16,6 @@ Require Import Lia.
 
 Definition regex_is_decidable (r: regex) :=
     (forall s: str, s `elem` {{r}} \/ s `notelem` {{r}}).
-
-(* TODO: move into listerine *)
-Lemma length_zero_string_is_empty (s : str) :
-  length s <= 0 -> s = [].
-Proof.
-  intros.
-  assert (length s = 0).
-  lia.
-  rewrite length_zero_iff_nil in *.
-  assumption.
-Qed.
-
-(* TODO: move into listerine *)
-Lemma split_string_lemma (s : str) (n : nat):
-  forall (s1 s2: str),
-    length s1 = n ->
-    s = s1 ++ s2 ->
-    s1 = firstn n s /\
-    s2 = skipn n s.
-Proof.
-  intros.
-  set (s1' := firstn n s).
-  set (s2' := skipn n s).
-  subst.
-
-  set (firstn_app (length s1) s1 s2) as Hfirst.
-  replace (length s1 - length s1) with 0 in * by lia.
-  replace (firstn 0 s2) with (nil : str) in * by (symmetry; apply firstn_O).
-  rewrite app_nil_r in Hfirst.
-  replace (firstn (length s1) s1) with s1 in Hfirst by (symmetry; apply firstn_all).
-
-  set (skipn_app (length s1) s1 s2) as Hlast.
-  replace (length s1 - length s1) with 0 in * by lia.
-  replace (skipn (length s1) s1) with (nil: str) in Hlast by (symmetry; apply skipn_all).
-  rewrite app_nil_l in Hlast.
-  replace (skipn 0 s2) with s2 in Hlast by (apply skipn_O).
-
-  split; auto.
-Qed.
-
-(* TODO: move into listerine *)
-Lemma substrings_have_smaller_length (s s1 s2: str):
-  s = s1 ++ s2 -> length s1 <= length s.
-Proof.
-  intro H.
-  assert (length s1 + length s2 = length s).
-  replace s with (s1 ++ s2) by assumption.
-  symmetry.
-  exact (app_length s1 s2).
-  lia.
-Qed.
 
 Lemma denotation_concat_is_decidable_helper (p q: regex):
   regex_is_decidable p ->
@@ -97,7 +46,7 @@ Proof.
          for goals 2,3 and 4.
        *)
       (* now starts: we know what it is when it is split *)
-      assert (s1 = []) by (apply length_zero_string_is_empty; assumption);
+      assert (s1 = []) by (apply length_zero_or_smaller_string_is_empty; assumption);
       assert (s2 = s) by (replace (s1 ++ s2) with s2 in Hconcat by (subst; auto);
                           symmetry;
                           assumption);
@@ -142,7 +91,7 @@ Proof.
       destruct Hlen' as [Hlen' | Hlen'];
       try (apply IHnAllNoMatch; assumption); (* case length s1 <= n *)
       try (
-          destruct (split_string_lemma s (S n) s1 s2 Hlen' Hconcat) as [Hfoo Hbar];
+          destruct (split_list s (S n) s1 s2 Hlen' Hconcat) as [Hfoo Hbar];
 
           replace l1 with s1 in * by auto;
           replace l2 with s2 in * by auto;
@@ -218,7 +167,7 @@ Proof.
     destruct HmatchContr as [s [s1 [s2 [Hconcat [Hmatchp Hmatchq]]]]].
     symmetry in Hconcat.
 
-    set (Hlen := substrings_have_smaller_length s s1 s2 Hconcat).
+    set (Hlen := prefix_leq_length s s1 s2 Hconcat).
 
     specialize HAllDontMatch with s1 s2.
     destruct (HAllDontMatch Hconcat Hlen); auto.
@@ -461,7 +410,7 @@ Proof.
   intro Hdec.
   induction n.
   - intros s Hlen.
-    apply length_zero_string_is_empty in Hlen.
+    apply length_zero_or_smaller_string_is_empty in Hlen.
     subst.
     apply denotation_star_is_decidable_for_empty_string.
   - intros s Hlen.

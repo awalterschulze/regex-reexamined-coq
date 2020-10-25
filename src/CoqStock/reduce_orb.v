@@ -1,4 +1,4 @@
-Require Import Bool.
+Require Import Coq.Bool.Bool.
 
 Ltac reduce_orb_step :=
   match goal with

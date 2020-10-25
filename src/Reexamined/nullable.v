@@ -1,6 +1,7 @@
-Require Import List.
+Require Import Coq.Lists.List.
 
 Require Import CoqStock.comparable.
+
 Require Import Reexamined.regex.
 
 (* nullable returns whether the regular expression matchesb the

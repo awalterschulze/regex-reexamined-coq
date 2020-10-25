@@ -1,6 +1,6 @@
-Require Import List.
-Import ListNotations.
-Require Import Setoid.
+Require Import Coq.Lists.List.
+Import Coq.Lists.List.ListNotations.
+Require Import Coq.Setoids.Setoid.
 
 Require Import CoqStock.DubStep.
 Require Import CoqStock.Invs.

@@ -6,7 +6,7 @@ which is a instance of comparable for nat.
 Set Implicit Arguments.
 Set Asymmetric Patterns.
 
-Require Import List.
+Require Import Coq.Lists.List.
 
 Require Import CoqStock.comparable.
 

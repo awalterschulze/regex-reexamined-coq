@@ -1,9 +1,10 @@
 Set Implicit Arguments.
 Set Asymmetric Patterns.
 
-Require Import List.
+Require Import Coq.Lists.List.
 
 Require Import CoqStock.comparable.
+
 Require Import Reexamined.regex.
 
 Fixpoint size {A: Type} {cmp: comparable A} (r: regex A) := 

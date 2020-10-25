@@ -1,7 +1,7 @@
 Set Implicit Arguments.
 
-Require Export Relation_Definitions.
-Require Export Setoid.
+Require Export Coq.Relations.Relation_Definitions.
+Require Export Coq.Setoids.Setoid.
 
 Require Import CoqStock.comparable.
 

@@ -1,5 +1,5 @@
-Require Import List.
-Import ListNotations.
+Require Import Coq.Lists.List.
+Import Coq.Lists.List.ListNotations.
 
 Require Import CoqStock.WreckIt.
 Require Import CoqStock.Listerine.

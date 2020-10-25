@@ -1,9 +1,9 @@
-Require Import List.
-Require Import Bool.
+Require Import Coq.Bool.Bool.
+Require Import Coq.Lists.List.
 
 Require Import CoqStock.comparable.
-Require Import CoqStock.Truthy.
 Require Import CoqStock.reduce_orb.
+Require Import CoqStock.Truthy.
 
 Require Import Reexamined.compare_regex.
 Require Export Reexamined.derive_def.

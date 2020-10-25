@@ -1,7 +1,7 @@
 Set Implicit Arguments.
 Set Asymmetric Patterns.
 
-Require Import List.
+Require Import Coq.Lists.List.
 
 Class comparable (A : Type) :=
   { compare : A -> A -> comparison (* Eq | Lt | Gt *)
