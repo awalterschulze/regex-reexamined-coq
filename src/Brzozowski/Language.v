@@ -75,14 +75,10 @@ Existing Instance lang_setoid.
 
 (* Concatenation*. $(P.Q) = \{ s | s = p.q; p \in P, q \in Q \}$. *)
 Inductive concat_lang (P Q: lang): lang :=
-  | mk_concat: forall (s: str),
-    (exists
-      (p: str)
-      (q: str)
-      (pqs: p ++ q = s),
-      p `elem` P /\
-      q `elem` Q
-    ) ->
+  | mk_concat: forall (p q s: str),
+    p ++ q = s ->
+    p `elem` P ->
+    q `elem` Q ->
     concat_lang P Q s
   .
 
@@ -93,19 +89,19 @@ Add Parametric Morphism: concat_lang
   with signature lang_iff ==> lang_iff ==> lang_iff as concat_lang_morph.
 Proof.
 intros.
-constructor; constructor; invs H1; wreckit;
-  exists x1;
-  exists x2;
-  exists x3;
-  wreckit.
-  + apply H.
-    assumption.
-  + apply H0.
-    assumption.
-  + apply H.
-    assumption.
-  + apply H0.
-    assumption.
+split.
+- intros.
+  destruct H1.
+  apply (mk_concat _ _  p q s).
+  + assumption.
+  + apply H. assumption.
+  + apply H0. assumption.
+- intros.
+  destruct H1.
+  apply (mk_concat _ _  p q s).
+  + assumption.
+  + apply H. assumption.
+  + apply H0. assumption.
 Qed.
 
 Inductive star_lang (R: lang): lang :=
@@ -295,8 +291,7 @@ Proof.
 split.
 - intros.
   invs H.
-  wreckit.
-  invs L.
+  invs H1.
 - intros.
   invs H.
 Qed.

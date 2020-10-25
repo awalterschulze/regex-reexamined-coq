@@ -10,6 +10,7 @@ Require Import CoqStock.Untie.
 Require Import CoqStock.WreckIt.
 
 Require Import Brzozowski.Alphabet.
+Require Import Brzozowski.ConcatLang.
 Require Import Brzozowski.Language.
 Require Import Brzozowski.Regex.
 
@@ -54,8 +55,7 @@ Proof.
 split.
 - intros.
   invs H.
-  wreckit.
-  invs L.
+  invs H1.
 - intros.
   invs H.
 Qed.
@@ -68,8 +68,7 @@ Proof.
 split.
 - intros.
   invs H.
-  wreckit.
-  invs R.
+  invs H2.
 - intros.
   invs H.
 Qed.
@@ -80,8 +79,7 @@ Proof.
 intros.
 untie.
 invs H.
-wreckit.
-invs R.
+invs H2.
 Qed.
 
 Theorem concat_lang_lambda_l_is_l: forall (r: lang),
@@ -92,13 +90,11 @@ Proof.
 split.
 - intros.
   invs H.
-  wreckit.
-  subst.
-  inversion_clear L.
+  inversion_clear H1.
   cbn.
   assumption.
 - intros.
-  constructor.
+  destruct_concat.
   exists [].
   exists s.
   exists eq_refl.
@@ -117,11 +113,11 @@ split.
   invs H.
   wreckit.
   subst.
-  inversion_clear R.
+  inversion_clear H2.
   listerine.
   assumption.
 - intros.
-  constructor.
+  destruct_concat.
   exists s.
   exists [].
   assert (s ++ [] = s). listerine. reflexivity.

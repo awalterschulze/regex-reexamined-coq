@@ -1,3 +1,5 @@
+Require Import Coq.micromega.Lia.
+
 Require Import CoqStock.DubStep.
 Require Import CoqStock.Invs.
 Require Import CoqStock.List.
@@ -6,10 +8,9 @@ Require Import CoqStock.Untie.
 Require Import CoqStock.WreckIt.
 
 Require Import Brzozowski.Alphabet.
+Require Import Brzozowski.ConcatLang.
 Require Import Brzozowski.Language.
 Require Import Brzozowski.Regex.
-
-Require Import Lia.
 
 Definition regex_is_decidable (r: regex) :=
     (forall s: str, s `elem` {{r}} \/ s `notelem` {{r}}).
@@ -161,19 +162,21 @@ Proof.
   - right.
     unfold not.
     intro HmatchContr.
-    destruct HmatchContr as [s [s1 [s2 [Hconcat [Hmatchp Hmatchq]]]]].
-    symmetry in Hconcat.
+    destruct HmatchContr.
+    symmetry in H.
 
-    set (Hlen := prefix_leq_length s s1 s2 Hconcat).
+    set (Hlen := prefix_leq_length s p0 q0 H).
 
-    specialize HAllDontMatch with s1 s2.
-    destruct (HAllDontMatch Hconcat Hlen); auto.
+    specialize HAllDontMatch with p0 q0.
+    destruct (HAllDontMatch H Hlen); auto.
 
   - left.
     destruct HExistsMatch as [s1 [s2 [Hconcat [Hlen [Hmatchp Hmatchq]]]]].
-    constructor.
     symmetry in Hconcat.
-    exists s1. exists s2. exists Hconcat.
+    destruct_concat.
+    exists s1.
+    exists s2.
+    exists Hconcat.
     split; assumption.
 Qed.
 
@@ -256,11 +259,11 @@ Proof.
 intros.
 wreckit.
 - left.
-  constructor.
+  destruct_concat.
   exists [].
   exists [].
   exists eq_refl.
-  wreckit; assumption.
+  split; assumption.
 - right.
   untie.
   invs H.

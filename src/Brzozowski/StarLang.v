@@ -2,6 +2,7 @@ Require Import CoqStock.List.
 Require Import CoqStock.Listerine.
 
 Require Import Brzozowski.Alphabet.
+Require Import Brzozowski.ConcatLang.
 Require Import Brzozowski.Language.
 
 (*
@@ -53,7 +54,7 @@ The other definitions are:
   - Uses existence
   - Allows empty prefixes in mk_star_more
   It contains more recursion, since it allows R to match the empty string.
-  The definition allowing empty prefixes and using the existence statement is hidden in `concat_lang`.
+  The definition allowing empty prefixes and using the existence statement is hidden in `concat_lang_ex`.
   This is the most difficult definition to use in Coq, but arguably the closest to the mathematical definition:
     *Star*. $P^{*} = \cup_{0}^{\infty} P^n$ , where $P^2 = P.P$, etc.
     and $P^0 = \lambda$, the set consisting of the string of zero length.
@@ -62,7 +63,7 @@ Inductive star_lang_ex_empty (R: lang): lang :=
   | mk_star_zero_ex_empty : forall (s: str),
     s = [] -> star_lang_ex_empty R s
   | mk_star_more_ex_empty : forall (s: str),
-    s `elem` (concat_lang R (star_lang_ex_empty R)) ->
+    s `elem` (concat_lang_ex R (star_lang_ex_empty R)) ->
     star_lang_ex_empty R s.
 
 (* star_lang_empty is a middle ground:
@@ -108,8 +109,8 @@ Inductive star_lang_ex (R: lang): lang :=
 
 (* The Propositions below shows how each of the 4 definitions are equivalent to star_lang. *)
 
-Proposition star_lang_empty_equivalent (R: lang): forall (s: str),
-   s `elem` star_lang R <-> s `elem` star_lang_empty R.
+Proposition star_lang_empty_equivalent (R: lang):
+  star_lang R {<->} star_lang_empty R.
 Proof.
   split.
   - intro Hmatch.
@@ -163,8 +164,8 @@ destruct Hs_match.
   listerine.
 Qed.
 
-Proposition star_lang_ex_equivalent (R: lang): forall (s: str),
-    s `elem` star_lang R <-> s `elem` star_lang_ex R.
+Proposition star_lang_ex_equivalent (R: lang):
+    star_lang R {<->} star_lang_ex R.
 Proof.
   split.
   - intro Hmatch.
@@ -219,8 +220,8 @@ destruct Hs_match.
   repeat split; try assumption.
 Qed.
 
-Proposition star_lang_ex_empty_equivalent (R: lang): forall (s: str),
-    s `elem` star_lang R <-> s `elem` star_lang_ex_empty R.
+Proposition star_lang_ex_empty_equivalent (R: lang):
+    star_lang R {<->} star_lang_ex_empty R.
 Proof.
   split.
   - intro Hmatch.
