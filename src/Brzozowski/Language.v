@@ -109,127 +109,6 @@ constructor; constructor; invs H1; wreckit;
     assumption.
 Qed.
 
-Inductive concat_prefix_not_empty_lang (P Q: lang): lang :=
-  | mk_concat_prefix_is_not_empty: forall (s: str),
-    (exists
-      (p: str)
-      (a: alphabet)
-      (q: str)
-      (pqs: (a :: p) ++ q = s),
-      (a :: p) `elem` P /\
-      q `elem` Q
-    ) ->
-    concat_prefix_not_empty_lang P Q s
-  .
-
-Theorem concat_prefix_not_empty_lang_is_concat_lang:
-  forall (P Q: lang) (s: str),
-  concat_prefix_not_empty_lang P Q s ->
-  concat_lang P Q s.
-Proof.
-intros.
-inversion H.
-wreckit.
-subst.
-constructor.
-exists (x0 :: x).
-exists x1.
-exists eq_refl.
-wreckit; assumption.
-Qed.
-
-Theorem concat_lang_is_concat_prefix_not_empty_lang:
-  forall (P Q: lang) (s: str),
-  [] `notelem` P ->
-  concat_lang P Q s ->
-  concat_prefix_not_empty_lang P Q s.
-Proof.
-intros.
-inversion H0.
-wreckit.
-subst.
-destruct x.
-- contradiction.
-- constructor.
-  exists x.
-  exists a.
-  exists x0.
-  exists eq_refl.
-  wreckit; assumption.
-Qed.
-
-(*
-   concat_prefix_not_empty_lang_morph allows rewrite to work inside concat_prefix_not_empty_lang parameters
-*)
-Add Parametric Morphism: concat_prefix_not_empty_lang
-  with signature lang_iff ==> lang_iff ==> lang_iff as concat_prefix_not_empty_lang_morph.
-Proof.
-intros P P'.
-intros Piff.
-intros Q Q'.
-intros Qiff.
-unfold "{<->}" in *.
-unfold "`elem`" in *.
-split.
-- intro H.
-  invs H.
-  destruct H0 as [p [a [q [splt [Pmatch Qmatch]]]]].
-  constructor.
-  exists p.
-  exists a.
-  exists q.
-  exists splt.
-  wreckit.
-  + specialize Piff with (a :: p).
-    apply Piff.
-    assumption.
-  + specialize Qiff with q.
-    apply Qiff.
-    assumption.
-- intro H.
-  invs H.
-  destruct H0 as [p [a [q [splt [Pmatch Qmatch]]]]].
-  constructor.
-  exists p.
-  exists a.
-  exists q.
-  exists splt.
-  wreckit.
-  + specialize Piff with (a :: p).
-    apply Piff.
-    assumption.
-  + specialize Qiff with q.
-    apply Qiff.
-    assumption.
-Qed.
-
-
-(*
-
-Different possible definitions of star_lang:
-
-- allowing empty prefixes in `mk_star_more` or not
-- using an existence statement or not
-
-This gives 4 equivalent definitions.
-
-The definitions that use an existence statement (e.g. the existence statement
-that is part of `concat_lang` and `concat_prefix_not_empty_lang`) require you to
-prove your own induction principle, because Coq is not smart enough to figure it
-out by itself. The definitions that allow empty prefixes make induction more
-difficult if the regular expression matches the empty string.
-
-Therefore, the easiest definition is the one that does not have an existence
-statement and that does not allow empty prefixes, and I suggest that we use that
-one as our main definition.
-
-Below, we define all these definitions and prove their equivalence. As part of
-the proofs, we prove a stronger induction principle for the two definitions that
-use an existence statement.
-
-*)
-
-(* Most convenient definition. *)
 Inductive star_lang (R: lang): lang :=
   | mk_star_zero : star_lang R []
   | mk_star_more : forall (s p q: str),
@@ -408,6 +287,7 @@ Proof.
     induction not_x.
 Abort.
 
+(* This lemma is only here to show off the setoid rewrite example below. *)
 Example lemma_for_setoid_example_concat_lang_emptyset_l_is_emptyset: forall (r: lang),
   concat_lang emptyset_lang r
   {<->}
