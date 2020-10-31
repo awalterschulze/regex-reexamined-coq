@@ -7,6 +7,7 @@ Require Import CoqStock.WreckIt.
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Boolean.
 Require Import Brzozowski.Regex.
+Require Import Brzozowski.ConcatLang.
 Require Import Brzozowski.Language.
 
 (*
@@ -28,7 +29,7 @@ Lemma test_elem_xI01_101:
   ([A1] ++ [A0] ++ [A1]) `elem` {{xI01}}.
 Proof.
 unfold xI01.
-constructor.
+destruct_concat_lang.
 exists [A1].
 exists ([A0] ++ [A1]).
 assert ([A1] ++ [A0] ++ [A1] = [A1; A0; A1]). reflexivity.
@@ -37,7 +38,7 @@ constructor.
 - constructor.
   wreckit.
   apply notelem_emptyset.
-- constructor.
+- destruct_concat_lang.
   exists [A0].
   exists [A1].
   exists eq_refl.
@@ -68,19 +69,10 @@ Lemma test_notleme_xI01_empty:
 Proof.
 elemt.
 elemt.
-wreckit.
 elemt.
 subst.
-cbn in x3.
-apply app_eq_nil in x3.
-wreckit.
-assert ([A0; A1] <> []).
-discriminate.
-subst.
+listerine.
 elemt.
-elemt.
-subst.
-contradiction.
 Qed.
 
 Lemma test_notelem_xI01_10:
@@ -88,15 +80,12 @@ Lemma test_notelem_xI01_10:
 Proof.
 elemt.
 elemt.
-wreckit.
-elemt.
-wreckit.
 elemt.
 elemt.
 elemt.
-wreckit.
+elemt.
 subst.
-assert (x ++ [A0] ++ [A1] <> [A1] ++ [A0]).
+assert (p ++ [A0] ++ [A1] <> [A1] ++ [A0]).
 listerine.
 contradiction.
 Qed.
@@ -106,13 +95,10 @@ Lemma test_notelem_xI01_1110:
 Proof.
 elemt.
 elemt.
-wreckit.
 elemt.
-wreckit.
 elemt.
 elemt.
 subst.
-cbn in x3.
 listerine.
 Qed.
 
@@ -121,15 +107,14 @@ Lemma test_notelem_x11star_0:
 Proof.
 elemt.
 elemt.
-wreckit.
 elemt.
 - subst.
   listerine.
   subst.
   elemt.
 - elemt.
-  + wreckit. subst. inversion H2. subst. cbn in x3. listerine.
-  + wreckit. subst. inversion H2. subst. cbn in x3. listerine.
+  + subst. elemt. subst. listerine.
+  + subst. invs H1. invs H5. invs H9. listerine.
 Qed.
 
 Lemma test_notelem_starx1_0:
@@ -173,7 +158,7 @@ Proof.
 untie.
 invs H.
 wreckit.
-listerine; (try invs L).
+listerine; (try invs H1).
 - apply test_notelem_starx1_110.
   assumption.
 Qed.
@@ -181,7 +166,7 @@ Qed.
 Lemma test_elem_xI111I_1110:
     ([A1] ++ [A1] ++ [A1] ++ [A0]) `elem` {{xI111I}}.
 Proof.
-constructor.
+destruct_concat_lang.
 exists [].
 exists ([A1] ++ [A1] ++ [A1] ++ [A0]).
 exists eq_refl.
@@ -189,19 +174,19 @@ split.
 - constructor.
   wreckit.
   untie.
-- constructor.
+- destruct_concat_lang.
   exists [A1].
   exists ([A1] ++ [A1] ++ [A0]).
   exists eq_refl.
   split.
   + constructor.
-  + constructor.
+  + destruct_concat_lang.
     exists [A1].
     exists ([A1] ++ [A0]).
     exists eq_refl.
     split.
     * constructor.
-    * constructor.
+    * destruct_concat_lang.
       exists [A1].
       exists [A0].
       exists eq_refl.
@@ -265,7 +250,7 @@ untie.
 invs H.
 wreckit.
 apply R1.
-constructor.
+destruct_concat_lang.
 exists [A1].
 exists [A1; A1].
 exists eq_refl.

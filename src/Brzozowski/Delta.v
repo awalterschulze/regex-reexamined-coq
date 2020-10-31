@@ -6,6 +6,7 @@ Require Import CoqStock.Untie.
 Require Import CoqStock.WreckIt.
 
 Require Import Brzozowski.Alphabet.
+Require Import Brzozowski.ConcatLang.
 Require Import Brzozowski.Regex.
 Require Import Brzozowski.Language.
 
@@ -115,7 +116,7 @@ Theorem delta_concat_is_and_lambda: forall (p q: regex),
 Proof.
 intros.
 constructor.
-constructor.
+destruct_concat_lang.
 exists [].
 exists [].
 assert ([] ++ [] = (@nil alphabet)). cbn. reflexivity.
@@ -138,7 +139,7 @@ Theorem delta_concat_is_and:
 Proof.
 intros.
 invs delta_p; invs delta_q; cbn; constructor; try untie.
-- constructor.
+- destruct_concat_lang.
   exists []. exists []. exists eq_refl.
   split; assumption.
 - invs H1. wreckit. listerine. subst.
@@ -436,7 +437,7 @@ induction r.
   invs IHr1;
   invs IHr2.
   + apply delta_lambda.
-    constructor.
+    destruct_concat_lang.
     exists [].
     exists [].
     exists eq_refl.
@@ -503,9 +504,9 @@ inversion_clear H.
   + inversion H0.
   + cbn. reflexivity.
   + inversion H0.
-  + invs H0. wreckit. listerine. subst.
-    remember (IHr1 L).
-    remember (IHr2 R).
+  + invs H0. listerine. subst.
+    remember (IHr1 H1).
+    remember (IHr2 H2).
     cbn.
     rewrite e.
     rewrite e0.
@@ -548,7 +549,7 @@ inversion_clear H.
       -- reflexivity.
       -- exfalso.
          apply H0.
-         constructor.
+         destruct_concat_lang.
          exists [].
          exists [].
          exists eq_refl.

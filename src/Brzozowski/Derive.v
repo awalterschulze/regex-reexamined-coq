@@ -6,6 +6,7 @@ Require Import CoqStock.WreckIt.
 Require Import CoqStock.List.
 
 Require Import Brzozowski.Alphabet.
+Require Import Brzozowski.ConcatLang.
 Require Import Brzozowski.Delta.
 Require Import Brzozowski.Regex.
 Require Import Brzozowski.Language.
@@ -358,25 +359,26 @@ constructor.
 wreckit.
 untie.
 invs H.
+invs H2.
 wreckit.
 listerine.
-- apply delta_lambda in L.
-  apply delta_implies_delta_def in L.
-  apply R2 in R.
-  apply R0.
-  constructor.
+- apply delta_lambda in H0.
+  apply delta_implies_delta_def in H0.
+  apply R2 in H1.
+  apply R.
+  destruct_concat_lang.
   exists [].
   exists s.
   exists eq_refl.
   split.
-  + rewrite L.
+  + rewrite H0.
     constructor.
   + assumption.
-- apply R1 in L.
-  apply L0.
-  constructor.
-  exists L1.
-  exists x0.
+- apply R1 in H0.
+  apply L.
+  destruct_concat_lang.
+  exists L0.
+  exists q.
   exists eq_refl.
   split.
   * assumption.
@@ -403,12 +405,10 @@ constructor.
 split.
 - untie.
   invs H.
-  wreckit.
-  invs L0.
+  invs H1.
 - untie.
   invs H.
-  wreckit.
-  invs L0.
+  invs H1.
 Qed.
 
 (* A helper Lemma for commutes_a_concat *)
@@ -431,12 +431,10 @@ constructor.
 split.
 - untie.
   invs H.
-  wreckit.
-  invs R0.
+  invs H2.
 - untie.
   invs H.
-  wreckit.
-  invs R0.
+  invs H2.
 Qed.
 
 (*

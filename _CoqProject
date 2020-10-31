@@ -37,6 +37,7 @@ src/Brzozowski/Alphabet.v
 src/Brzozowski/Boolean.v
 src/Brzozowski/Decidable.v
 src/Brzozowski/Delta.v
+src/Brzozowski/ConcatLang.v
 src/Brzozowski/Derive.v
 src/Brzozowski/ExampleR.v
 src/Brzozowski/Language.v
