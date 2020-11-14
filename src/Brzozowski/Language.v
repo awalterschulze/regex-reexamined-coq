@@ -125,7 +125,7 @@ Proof.
     + apply H. assumption.
 Qed.
 
-Theorem star_lang_morph:
+Theorem star_lang_morph':
   forall (x y : lang) (s: str),
   (x {<->} y)
   -> (s `elem` star_lang x <-> s `elem` star_lang y).
@@ -147,16 +147,9 @@ Proof.
 intros R R' Riff.
 unfold "{<->}" in *.
 intro s.
-set (n := length s).
-(* TODO: apply star_lang_morph_helper, but first prove it *)
-(* apply (star_lang_morph_helper R R' s (length s)).
-- trivial.
-- unfold "{<->}" in *.
-  intro s0.
-  specialize Riff with s0.
-  assumption. *)
-(* TODO: Good First Issue *)
-Abort.
+apply star_lang_morph'.
+assumption.
+Qed.
 
 (*
     *Boolean function*. We shall denote any Boolean function of $P$ and $Q$ by $f(P, Q)$.
@@ -316,6 +309,16 @@ Example NorLangMorphSetoidRewrite: forall (r s: lang),
   nor_lang (concat_lang emptyset_lang r) s
   {<->}
   nor_lang emptyset_lang s.
+Proof.
+intros.
+rewrite lemma_for_setoid_example_concat_lang_emptyset_l_is_emptyset.
+reflexivity.
+Qed.
+
+Example StarLangNorLangMorphSetoidRewrite: forall (r s: lang),
+  star_lang (nor_lang (concat_lang emptyset_lang r) s)
+  {<->}
+  star_lang (nor_lang emptyset_lang s).
 Proof.
 intros.
 rewrite lemma_for_setoid_example_concat_lang_emptyset_l_is_emptyset.
