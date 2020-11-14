@@ -13,24 +13,308 @@ Require Import Brzozowski.Language.
 Require Import Brzozowski.Regex.
 
 Definition regex_is_decidable (r: regex) :=
-    (forall s: str, s `elem` {{r}} \/ s `notelem` {{r}}).
+  (forall s: str, s `elem` {{r}} \/ s `notelem` {{r}}).
+
+Theorem prefix_length_leq:
+  forall (p q s: str),
+  p ++ q = s -> length p <= length s.
+Proof.
+intros.
+rewrite <- H.
+autorewrite with list.
+auto with arith.
+Qed.
+
+Theorem str_length_gt_zero:
+  forall (p: str),
+  p <> [] -> 0 < length p.
+Proof.
+induction p.
+- contradiction.
+- cbn.
+  lia.
+Qed.
+
+Theorem prefix_is_gt_zero_and_leq:
+  forall (p q s: str),
+  (p <> []) -> p ++ q = s ->
+  (0 < length p <= length s).
+Proof.
+intros.
+remember (prefix_length_leq p q s).
+remember str_length_gt_zero.
+(* This theorem clearly follows by the above theorems. *)
+auto.
+Qed.
+
+Theorem prefix_is_not_empty_with_index_gt_zero:
+  forall (s: str) (index: nat) (index_range: 0 < index <= length s),
+    firstn index s <> [].
+Proof.
+intros.
+induction index.
+- lia.
+- destruct index_range.
+  induction s.
+  + cbn in H0. lia.
+  + cbn. auto with list.
+Qed.
+
+Lemma star_lang_a_split_matches:
+  forall (r: regex) (s: str) (s_is_not_empty: s <> []),
+    s `elem` {{ star r }}
+  <->
+  (exists (index: nat) (index_range : 0 < index <= length s),
+    let prefix := firstn index s in
+    let suffix := skipn index s in
+    (prefix `elem` {{r}} /\ suffix `elem` {{star r}})).
+Proof.
+intros.
+split.
+- intro s_elem_star_r.
+  destruct s_elem_star_r.
+  + contradiction.
+  + exists (length p).
+    exists (prefix_is_gt_zero_and_leq p q s H0 H).
+    intros.
+    unfold prefix.
+    unfold suffix.
+    rewrite <- H.
+    rewrite (firstn_length_prefix_is_prefix p q).
+    rewrite (skipn_length_prefix_is_suffix p q).
+    split; assumption.
+- intros split_of_star_r.
+  destruct split_of_star_r as [index [index_range [prefix_r suffix_r]]].
+  apply (mk_star_more {{r}} s (firstn index s) (skipn index s)).
+  + auto with list.
+  + now apply prefix_is_not_empty_with_index_gt_zero.
+  + assumption.
+  + assumption.
+Qed.
+
+Lemma star_lang_no_split_matches:
+  forall (r: regex) (s: str) (s_is_not_empty: s <> []),
+  s `notelem` {{ star r }}
+  <->
+  (forall (index: nat) (index_range : 0 < index <= length s),
+     let prefix := firstn index s in
+     let suffix := skipn index s in
+     (not (prefix `elem` {{r}} /\ suffix `elem` {{star r}}))).
+Proof.
+intros.
+split.
+- intros s_not_elem_star_r.
+  intros index index_range.
+  intros.
+  untie.
+  unfold not in s_not_elem_star_r.
+  destruct H as [prefixr suffixr].
+  apply s_not_elem_star_r.
+  apply (mk_star_more {{r}} s (firstn index s) (skipn index s)).
+  + auto with list.
+  + now apply prefix_is_not_empty_with_index_gt_zero.
+  + assumption.
+  + assumption.
+- intros split_of_not_star_r.
+  untie.
+  destruct H.
+  + contradiction.
+  + set (prefix_is_gt_zero_and_leq p q s H0 H) as p_range.
+    set (split_of_not_star_r (length p) p_range) as specialized_split_of_not_star_r.
+    apply specialized_split_of_not_star_r.
+    split.
+    * rewrite <- H.
+      rewrite firstn_length_prefix_is_prefix.
+      assumption.
+    * rewrite <- H.
+      rewrite skipn_length_prefix_is_suffix.
+      assumption.
+Qed.
+
+Theorem star_lang_a_split_matches_or_no_split_matches:
+  forall (r: regex) (s: str) (s_is_not_empty: s <> []),
+    s `elem` {{star r}}
+  \/
+    s `notelem` {{star r}}
+  <->
+    (exists (index: nat) (index_range : 0 < index <= length s),
+      (firstn index s `elem` {{r}} /\ skipn index s `elem` {{star r}}))
+  \/
+    (forall (index: nat) (index_range : 0 < index <= length s),
+      (not (firstn index s `elem` {{r}} /\ skipn index s `elem` {{star r}}))).
+Proof.
+intros.
+destruct (star_lang_a_split_matches r s s_is_not_empty).
+destruct (star_lang_no_split_matches r s s_is_not_empty).
+(* This theorem clearly follows by the above theorems. *)
+split; intros decide; destruct decide; eauto.
+Qed.
+
+Lemma breakdown_leq (n: nat):
+  forall i: nat, i <= S n -> i <= n \/ i = S n.
+Proof.
+  intros.
+  lia.
+Qed.
+
+Lemma deciding_for_all_elements_in_finite_sets (P: nat -> Prop) (n: nat):
+  (forall (i : nat), i <= n -> (P i \/ ~ (P i))) ->
+  ((forall (i: nat), i <= n -> ~ (P i)) \/ (exists (i: nat) (pi: i <= n), P i)).
+Proof.
+   intro.
+    induction n.
+    + specialize H with (i := 0).
+      assert (0 <= 0) as ofcourse by lia.
+      destruct (H ofcourse).
+      * right.
+        exists 0.
+        split; assumption.
+      * left.
+        intros.
+        assert (i = 0) by lia.
+        subst.
+        assumption.
+    + assert (forall i : nat, i <= n -> P i \/ ~ P i) as Hsmaller.
+      * intros.
+        apply H.
+        lia.
+
+      * apply IHn in Hsmaller.
+        destruct Hsmaller.
+        -- assert (S n <= S n) as eq_so_leq by lia.
+           destruct (H (S n) eq_so_leq).
+           ++ right.
+              exists (S n).
+              split; assumption.
+           ++ left.
+              intros i ibounded.
+              destruct (breakdown_leq n i ibounded).
+              ** apply H0.
+                 assumption.
+              ** subst.
+                 assumption.
+        -- right.
+           destruct H0 as [i [ibounded imatch]].
+           exists i.
+           split.
+           ++ lia.
+           ++ assumption.
+Qed.
+
+Lemma breakdown_leq_one (n: nat):
+  forall i: nat, 0 < i <= S n -> 0 < i <= n \/ i = S n.
+Proof.
+  intros.
+  lia.
+Qed.
+
+Theorem deciding_for_all_elements_of_non_empty_finite_sets (P: nat -> Prop) (n: nat):
+  (forall (i : nat), 0 < i <= n -> (P i \/ ~ (P i))) ->
+  ((forall (i: nat), 0 < i <= n -> ~ (P i)) \/ (exists (i: nat) (pi: 0 < i <= n), P i)).
+Proof.
+  intro.
+  induction n.
+  + left.
+    intros.
+    lia.
+  + assert (forall i : nat, 0 < i <= n -> P i \/ ~ P i) as Hsmaller.
+    * intros.
+      apply H.
+      lia.
+    * apply IHn in Hsmaller.
+      destruct Hsmaller.
+      -- assert (0 < S n <= S n) as eq_so_leq by lia.
+         destruct (H (S n) eq_so_leq).
+         ++ right.
+            exists (S n).
+            split; assumption.
+         ++ left.
+            intros i ibounded.
+            destruct (breakdown_leq_one n i ibounded).
+            ** apply H0.
+               assumption.
+            ** subst.
+               assumption.
+      -- right.
+         destruct H0 as [i [ibounded imatch]].
+         exists i.
+         split.
+         ++ lia.
+         ++ assumption.
+Qed.
+
+Lemma denotation_star_is_decidable_helper (r: regex) (n: nat):
+  regex_is_decidable r ->
+  (forall
+    (s: str)
+    (range: length s <= n),
+    (s `elem` {{star r}} \/ s `notelem` {{star r}})
+  ).
+Proof.
+intros.
+generalize dependent s.
+induction n.
+- left.
+  apply length_zero_or_smaller_string_is_empty in range.
+  rewrite range.
+  constructor.
+- intros s max_length_S.
+  unfold regex_is_decidable in H.
+  destruct s.
+  + left. constructor.
+  + assert (a :: s <> []) as a_is_not_empty; listerine.
+    apply (star_lang_a_split_matches_or_no_split_matches r (a :: s) a_is_not_empty).
+    rewrite or_comm.
+    apply deciding_for_all_elements_of_non_empty_finite_sets with (n := (length (a :: s))).
+    intros.
+    set (prefix := firstn i (a :: s)).
+    set (suffix := skipn i (a :: s)).
+    specialize H with prefix.
+    specialize IHn with suffix.
+    assert (length suffix <= n).
+    * unfold suffix.
+      destruct H0.
+      rewrite skipn_length.
+      lia.
+    * apply IHn in H1.
+      clear IHn max_length_S a_is_not_empty H0.
+      destruct H, H1.
+      --- left. auto.
+      --- right. untie. destruct H1. contradiction.
+      --- right. untie. destruct H1. contradiction.
+      --- right. untie. destruct H1. contradiction.
+Qed.
+
+Lemma denotation_star_is_decidable (r: regex):
+  regex_is_decidable r ->
+  regex_is_decidable (star r).
+Proof.
+unfold regex_is_decidable.
+intro Hr.
+intro s.
+apply (denotation_star_is_decidable_helper r (length s) Hr).
+lia.
+Qed.
+
+Definition no_splitting_is_an_elem_for_length (p q: regex) (s: str) (n: nat) :=
+  forall (s1 s2: str),
+  s = s1 ++ s2 ->
+  length s1 <= n ->
+  ((s1 `notelem` {{ p }} \/ s2 `notelem` {{ q }})).
+
+Definition a_splitting_is_an_elem_for_length (p q: regex) (s: str) (n: nat) :=
+  exists (s1 s2: str),
+  s = s1 ++ s2 /\
+  length s1 <= n /\
+  (s1 `elem` {{ p }} /\ s2 `elem` {{ q }}).
 
 Lemma denotation_concat_is_decidable_helper (p q: regex):
   regex_is_decidable p ->
   regex_is_decidable q ->
   (forall (s: str) (n : nat),
-      (* prove that either all splittings don't match, or there is a match;
-         but only consider a subset of all splttings
-       *)
-      (forall (s1 s2: str),
-          s = s1 ++ s2 ->
-          length s1 <= n ->
-          (* does not match concat pairwise *)
-          ((s1 `notelem` {{ p }} \/ s2 `notelem` {{ q }})))
-      \/ (exists (s1 s2: str),
-            s = s1 ++ s2 /\
-            length s1 <= n /\
-            (s1 `elem` {{ p }} /\ s2 `elem` {{ q }}))).
+    no_splitting_is_an_elem_for_length p q s n
+    \/ a_splitting_is_an_elem_for_length p q s n
+  ).
 Proof.
   intros Hdecp Hdecq s n.
   induction n.
@@ -131,23 +415,6 @@ Proof.
 
 Qed.
 
-
-
-(*
-
-(s : str)
-
-s `elem` (concat p q)
-or not
-s `elem` (concat p q)
-
-
-
-
-
-*)
-
-
 Lemma denotation_concat_is_decidable (p q: regex):
   regex_is_decidable p ->
   regex_is_decidable q ->
@@ -166,7 +433,7 @@ Proof.
     symmetry in H.
 
     set (Hlen := prefix_leq_length s p0 q0 H).
-
+    unfold no_splitting_is_an_elem_for_length in HAllDontMatch.
     specialize HAllDontMatch with p0 q0.
     destruct (HAllDontMatch H Hlen); auto.
 
@@ -292,191 +559,6 @@ left.
 constructor.
 Qed.
 
-
-Lemma denotation_star_is_decidable_helper (r: regex) (k: nat) (s: str) (a: alphabet):
-  regex_is_decidable r ->
-  (forall (s': str),
-      length s' < length (a::s) -> (
-        s' `elem` {{star r}}
-           \/ s' `notelem` {{star r}})) ->
-      (forall (s1 s2: str),
-          length s1 <= k ->
-          (a::s) = a::s1 ++ s2 ->
-          (* does not match concat pairwise *)
-          ((a::s1 `notelem` {{ r }} \/ s2 `notelem` {{ star r }})))
-      \/ (exists (s1 s2: str),
-            length s1 <= k /\
-            (a::s) = a::s1 ++ s2 /\
-            (a::s1 `elem` {{ r }} /\ s2 `elem` {{ star r }})).
-Proof.
-  intro Hdecr.
-  intro Hdecstarr.
-  induction k.
-  -
-    unfold regex_is_decidable in Hdecr.
-    specialize Hdecr with [a].
-    destruct Hdecr as [ Hrmatch | Hrnomatch ].
-    + destruct (Hdecstarr s) as [ Hstarmatch | Hstarnomatch].
-      * admit.
-      * right.
-        exists [].
-        exists s.
-        wreckit.
-        -- now listerine.
-        -- now listerine.
-        -- assumption.
-        -- assumption.
-      * admit.
-    + destruct (Hdecstarr s) as [ Hstarmatch | Hstarnomatch].
-      * admit.
-      * left.
-        admit.
-      * left. admit.
-
-  -
-    unfold regex_is_decidable in Hdecr.
-    destruct IHk as [ IHallnomatch | IHexistsmatch ].
-    + (* only check case length s1 = S k *)
-
-      (* s = a::s1 ++ s2
-      where length s1 = k + 1
-
-so s1 = (skipn 1 (firstn (k + 2) s))
-
-       *)
-      set (s1 := (firstn (S k) s)).
-      set (s2 := (skipn (S k) s)).
-
-      specialize Hdecr with (a::s1).
-      destruct Hdecr as [ Hrmatch | Hrnomatch ].
-      *
-        destruct (Hdecstarr s2) as [ Hstarmatch | Hstarnomatch ].
-        -- admit.
-        --
-          right.
-          exists s1.
-          exists s2.
-          wreckit.
-          ++ admit.
-          ++ admit.
-          ++ assumption.
-          ++ assumption.
-        --
-          left.
-          intros s1' s2'.
-          intro Hlen.
-          intro Happ.
-          inversion Hlen.
-          ++
-            replace s1' with s1.
-            replace s2' with s2.
-            right. assumption.
-
-            (* admit; use listerine *)
-            admit.
-            admit.
-
-          ++ specialize IHallnomatch with s1' s2'.
-             apply IHallnomatch.
-             assumption.
-             assumption.
-
-      * admit. (* probably (almost) copy of the above *)
-    +
-      right.
-
-      destruct IHexistsmatch as [ s1 [ s2 [Hlen] ] ].
-      destruct H as [ Happ [ Hstart Htail ]].
-      exists s1.
-      exists s2.
-
-      wreckit.
-      * lia.
-      * assumption.
-      * assumption.
-      * assumption.
-(* TODO: Good First Issue *)
-Abort.
-
-
-Lemma denotation_star_is_decidable_for_small_strings (r: regex) (n: nat):
-  (regex_is_decidable r)
-  -> (forall (s: str),
-        length s <= n
-        ->
-        (s `elem` {{star r}}
-            \/ s `notelem` {{star r}})).
-Proof.
-  intro Hdec.
-  induction n.
-  - intros s Hlen.
-    apply length_zero_or_smaller_string_is_empty in Hlen.
-    subst.
-    apply denotation_star_is_decidable_for_empty_string.
-  - intros s Hlen.
-    destruct s.
-    + apply denotation_star_is_decidable_for_empty_string.
-    + simpl in Hlen.
-      (* TODO: apply denotation_star_is_decidable_helper, but first prove it *)
-      (* apply (denotation_star_is_decidable_helper r n s a) in Hdec.
-      * wreckit.
-        --- right.
-            untie.
-            inversion H.
-            +++ discriminate.
-            +++ invs H0.
-                wreckit. 
-
-
-
-
-      * intros. apply IHn. admit. *)
-
-    (* TODO: NEXT STEP: use the denotation_star_is_decidable_helper
-to prove this. Then use this to prove denotation_star_is_decidable
-     *)
-
-
-    (*
-
-Let s = s1 ++ s2
-
-then ....
-
-     *)
-
-
-    (*
-we know: doesn't match empty (b/c of length)
-
-we know: (concat r (star r)) is decidable
-
-take any splitting s = s1 ++ s2
-where s1 matches r and s1 is not empty
-(But: also need: there are only finitely many such splittings. (Need this
-for constructivity (no excluded middle).))
-
-For every splitting s = s1 ++ s2
-where ...
-
-we want to prove:
-     s1
-
-
-
-
-     *)
-
-Abort.
-
-Lemma denotation_star_is_decidable (r: regex):
-  regex_is_decidable r -> regex_is_decidable (star r).
-Proof.
-  (* TODO: Help Wanted *)
-  (* See NEXT STEP above in denotation_star_is_decidable_for_small_strings
-for our idea on how to prove this. *)
-Abort.
-
 Lemma denotation_is_decidable_on_empty_string (r: regex):
   [] `elem` {{ r }} \/ [] `notelem` {{ r }}.
 Proof.
@@ -505,9 +587,10 @@ induction r.
 - intros. apply denotation_concat_is_decidable;
   unfold regex_is_decidable;
   assumption.
-- admit. (* TODO: Help Wanted *)
+- apply denotation_star_is_decidable.
+  assumption.
 - intros.
   specialize IHr1 with s.
   specialize IHr2 with s.
   apply denotation_nor_is_decidable; assumption.
-Abort.
+Qed.

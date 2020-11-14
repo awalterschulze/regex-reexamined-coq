@@ -11,7 +11,7 @@ Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Regex.
 
 (* A string is a list of characters. *)
-Definition str := (list alphabet).
+Definition str := list alphabet.
 (* A regular expression denotes a set of strings called a _language_. *)
 Definition lang := str -> Prop.
 Definition elem (l: lang) (s: str): Prop := l s.

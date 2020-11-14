@@ -80,7 +80,7 @@ Proof.
   assumption.
 Qed.
 
-(* 
+(*
   We can now prove the same theorem as
   `length_zero_or_smaller_string_is_empty`
   simply with `auto with list`,
@@ -125,6 +125,7 @@ Hint Rewrite
   Coq.Lists.List.skipn_nil (* skipn n ([] : list A) = [] *)
   Coq.Lists.List.skipn_cons (* skipn (S n) (a::l) = skipn n l *)
   Coq.Lists.List.skipn_all (* skipn (length l) l = nil *)
+  Coq.Lists.List.skipn_length (* length (skipn n l) = length l - n *)
   Coq.Lists.List.firstn_skipn (* firstn n l ++ skipn n l = l *)
   : list.
 
@@ -181,3 +182,15 @@ Hint Resolve
   split_list
   prefix_leq_length
   : list.
+
+Lemma skipn_length_prefix_is_suffix {A: Type} (prefix suffix: list A):
+  skipn (length prefix) (prefix ++ suffix) = suffix.
+Proof.
+(* TODO: Good First Issue *)
+Admitted.
+
+Lemma firstn_length_prefix_is_prefix {A: Type} (prefix suffix: list A):
+  firstn (length prefix) (prefix ++ suffix) = prefix.
+Proof.
+(* TODO: Good First Issue *)
+Admitted.
