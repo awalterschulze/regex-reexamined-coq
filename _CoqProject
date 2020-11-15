@@ -35,7 +35,6 @@ src/Reexamined/smart_or.v
 src/Reexamined/SimplificationRules.v
 
 src/Brzozowski/Alphabet.v
-src/Brzozowski/Boolean.v
 src/Brzozowski/Decidable.v
 src/Brzozowski/Delta.v
 src/Brzozowski/ConcatLang.v
@@ -43,5 +42,6 @@ src/Brzozowski/Derive.v
 src/Brzozowski/ExampleR.v
 src/Brzozowski/Language.v
 src/Brzozowski/Regex.v
+src/Brzozowski/Setoid.v
 src/Brzozowski/Simplify.v
 src/Brzozowski/StarLang.v

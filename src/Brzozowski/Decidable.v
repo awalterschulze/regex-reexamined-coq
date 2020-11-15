@@ -447,6 +447,13 @@ Proof.
     split; assumption.
 Qed.
 
+Theorem notelem_emptyset: forall (s: str),
+  s `notelem` emptyset_lang.
+Proof.
+intros.
+untie.
+Qed.
+
 Lemma denotation_emptyset_is_decidable (s: str):
   s `elem` {{ emptyset }} \/ s `notelem` {{ emptyset }}.
 Proof.
