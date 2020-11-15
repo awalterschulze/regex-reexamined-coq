@@ -14,6 +14,46 @@ Require Import Brzozowski.ConcatLang.
 Require Import Brzozowski.Language.
 Require Import Brzozowski.Regex.
 
+(*
+TODO: Good First Issue
+Create a theorem for and prove a simplification rule below:
+
+## Simplification rules mentioned in the Brzozowski paper.
+
+R + R = R
+P + Q = Q + P
+(P + Q) + R = P + (Q + R)
+
+R + ∅ = R
+∅ + R = R
+concat_lang_emptyset_r_is_emptyset: R,∅ = ∅
+concat_lang_emptyset_l_is_emptyset: ∅,R = ∅
+concat_lang_lambda_r_is_r: R,λ = R
+concat_lang_lambda_l_is_l: λ,R = R
+
+~∅+X = ~∅
+~∅&X = X
+
+~(P+Q) = ~P&~Q
+~(P&Q) = ~P+~Q
+
+Q&~λ = Q where nullable(Q) = false
+
+## Extra simplification from the Scott Owen's regular expression re-examined paper
+
+r&r = r
+r&s = s&r
+(r&s)&t = r&(s&t)
+∅&r = ∅
+
+(r,s),t = r,(s,t)
+
+r** = r*
+λ* = λ
+∅* = λ
+not_lang_not_lang_is_lang: ~~r = r
+*)
+
 Theorem not_lang_not_lang_is_lang: forall (r: regex),
   not_lang (not_lang {{r}})
   {<->}
@@ -71,15 +111,6 @@ split.
   invs H2.
 - intros.
   invs H.
-Qed.
-
-Theorem concat_lang_emptyset_r: forall (r: lang) (s: str),
-  s `notelem` concat_lang r emptyset_lang.
-Proof.
-intros.
-untie.
-invs H.
-invs H2.
 Qed.
 
 Theorem concat_lang_lambda_l_is_l: forall (r: lang),
