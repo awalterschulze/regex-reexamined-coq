@@ -32,6 +32,7 @@ src/Reexamined/simplified.v
 src/Reexamined/size.v
 src/Reexamined/smart.v
 src/Reexamined/smart_or.v
+src/Reexamined/SimplificationRules.v
 
 src/Brzozowski/Alphabet.v
 src/Brzozowski/Boolean.v
