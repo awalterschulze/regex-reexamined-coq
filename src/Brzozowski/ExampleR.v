@@ -5,7 +5,6 @@ Require Import CoqStock.Untie.
 Require Import CoqStock.WreckIt.
 
 Require Import Brzozowski.Alphabet.
-Require Import Brzozowski.Boolean.
 Require Import Brzozowski.Regex.
 Require Import Brzozowski.ConcatLang.
 Require Import Brzozowski.Language.
@@ -24,6 +23,13 @@ Definition xI111I := concat I (concat x1 (concat x1 (concat x1 I))).
 Definition xI01 := concat I (concat x0 x1).
 Definition x11star := concat x1 (star x1).
 Definition exampleR := and xI111I (complement (or xI01 x11star)).
+
+Theorem notelem_emptyset: forall (s: str),
+  s `notelem` emptyset_lang.
+Proof.
+intros.
+untie.
+Qed.
 
 Lemma test_elem_xI01_101:
   ([A1] ++ [A0] ++ [A1]) `elem` {{xI01}}.
