@@ -186,11 +186,72 @@ Hint Resolve
 Lemma skipn_length_prefix_is_suffix {A: Type} (prefix suffix: list A):
   skipn (length prefix) (prefix ++ suffix) = suffix.
 Proof.
-(* TODO: Good First Issue *)
-Admitted.
+auto with list.
+Qed.
 
 Lemma firstn_length_prefix_is_prefix {A: Type} (prefix suffix: list A):
   firstn (length prefix) (prefix ++ suffix) = prefix.
 Proof.
-(* TODO: Good First Issue *)
-Admitted.
+auto with list.
+Qed.
+
+Theorem prefix_length_leq:
+  forall {A: Type} (prefix suffix list: list A),
+  prefix ++ suffix = list -> length prefix <= length list.
+Proof.
+intros.
+rewrite <- H.
+autorewrite with list.
+auto with arith.
+Qed.
+
+Hint Resolve
+  prefix_length_leq
+  : list.
+
+Theorem length_gt_zero:
+  forall {A: Type} (xs: list A),
+  xs <> [] -> 0 < length xs.
+Proof.
+induction xs.
+- contradiction.
+- cbn.
+  lia.
+Qed.
+
+Hint Resolve
+  length_gt_zero
+  : list.
+
+Theorem prefix_is_gt_zero_and_leq:
+  forall {A: Type} (prefix suffix list: list A),
+  (prefix <> []) -> prefix ++ suffix = list ->
+  (0 < length prefix <= length list).
+Proof.
+intros.
+remember (prefix_length_leq prefix suffix list).
+remember (length_gt_zero prefix).
+(* This theorem clearly follows by the above theorems. *)
+auto.
+Qed.
+
+Hint Resolve
+  prefix_is_gt_zero_and_leq
+  : list.
+
+Theorem prefix_is_not_empty_with_index_gt_zero:
+  forall {A: Type} (xs: list A) (index: nat) (index_range: 0 < index <= length xs),
+    firstn index xs <> [].
+Proof.
+intros.
+induction index.
+- lia.
+- destruct index_range.
+  induction xs.
+  + cbn in H0. lia.
+  + cbn. auto with list.
+Qed.
+
+Hint Resolve
+  prefix_is_not_empty_with_index_gt_zero
+  : list.

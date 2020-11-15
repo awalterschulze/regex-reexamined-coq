@@ -15,51 +15,6 @@ Require Import Brzozowski.Regex.
 Definition regex_is_decidable (r: regex) :=
   (forall s: str, s `elem` {{r}} \/ s `notelem` {{r}}).
 
-Theorem prefix_length_leq:
-  forall (p q s: str),
-  p ++ q = s -> length p <= length s.
-Proof.
-intros.
-rewrite <- H.
-autorewrite with list.
-auto with arith.
-Qed.
-
-Theorem str_length_gt_zero:
-  forall (p: str),
-  p <> [] -> 0 < length p.
-Proof.
-induction p.
-- contradiction.
-- cbn.
-  lia.
-Qed.
-
-Theorem prefix_is_gt_zero_and_leq:
-  forall (p q s: str),
-  (p <> []) -> p ++ q = s ->
-  (0 < length p <= length s).
-Proof.
-intros.
-remember (prefix_length_leq p q s).
-remember str_length_gt_zero.
-(* This theorem clearly follows by the above theorems. *)
-auto.
-Qed.
-
-Theorem prefix_is_not_empty_with_index_gt_zero:
-  forall (s: str) (index: nat) (index_range: 0 < index <= length s),
-    firstn index s <> [].
-Proof.
-intros.
-induction index.
-- lia.
-- destruct index_range.
-  induction s.
-  + cbn in H0. lia.
-  + cbn. auto with list.
-Qed.
-
 Lemma star_lang_a_split_matches:
   forall (r: regex) (s: str) (s_is_not_empty: s <> []),
     s `elem` {{ star r }}
