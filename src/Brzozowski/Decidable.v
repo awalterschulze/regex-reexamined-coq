@@ -1,3 +1,11 @@
+(*
+In this module we prove the denotation of regular expressions is decidable, using:
+```
+Theorem denotation_is_decidable (r: regex) (s: str):
+  s `elem` {{ r }} \/ s `notelem` {{ r }}.
+```
+*)
+
 Require Import Coq.micromega.Lia.
 
 Require Import CoqStock.DubStep.
@@ -15,26 +23,99 @@ Require Import Brzozowski.Regex.
 Definition regex_is_decidable (r: regex) :=
   (forall s: str, s `elem` {{r}} \/ s `notelem` {{r}}).
 
+Lemma denotation_emptyset_is_decidable (s: str):
+  s `elem` {{ emptyset }} \/ s `notelem` {{ emptyset }}.
+Proof.
+right.
+untie.
+Qed.
+
+Lemma denotation_lambda_is_decidable (s: str):
+  s `elem` {{ lambda }} \/ s `notelem` {{ lambda }}.
+Proof.
+destruct s.
+- left. constructor.
+- right. untie. invs H.
+Qed.
+
+Lemma denotation_symbol_is_decidable (s: str) (a: alphabet):
+  s `elem` {{ symbol a }} \/ s `notelem` {{ symbol a }}.
+Proof.
+destruct s.
+- right. untie. invs H.
+- destruct a, a0.
+  + destruct s.
+    * left.
+      constructor.
+    * right.
+      untie.
+      invs H.
+  + right.
+    untie.
+    invs H.
+  + right.
+    untie.
+    invs H.
+  + destruct s.
+    * left.
+      constructor.
+    * right.
+      untie.
+      invs H.
+Qed.
+
+Lemma denotation_nor_is_decidable (p q: regex) (s: str):
+  s `elem` {{ p }} \/ s `notelem` {{ p }} ->
+  s `elem` {{ q }} \/ s `notelem` {{ q }} ->
+  s `elem` {{ nor p q }} \/ s `notelem` {{ nor p q }}.
+Proof.
+simpl.
+intros.
+wreckit.
+- right.
+  untie.
+  invs H.
+  wreckit.
+  contradiction.
+- right.
+  untie.
+  invs H.
+  wreckit.
+  contradiction.
+- right.
+  untie.
+  invs H.
+  wreckit.
+  contradiction.
+- left.
+  constructor.
+  wreckit.
+  * assumption.
+  * assumption.
+Qed.
+
+Definition elem_of_split (r: regex) (s: str) (index: nat) :=
+  let prefix := firstn index s in
+  let suffix := skipn index s in
+  (prefix `elem` {{r}} /\ suffix `elem` {{star r}}).
+
 Lemma star_lang_a_split_matches:
   forall (r: regex) (s: str) (s_is_not_empty: s <> []),
     s `elem` {{ star r }}
   <->
   (exists (index: nat) (index_range : 0 < index <= length s),
-    let prefix := firstn index s in
-    let suffix := skipn index s in
-    (prefix `elem` {{r}} /\ suffix `elem` {{star r}})).
+    elem_of_split r s index
+  ).
 Proof.
 intros.
 split.
 - intro s_elem_star_r.
-  destruct s_elem_star_r.
+  destruct s_elem_star_r as [ | s p q pqs p_not_empty p_elem_r q_elem_star_r ].
   + contradiction.
   + exists (length p).
-    exists (prefix_is_gt_zero_and_leq p q s H0 H).
-    intros.
-    unfold prefix.
-    unfold suffix.
-    rewrite <- H.
+    exists (prefix_is_gt_zero_and_leq p q s p_not_empty pqs).
+    unfold elem_of_split.
+    rewrite <- pqs.
     rewrite (firstn_length_prefix_is_prefix p q).
     rewrite (skipn_length_prefix_is_suffix p q).
     split; assumption.
@@ -52,18 +133,17 @@ Lemma star_lang_no_split_matches:
   s `notelem` {{ star r }}
   <->
   (forall (index: nat) (index_range : 0 < index <= length s),
-     let prefix := firstn index s in
-     let suffix := skipn index s in
-     (not (prefix `elem` {{r}} /\ suffix `elem` {{star r}}))).
+    not (elem_of_split r s index)
+  ).
 Proof.
 intros.
 split.
 - intros s_not_elem_star_r.
   intros index index_range.
-  intros.
-  untie.
+  unfold not.
+  intro elem_split.
   unfold not in s_not_elem_star_r.
-  destruct H as [prefixr suffixr].
+  destruct elem_split as [prefixr suffixr].
   apply s_not_elem_star_r.
   apply (mk_star_more {{r}} s (firstn index s) (skipn index s)).
   + auto with list.
@@ -71,32 +151,36 @@ split.
   + assumption.
   + assumption.
 - intros split_of_not_star_r.
-  untie.
-  destruct H.
+  unfold not.
+  intro s_elem_star_r.
+  destruct s_elem_star_r as [ | s p q pqs p_not_empty p_elem_r q_elem_star_r ].
   + contradiction.
-  + set (prefix_is_gt_zero_and_leq p q s H0 H) as p_range.
+  + set (prefix_is_gt_zero_and_leq p q s p_not_empty pqs) as p_range.
     set (split_of_not_star_r (length p) p_range) as specialized_split_of_not_star_r.
     apply specialized_split_of_not_star_r.
+    unfold elem_of_split.
     split.
-    * rewrite <- H.
+    * rewrite <- pqs.
       rewrite firstn_length_prefix_is_prefix.
       assumption.
-    * rewrite <- H.
+    * rewrite <- pqs.
       rewrite skipn_length_prefix_is_suffix.
       assumption.
 Qed.
 
 Theorem star_lang_a_split_matches_or_no_split_matches:
   forall (r: regex) (s: str) (s_is_not_empty: s <> []),
-    s `elem` {{star r}}
-  \/
-    s `notelem` {{star r}}
+      s `elem` {{star r}}
+    \/
+      s `notelem` {{star r}}
   <->
-    (exists (index: nat) (index_range : 0 < index <= length s),
-      (firstn index s `elem` {{r}} /\ skipn index s `elem` {{star r}}))
-  \/
-    (forall (index: nat) (index_range : 0 < index <= length s),
-      (not (firstn index s `elem` {{r}} /\ skipn index s `elem` {{star r}}))).
+      (exists (index: nat) (index_range : 0 < index <= length s),
+        elem_of_split r s index
+      )
+    \/
+      (forall (index: nat) (index_range : 0 < index <= length s),
+        not (elem_of_split r s index) 
+      ).
 Proof.
 intros.
 destruct (star_lang_a_split_matches r s s_is_not_empty).
@@ -105,139 +189,170 @@ destruct (star_lang_no_split_matches r s s_is_not_empty).
 split; intros decide; destruct decide; eauto.
 Qed.
 
-Lemma breakdown_leq (n: nat):
-  forall i: nat, i <= S n -> i <= n \/ i = S n.
+(* 
+  lift_index_and_max_len_from_disjunction
+  is used to lift the index and its max length bounds
+  out of a disjunction, by applying it on the goal.
+*)
+Theorem lift_index_and_max_len_from_disjunction
+  (P: nat -> Prop) (len: nat):
+  (forall (index : nat) (bounded_index: index <= len),
+      P index
+    \/ 
+      ~ (P index)
+  )
+  ->
+  (
+    (forall (index: nat) (bounded_index: index <= len),
+      ~ (P index)
+    )
+    \/
+    (exists (index: nat) (bounded_index: index <= len),
+      P index
+    )
+  ).
 Proof.
-  intros.
-  lia.
-Qed.
-
-Lemma deciding_for_all_elements_in_finite_sets (P: nat -> Prop) (n: nat):
-  (forall (i : nat), i <= n -> (P i \/ ~ (P i))) ->
-  ((forall (i: nat), i <= n -> ~ (P i)) \/ (exists (i: nat) (pi: i <= n), P i)).
-Proof.
-   intro.
-    induction n.
-    + specialize H with (i := 0).
-      assert (0 <= 0) as ofcourse by lia.
-      destruct (H ofcourse).
-      * right.
-        exists 0.
-        split; assumption.
-      * left.
-        intros.
-        assert (i = 0) by lia.
-        subst.
-        assumption.
-    + assert (forall i : nat, i <= n -> P i \/ ~ P i) as Hsmaller.
-      * intros.
-        apply H.
-        lia.
-
-      * apply IHn in Hsmaller.
-        destruct Hsmaller.
-        -- assert (S n <= S n) as eq_so_leq by lia.
-           destruct (H (S n) eq_so_leq).
-           ++ right.
-              exists (S n).
-              split; assumption.
-           ++ left.
-              intros i ibounded.
-              destruct (breakdown_leq n i ibounded).
-              ** apply H0.
-                 assumption.
-              ** subst.
-                 assumption.
-        -- right.
-           destruct H0 as [i [ibounded imatch]].
-           exists i.
-           split.
-           ++ lia.
-           ++ assumption.
-Qed.
-
-Lemma breakdown_leq_one (n: nat):
-  forall i: nat, 0 < i <= S n -> 0 < i <= n \/ i = S n.
-Proof.
-  intros.
-  lia.
-Qed.
-
-Theorem deciding_for_all_elements_of_non_empty_finite_sets (P: nat -> Prop) (n: nat):
-  (forall (i : nat), 0 < i <= n -> (P i \/ ~ (P i))) ->
-  ((forall (i: nat), 0 < i <= n -> ~ (P i)) \/ (exists (i: nat) (pi: 0 < i <= n), P i)).
-Proof.
-  intro.
-  induction n.
+intro lifted.
+induction len.
+- specialize lifted with (index := 0).
+  assert (0 <= 0) as ofcourse by lia.
+  destruct (lifted ofcourse) as [P0 | notP0].
+  + right.
+    exists 0.
+    split; assumption.
   + left.
-    intros.
+    intros. 
+    assert (index = 0) as index0 by lia.
+    rewrite index0.
+    assumption.
+- assert (forall (index: nat) (bounded_index: index <= len), P index \/ ~ P index) as smaller_lifted.
+  + intros.
+    apply lifted.
     lia.
-  + assert (forall i : nat, 0 < i <= n -> P i \/ ~ P i) as Hsmaller.
-    * intros.
-      apply H.
-      lia.
-    * apply IHn in Hsmaller.
-      destruct Hsmaller.
-      -- assert (0 < S n <= S n) as eq_so_leq by lia.
-         destruct (H (S n) eq_so_leq).
-         ++ right.
-            exists (S n).
-            split; assumption.
-         ++ left.
-            intros i ibounded.
-            destruct (breakdown_leq_one n i ibounded).
-            ** apply H0.
-               assumption.
-            ** subst.
-               assumption.
-      -- right.
-         destruct H0 as [i [ibounded imatch]].
-         exists i.
-         split.
-         ++ lia.
-         ++ assumption.
+  + apply IHlen in smaller_lifted.
+    destruct smaller_lifted as [notPindex | Pindex].
+    * assert (S len <= S len) as slen_leq by lia.
+      destruct (lifted (S len) slen_leq) as [PSlen | notPSlen].
+      --- right.
+          exists (S len).
+          split; assumption.
+      --- left.
+          intros.
+          assert (forall (len: nat) (index: nat),
+            index <= S len -> index <= len \/ index = S len
+          ) as breakdown_leq by lia.
+          destruct (breakdown_leq len index bounded_index) as [leqlen | eqSlen].
+          +++ apply notPindex.
+              assumption.
+          +++ rewrite eqSlen.
+              assumption.
+    * right.
+      destruct Pindex as [index [bounded_index Pindex]].
+      exists index.
+      split.
+      --- lia.
+      --- assumption.
 Qed.
 
-Lemma denotation_star_is_decidable_helper (r: regex) (n: nat):
-  regex_is_decidable r ->
+(* 
+  lift_index_and_non_empty_and_max_len_bounds_from_disjunction
+  is used to lift the index and its bounds
+  out of a disjunction, by applying it on the goal.
+*)
+Theorem lift_index_and_non_empty_and_max_len_bounds_from_disjunction
+  (P: nat -> Prop) (len: nat):
+  (forall (index : nat) (bounded_index: 0 < index <= len),
+      P index
+    \/ 
+      ~ (P index)
+  )
+  ->
+  (
+    (forall (index: nat) (bounded_index: 0 < index <= len),
+      ~ (P index)
+    )
+    \/
+    (exists (index: nat) (bounded_index: 0 < index <= len),
+      P index
+    )
+  ).
+Proof.
+intro lifted.
+induction len.
+- left.
+  intros.
+  lia.
+- assert (forall (index: nat) (bounded_index: 0 < index <= len), P index \/ ~ P index) as smaller_lifted.
+  + intros.
+    apply lifted.
+    lia.
+  + apply IHlen in smaller_lifted.
+    destruct smaller_lifted as [notPindex | Pindex].
+    * assert (0 < S len <= S len) as slen_leq by lia.
+      destruct (lifted (S len) slen_leq) as [PSlen | notPSlen].
+      --- right.
+          exists (S len).
+          split; assumption.
+      --- left.
+          intros.
+          assert (forall (len: nat) (index: nat),
+            0 < index <= S len -> 0 < index <= len \/ index = S len
+          ) as breakdown_leq by lia.
+          destruct (breakdown_leq len index bounded_index) as [leqlen | eqSlen].
+          +++ apply notPindex.
+              assumption.
+          +++ rewrite eqSlen.
+              assumption.
+    * right.
+      destruct Pindex as [index [bounded_index Pindex]].
+      exists index.
+      split.
+      --- lia.
+      --- assumption.
+Qed.
+
+Lemma denotation_star_is_decidable_bounded_len
+  (r: regex) (len: nat) (decidable_r: regex_is_decidable r):
   (forall
     (s: str)
-    (range: length s <= n),
+    (bounded_len: length s <= len),
     (s `elem` {{star r}} \/ s `notelem` {{star r}})
   ).
 Proof.
 intros.
 generalize dependent s.
-induction n.
+induction len.
 - left.
-  apply length_zero_or_smaller_string_is_empty in range.
-  rewrite range.
+  apply length_zero_or_smaller_string_is_empty in bounded_len.
+  rewrite bounded_len.
   constructor.
 - intros s max_length_S.
-  unfold regex_is_decidable in H.
+  unfold regex_is_decidable in decidable_r.
   destruct s.
   + left. constructor.
   + assert (a :: s <> []) as a_is_not_empty; listerine.
     apply (star_lang_a_split_matches_or_no_split_matches r (a :: s) a_is_not_empty).
     rewrite or_comm.
-    apply deciding_for_all_elements_of_non_empty_finite_sets with (n := (length (a :: s))).
+    apply lift_index_and_non_empty_and_max_len_bounds_from_disjunction with (len := (length (a :: s))).
     intros.
-    set (prefix := firstn i (a :: s)).
-    set (suffix := skipn i (a :: s)).
-    specialize H with prefix.
-    specialize IHn with suffix.
-    assert (length suffix <= n).
+    set (prefix := firstn index (a :: s)).
+    set (suffix := skipn index (a :: s)).
+    specialize decidable_r with prefix.
+    specialize IHlen with suffix.
+    assert (length suffix <= len) as suffix_bound.
     * unfold suffix.
-      destruct H0.
+      destruct bounded_index as [index0 indexlen].
       rewrite skipn_length.
       lia.
-    * apply IHn in H1.
-      clear IHn max_length_S a_is_not_empty H0.
-      destruct H, H1.
+    * apply IHlen in suffix_bound as decidable_suffix.
+      clear IHlen max_length_S a_is_not_empty suffix_bound.
+      unfold elem_of_split.
+      destruct decidable_r as [prefix_elem | prefix_not_elem];
+      destruct decidable_suffix as [suffix_elem | suffix_not_elem].
       --- left. auto.
-      --- right. untie. destruct H1. contradiction.
-      --- right. untie. destruct H1. contradiction.
-      --- right. untie. destruct H1. contradiction.
+      --- right. untie. destruct H. contradiction.
+      --- right. untie. destruct H. contradiction.
+      --- right. untie. destruct H. contradiction.
 Qed.
 
 Lemma denotation_star_is_decidable (r: regex):
@@ -247,7 +362,7 @@ Proof.
 unfold regex_is_decidable.
 intro Hr.
 intro s.
-apply (denotation_star_is_decidable_helper r (length s) Hr).
+apply (denotation_star_is_decidable_bounded_len r (length s) Hr).
 lia.
 Qed.
 
@@ -402,84 +517,6 @@ Proof.
     split; assumption.
 Qed.
 
-Theorem notelem_emptyset: forall (s: str),
-  s `notelem` emptyset_lang.
-Proof.
-intros.
-untie.
-Qed.
-
-Lemma denotation_emptyset_is_decidable (s: str):
-  s `elem` {{ emptyset }} \/ s `notelem` {{ emptyset }}.
-Proof.
-right.
-apply notelem_emptyset.
-Qed.
-
-Lemma denotation_lambda_is_decidable (s: str):
-  s `elem` {{ lambda }} \/ s `notelem` {{ lambda }}.
-Proof.
-destruct s.
-- left. constructor.
-- right. untie. invs H.
-Qed.
-
-Lemma denotation_symbol_is_decidable (s: str) (a: alphabet):
-  s `elem` {{ symbol a }} \/ s `notelem` {{ symbol a }}.
-Proof.
-destruct s.
-- right. untie. invs H.
-- destruct a, a0.
-  + destruct s.
-    * left.
-      constructor.
-    * right.
-      untie.
-      invs H.
-  + right.
-    untie.
-    invs H.
-  + right.
-    untie.
-    invs H.
-  + destruct s.
-    * left.
-      constructor.
-    * right.
-      untie.
-      invs H.
-Qed.
-
-Lemma denotation_nor_is_decidable (p q: regex) (s: str):
-  s `elem` {{ p }} \/ s `notelem` {{ p }} ->
-  s `elem` {{ q }} \/ s `notelem` {{ q }} ->
-  s `elem` {{ nor p q }} \/ s `notelem` {{ nor p q }}.
-Proof.
-simpl.
-intros.
-wreckit.
-- right.
-  untie.
-  invs H.
-  wreckit.
-  contradiction.
-- right.
-  untie.
-  invs H.
-  wreckit.
-  contradiction.
-- right.
-  untie.
-  invs H.
-  wreckit.
-  contradiction.
-- left.
-  constructor.
-  wreckit.
-  * assumption.
-  * assumption.
-Qed.
-
 Lemma denotation_concat_is_decidable_for_empty_string (p q: regex):
   [] `elem` {{ p }} \/ [] `notelem` {{ p }} ->
   [] `elem` {{ q }} \/ [] `notelem` {{ q }} ->
@@ -512,7 +549,6 @@ wreckit.
   listerine.
   contradiction.
 Qed.
-
 
 Lemma denotation_star_is_decidable_for_empty_string (r: regex):
   [] `elem` {{ star r }} \/ [] `notelem` {{ star r }}.
