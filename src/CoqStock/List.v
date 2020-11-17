@@ -189,11 +189,27 @@ Proof.
 auto with list.
 Qed.
 
+(* TODO: Help Wanted
+Cannot infer the implicit parameter A of skipn_length_prefix_is_suffix
+whose type is "Type".
+Hint Rewrite
+  skipn_length_prefix_is_suffix
+  : list.
+*)
+
 Lemma firstn_length_prefix_is_prefix {A: Type} (prefix suffix: list A):
   firstn (length prefix) (prefix ++ suffix) = prefix.
 Proof.
 auto with list.
 Qed.
+
+(* TODO: Help Wanted
+Cannot infer the implicit parameter A of firstn_length_prefix_is_prefix
+whose type is "Type".
+Hint Rewrite
+  firstn_length_prefix_is_prefix
+  : list.
+*)
 
 Theorem prefix_length_leq:
   forall {A: Type} (prefix suffix list: list A),
