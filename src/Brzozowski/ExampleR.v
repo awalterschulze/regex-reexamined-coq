@@ -5,9 +5,10 @@ Require Import CoqStock.Untie.
 Require Import CoqStock.WreckIt.
 
 Require Import Brzozowski.Alphabet.
-Require Import Brzozowski.Regex.
 Require Import Brzozowski.ConcatLang.
 Require Import Brzozowski.Language.
+Require Import Brzozowski.LogicOp.
+Require Import Brzozowski.Regex.
 
 (*
 The introduction of arbitrary Boolean functions enriches the language of regular expressions.

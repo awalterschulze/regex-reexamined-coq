@@ -12,6 +12,7 @@ Require Import CoqStock.WreckIt.
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.ConcatLang.
 Require Import Brzozowski.Language.
+Require Import Brzozowski.LogicOp.
 Require Import Brzozowski.Regex.
 
 (*
