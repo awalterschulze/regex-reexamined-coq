@@ -25,14 +25,14 @@ Definition x11star := concat x1 (star x1).
 Definition exampleR := and xI111I (complement (or xI01 x11star)).
 
 Theorem notelem_emptyset: forall (s: str),
-  s `notelem` emptyset_lang.
+  s \notin emptyset_lang.
 Proof.
 intros.
 untie.
 Qed.
 
 Lemma test_elem_xI01_101:
-  ([A1] ++ [A0] ++ [A1]) `elem` {{xI01}}.
+  ([A1] ++ [A0] ++ [A1]) \in {{xI01}}.
 Proof.
 unfold xI01.
 destruct_concat_lang.
@@ -54,7 +54,7 @@ constructor.
 Qed.
 
 Lemma test_notelem_xI01_101_false:
-  ([A1] ++ [A0] ++ [A1]) `notelem` {{xI01}}  -> False.
+  ([A1] ++ [A0] ++ [A1]) \notin {{xI01}}  -> False.
 Proof.
 unfold not.
 intros.
@@ -64,14 +64,14 @@ Qed.
 
 Local Ltac elemt :=
   match goal with
-  | [ H : _ `elem` _ |- _ ] =>
+  | [ H : _ \in _ |- _ ] =>
     inversion H; clear H
-  | [ |- context [_ `notelem` _ ] ] =>
+  | [ |- context [_ \notin _ ] ] =>
     unfold not; intros
   end.
 
 Lemma test_notleme_xI01_empty:
-    [] `notelem` {{xI01}}.
+    [] \notin {{xI01}}.
 Proof.
 elemt.
 elemt.
@@ -82,7 +82,7 @@ elemt.
 Qed.
 
 Lemma test_notelem_xI01_10:
-  ([A1] ++ [A0]) `notelem` {{xI01}}.
+  ([A1] ++ [A0]) \notin {{xI01}}.
 Proof.
 elemt.
 elemt.
@@ -97,7 +97,7 @@ contradiction.
 Qed.
 
 Lemma test_notelem_xI01_1110:
-  ([A1] ++ [A1] ++ [A1] ++ [A0]) `notelem` {{xI01}}.
+  ([A1] ++ [A1] ++ [A1] ++ [A0]) \notin {{xI01}}.
 Proof.
 elemt.
 elemt.
@@ -109,7 +109,7 @@ listerine.
 Qed.
 
 Lemma test_notelem_x11star_0:
-  [A0] `notelem` {{ x11star }}.
+  [A0] \notin {{ x11star }}.
 Proof.
 elemt.
 elemt.
@@ -124,7 +124,7 @@ elemt.
 Qed.
 
 Lemma test_notelem_starx1_0:
-  [A0] `notelem` {{star x1}}.
+  [A0] \notin {{star x1}}.
 Proof.
 untie.
 invs H.
@@ -135,7 +135,7 @@ invs H.
 Qed.
 
 Lemma test_notelem_starx1_10:
-  [A1; A0] `notelem` {{star x1}}.
+  [A1; A0] \notin {{star x1}}.
 Proof.
 untie.
 invs H.
@@ -148,7 +148,7 @@ invs H.
 Qed.
 
 Lemma test_notelem_starx1_110:
-  [A1; A1; A0] `notelem` {{star x1}}.
+  [A1; A1; A0] \notin {{star x1}}.
 Proof.
 untie.
 invs H.
@@ -159,7 +159,7 @@ assumption.
 Qed.
 
 Lemma test_notelem_x11star_1110:
-  ([A1] ++ [A1] ++ [A1] ++ [A0]) `notelem` {{x11star}}.
+  ([A1] ++ [A1] ++ [A1] ++ [A0]) \notin {{x11star}}.
 Proof.
 untie.
 invs H.
@@ -170,7 +170,7 @@ listerine; (try invs H1).
 Qed.
 
 Lemma test_elem_xI111I_1110:
-    ([A1] ++ [A1] ++ [A1] ++ [A0]) `elem` {{xI111I}}.
+    ([A1] ++ [A1] ++ [A1] ++ [A0]) \in {{xI111I}}.
 Proof.
 destruct_concat_lang.
 exists [].
@@ -204,7 +204,7 @@ split.
 Qed.
 
 Theorem test_exampleR_1110_elem:
-    ([A1] ++ [A1] ++ [A1] ++ [A0]) `elem` {{exampleR}}.
+    ([A1] ++ [A1] ++ [A1] ++ [A0]) \in {{exampleR}}.
 Proof.
 constructor.
 split.
@@ -238,7 +238,7 @@ split.
 Qed.
 
 Theorem test_exampleR_111_notelem:
-    [A1; A1; A1] `notelem` {{exampleR}}.
+    [A1; A1; A1] \notin {{exampleR}}.
 Proof.
 untie.
 invs H.

@@ -29,8 +29,8 @@ Inductive concat_lang_ex (P Q: lang): lang :=
       (p: str)
       (q: str)
       (pqs: p ++ q = s),
-      p `elem` P /\
-      q `elem` Q
+      p \in P /\
+      q \in Q
     ) ->
     concat_lang_ex P Q s
   .
@@ -71,8 +71,8 @@ Ltac destruct_concat_lang :=
 (* example_destruct_concat_lang shows how the destruct_concat_lang can be used. *)
 Example example_destruct_concat_lang:
   forall (p q: regex),
-  [] `elem` {{p}} /\ [] `elem` {{q}} ->
-  [] `elem` {{concat p q}}.
+  [] \in {{p}} /\ [] \in {{q}} ->
+  [] \in {{concat p q}}.
 Proof.
 intros.
 destruct_concat_lang.

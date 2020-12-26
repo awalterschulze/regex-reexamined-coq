@@ -61,7 +61,7 @@ Theorem not_lang_not_lang_is_lang: forall (r: regex),
 Proof.
 intros.
 split.
-- assert (s `elem` {{ r }} \/ s `notelem` {{ r }}).
+- assert (s \in {{ r }} \/ s \notin {{ r }}).
   admit. (* TODO: apply denotation_is_decidable *)
   intros.
   wreckit.
@@ -74,7 +74,7 @@ split.
     constructor.
     wreckit.
     assumption.
-- assert (s `elem` {{ r }} \/ s `notelem` {{ r }}).
+- assert (s \in {{ r }} \/ s \notin {{ r }}).
   admit. (* TODO: apply denotation_is_decidable *)
   intros.
   constructor.
