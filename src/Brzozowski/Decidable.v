@@ -2,7 +2,7 @@
 In this module we prove the denotation of regular expressions is decidable, using:
 ```
 Theorem denotation_is_decidable (r: regex) (s: str):
-  s `elem` {{ r }} \/ s `notelem` {{ r }}.
+  s \in {{ r }} \/ s \notin {{ r }}.
 ```
 *)
 
@@ -21,17 +21,17 @@ Require Import Brzozowski.Language.
 Require Import Brzozowski.Regex.
 
 Definition regex_is_decidable (r: regex) :=
-  (forall s: str, s `elem` {{r}} \/ s `notelem` {{r}}).
+  (forall s: str, s \in {{r}} \/ s \notin {{r}}).
 
 Lemma denotation_emptyset_is_decidable (s: str):
-  s `elem` {{ emptyset }} \/ s `notelem` {{ emptyset }}.
+  s \in {{ emptyset }} \/ s \notin {{ emptyset }}.
 Proof.
 right.
 untie.
 Qed.
 
 Lemma denotation_lambda_is_decidable (s: str):
-  s `elem` {{ lambda }} \/ s `notelem` {{ lambda }}.
+  s \in {{ lambda }} \/ s \notin {{ lambda }}.
 Proof.
 destruct s.
 - left. constructor.
@@ -39,7 +39,7 @@ destruct s.
 Qed.
 
 Lemma denotation_symbol_is_decidable (s: str) (a: alphabet):
-  s `elem` {{ symbol a }} \/ s `notelem` {{ symbol a }}.
+  s \in {{ symbol a }} \/ s \notin {{ symbol a }}.
 Proof.
 destruct s.
 - right. untie. invs H.
@@ -65,9 +65,9 @@ destruct s.
 Qed.
 
 Lemma denotation_nor_is_decidable (p q: regex) (s: str):
-  s `elem` {{ p }} \/ s `notelem` {{ p }} ->
-  s `elem` {{ q }} \/ s `notelem` {{ q }} ->
-  s `elem` {{ nor p q }} \/ s `notelem` {{ nor p q }}.
+  s \in {{ p }} \/ s \notin {{ p }} ->
+  s \in {{ q }} \/ s \notin {{ q }} ->
+  s \in {{ nor p q }} \/ s \notin {{ nor p q }}.
 Proof.
 simpl.
 intros.
@@ -111,11 +111,11 @@ Qed.
 Definition elem_of_concat_split (p q: regex) (s: str) (index: nat) :=
   let prefix := firstn index s in
   let suffix := skipn index s in
-  (prefix `elem` {{p}} /\ suffix `elem` {{q}}).
+  (prefix \in {{p}} /\ suffix \in {{q}}).
 
 Lemma concat_lang_a_split_matches:
   forall (P Q: regex) (s: str),
-    s `elem` {{ concat P Q }}
+    s \in {{ concat P Q }}
   <->
   (exists (index: nat) (index_range : index <= length s),
     elem_of_concat_split P Q s index
@@ -152,7 +152,7 @@ Qed.
 
 Lemma concat_lang_no_split_matches:
   forall (P Q: regex) (s: str),
-  s `notelem` {{ concat P Q }}
+  s \notin {{ concat P Q }}
   <->
   (forall (index: nat) (index_range : index <= length s),
     not (elem_of_concat_split P Q s index)
@@ -185,9 +185,9 @@ Qed.
 
 Theorem concat_lang_a_split_matches_or_no_split_matches:
   forall (P Q: regex) (s: str),
-      s `elem` {{concat P Q}}
+      s \in {{concat P Q}}
     \/
-      s `notelem` {{concat P Q}}
+      s \notin {{concat P Q}}
   <->
       (exists (index: nat) (index_range : index <= length s),
         elem_of_concat_split P Q s index
@@ -273,7 +273,7 @@ Lemma denotation_concat_is_decidable_bounded_len
   (forall
     (s: str)
     (bounded_len: length s <= len),
-    (s `elem` {{concat P Q}} \/ s `notelem` {{concat P Q}})
+    (s \in {{concat P Q}} \/ s \notin {{concat P Q}})
   ).
 Proof.
 intros.
@@ -311,13 +311,13 @@ Definition no_splitting_is_an_elem_for_length (p q: regex) (s: str) (n: nat) :=
   forall (s1 s2: str),
   s = s1 ++ s2 ->
   length s1 <= n ->
-  ((s1 `notelem` {{ p }} \/ s2 `notelem` {{ q }})).
+  ((s1 \notin {{ p }} \/ s2 \notin {{ q }})).
 
 Definition a_splitting_is_an_elem_for_length (p q: regex) (s: str) (n: nat) :=
   exists (s1 s2: str),
   s = s1 ++ s2 /\
   length s1 <= n /\
-  (s1 `elem` {{ p }} /\ s2 `elem` {{ q }}).
+  (s1 \in {{ p }} /\ s2 \in {{ q }}).
 
 Lemma denotation_concat_is_decidable_helper (p q: regex):
   regex_is_decidable p ->
@@ -476,11 +476,11 @@ Qed.
 Definition elem_of_star_split (r: regex) (s: str) (index: nat) :=
   let prefix := firstn index s in
   let suffix := skipn index s in
-  (prefix `elem` {{r}} /\ suffix `elem` {{star r}}).
+  (prefix \in {{r}} /\ suffix \in {{star r}}).
 
 Lemma star_lang_a_split_matches:
   forall (r: regex) (s: str) (s_is_not_empty: s <> []),
-    s `elem` {{ star r }}
+    s \in {{ star r }}
   <->
   (exists (index: nat) (index_range : 0 < index <= length s),
     elem_of_star_split r s index
@@ -509,7 +509,7 @@ Qed.
 
 Lemma star_lang_no_split_matches:
   forall (r: regex) (s: str) (s_is_not_empty: s <> []),
-  s `notelem` {{ star r }}
+  s \notin {{ star r }}
   <->
   (forall (index: nat) (index_range : 0 < index <= length s),
     not (elem_of_star_split r s index)
@@ -549,9 +549,9 @@ Qed.
 
 Theorem star_lang_a_split_matches_or_no_split_matches:
   forall (r: regex) (s: str) (s_is_not_empty: s <> []),
-      s `elem` {{star r}}
+      s \in {{star r}}
     \/
-      s `notelem` {{star r}}
+      s \notin {{star r}}
   <->
       (exists (index: nat) (index_range : 0 < index <= length s),
         elem_of_star_split r s index
@@ -630,7 +630,7 @@ Lemma denotation_star_is_decidable_bounded_len
   (forall
     (s: str)
     (bounded_len: length s <= len),
-    (s `elem` {{star r}} \/ s `notelem` {{star r}})
+    (s \in {{star r}} \/ s \notin {{star r}})
   ).
 Proof.
 intros.
@@ -681,7 +681,7 @@ lia.
 Qed.
 
 Theorem denotation_is_decidable (r: regex) (s: str):
-  s `elem` {{ r }} \/ s `notelem` {{ r }}.
+  s \in {{ r }} \/ s \notin {{ r }}.
 Proof.
 generalize dependent s.
 induction r.
