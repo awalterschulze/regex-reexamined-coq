@@ -120,7 +120,7 @@ Qed.
 
 Theorem or_lang_is_disj:
   forall (p q: regex) (s: str),
-  s `elem` or_lang {{p}} {{q}} <-> s `elem` {{p}} \/ s `elem` {{q}}.
+  s \in or_lang {{p}} {{q}} <-> s \in {{p}} \/ s \in {{q}}.
 Proof.
 intros.
 split.
@@ -141,7 +141,7 @@ Qed.
 
 Theorem or_is_disj:
   forall (p q: regex) (s: str),
-  s `elem` {{ or p q }} <-> s `elem` {{p}} \/ s `elem` {{q}}.
+  s \in {{ or p q }} <-> s \in {{p}} \/ s \in {{q}}.
 Proof.
 intros.
 specialize or_denotes_or_lang with (p := p) (q := q).
