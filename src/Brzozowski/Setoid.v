@@ -31,7 +31,7 @@ Theorem lang_iff_trans : forall A B C:lang, (A {<->} B) -> (B {<->} C) -> (A {<-
     intros.
     specialize H with s.
     specialize H0 with s.
-    unfold "`elem`" in *.
+    unfold "\in" in *.
     apply iff_trans with (A := A s) (B := B s); assumption.
   Qed.
 
@@ -41,7 +41,7 @@ Theorem lang_iff_sym : forall A B:lang, (A {<->} B) -> (B {<->} A).
     unfold "{<->}" in *.
     intros.
     specialize H with s.
-    unfold "`elem`" in *.
+    unfold "\in" in *.
     apply iff_sym.
     assumption.
   Qed.
@@ -64,7 +64,7 @@ Add Parametric Morphism: nor_lang
 Proof.
 intros.
 unfold "{<->}" in *.
-unfold "`elem`" in *.
+unfold "\in" in *.
 intros.
 specialize H with s.
 specialize H0 with s.
@@ -73,7 +73,7 @@ constructor;
   constructor;
   wreckit;
     untie;
-    unfold "`elem`" in *;
+    unfold "\in" in *;
     invs H1;
     wreckit.
 - apply L.
@@ -117,7 +117,7 @@ Qed.
 Lemma star_lang_morph_helper:
   forall (x y : lang) (s: str),
   (x {<->} y)
-  -> (s `elem` star_lang x -> s `elem` star_lang y).
+  -> (s \in star_lang x -> s \in star_lang y).
 Proof.
   intros.
   induction H0.
@@ -129,7 +129,7 @@ Qed.
 Theorem star_lang_morph':
   forall (x y : lang) (s: str),
   (x {<->} y)
-  -> (s `elem` star_lang x <-> s `elem` star_lang y).
+  -> (s \in star_lang x <-> s \in star_lang y).
 Proof.
   intros.
   split.

@@ -13,18 +13,18 @@ Definition str := list alphabet.
 (* A regular expression denotes a set of strings called a _language_. *)
 Definition lang := str -> Prop.
 Definition elem (l: lang) (s: str): Prop := l s.
-Notation "p `elem` P" := (elem P p) (at level 80).
-Notation "p `notelem` P" := (~ (elem P p)) (at level 80).
+Notation " p \in P " := (elem P p) (at level 20).
+Notation " p \notin P " := (not (elem P p)) (at level 20).
 
 Definition lang_if (s1 s2: lang): Prop :=
   forall (s: str),
-  s `elem` s1 -> s `elem` s2.
+  s \in s1 -> s \in s2.
 
 Notation "s1 {->} s2" := (lang_if s1 s2) (at level 80).
 
 Definition lang_iff (s1 s2: lang): Prop :=
   forall (s: str),
-  s `elem` s1 <-> s `elem` s2.
+  s \in s1 <-> s \in s2.
 
 Notation "s1 {<->} s2" := (lang_iff s1 s2) (at level 80).
 
@@ -71,7 +71,7 @@ Inductive symbol_lang (a: alphabet): lang :=
 *)
 Inductive nor_lang (P Q: lang): lang :=
   | mk_nor : forall s,
-    s `notelem` P /\ s `notelem` Q ->
+    s \notin P /\ s \notin Q ->
     nor_lang P Q s
   .
 
@@ -79,8 +79,8 @@ Inductive nor_lang (P Q: lang): lang :=
 Inductive concat_lang (P Q: lang): lang :=
   | mk_concat: forall (p q s: str),
     p ++ q = s ->
-    p `elem` P ->
-    q `elem` Q ->
+    p \in P ->
+    q \in Q ->
     concat_lang P Q s
   .
 
@@ -89,9 +89,9 @@ Inductive star_lang (R: lang): lang :=
   | mk_star_more : forall (s p q: str),
       p ++ q = s ->
       p <> [] ->
-      p `elem` R ->
-      q `elem` (star_lang R) ->
-      s `elem` star_lang R.
+      p \in R ->
+      q \in (star_lang R) ->
+      s \in star_lang R.
 
 (*
   Here we use a mix of Fixpoint and Inductive predicates to define the denotation of regular expressions.
