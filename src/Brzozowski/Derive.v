@@ -8,6 +8,7 @@ Require Import CoqStock.List.
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.ConcatLang.
 Require Import Brzozowski.Delta.
+Require Import Brzozowski.LogicOp.
 Require Import Brzozowski.Regex.
 Require Import Brzozowski.Setoid.
 Require Import Brzozowski.Language.
@@ -484,16 +485,24 @@ Lemma commutes_a_concat: forall (a : alphabet) (p q: regex)
     {{derive_def (concat p q) a}}
   ).
 Proof.
+intros a p q.
+simpl derive_def.
+set (dp := derive_def p a).
+set (dq := derive_def q a).
 intros.
-split.
-- apply concat_lang_a_impl_def;
-    unfold "{<->}" in *;
-    unfold "{->}" in *;
-    intros s0.
-  + apply (IHp s0).
-  + apply (IHq s0).
-- (* TODO: Help Wanted *)
-Admitted.
+case (delta_def p).
+unfold derive_lang_a.
+rewrite or_denotes_or_lang.
+specialize or_lang_is_disj with (
+  p := concat (derive_def p a) q
+) (
+  q := concat (delta_def p) (derive_def q a)
+) as or_disj.
+unfold lang_iff.
+intros.
+specialize or_disj with (s := s).
+(* TODO: Help Wanted *)
+Abort.
 
 (*
   Finally we have
@@ -522,7 +531,6 @@ Admitted.
 
   which is rule (3.6).
 *)
-
 Lemma commutes_a_star: forall (a : alphabet) (r : regex)
   (IH: derive_lang_a {{r}} a {<->} {{derive_def r a}}),
   (
@@ -532,7 +540,7 @@ Lemma commutes_a_star: forall (a : alphabet) (r : regex)
   ).
 Proof.
 (* TODO: Help Wanted *)
-Admitted.
+Abort.
 
 Theorem derive_commutes_a: forall (r: regex) (a: alphabet),
   derive_lang_a {{ r }} a
@@ -543,15 +551,21 @@ induction r; intros.
 - apply commutes_a_emptyset.
 - apply commutes_a_lambda.
 - apply commutes_a_symbol.
-- apply commutes_a_concat.
+- (*TODO Help Wanted
+    Proof theorem commutes_a_concat and then apply it.
+  apply commutes_a_concat.
   + apply IHr1.
   + apply IHr2.
-- apply commutes_a_star.
+*) admit.
+- (*TODO Help Wanted
+Proof theorem commutes_a_concat and then apply it.
+  apply commutes_a_star.
   + apply IHr.
+*) admit.
 - apply commutes_a_nor.
   + apply IHr1.
   + apply IHr2.
-Qed.
+Abort.
 
 Definition derive_defs (r: regex) (s: str) : regex :=
   fold_left derive_def s r.
@@ -823,5 +837,29 @@ Theorem derive_commutes: forall (r: regex) (s: str),
   {<->}
   {{ derive_defs r s }}.
 Proof.
-(* TODO: Help Wanted *)
+(* TODO: Help Wanted
+   Finish proving derive_commutes_a
+   and apply the following proof script:
+set derive_commutes_a as commutes.
+intros.
+generalize dependent r.
+induction s.
+- unfold derive_lang.
+  cbn.
+  intros.
+  reflexivity.
+- cbn.
+  intros.
+  fold (derive_defs (derive_def r a) s).
+  specialize IHs with (r := (derive_def r a)).
+  rewrite <- IHs.
+  specialize commutes with (r := r) (a := a).
+  unfold lang_iff in *.
+  intros.
+  unfold derive_lang in *.
+  unfold elem.
+  specialize commutes with (s ++ s0).
+  rewrite commutes.
+  reflexivity.
+*)
 Abort.

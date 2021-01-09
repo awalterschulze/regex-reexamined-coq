@@ -108,6 +108,3 @@ Fixpoint denote_regex (r: regex): lang :=
   end
 where "{{ r }}" := (denote_regex r).
 
-Definition not_lang (R: lang) : lang :=
-  nor_lang R R.
-

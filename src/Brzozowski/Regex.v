@@ -21,23 +21,3 @@ Inductive regex :=
   *)
   | nor : regex -> regex -> regex
   .
-
-(* We chose to include `nor`, since it can represent any possible boolean expression,
-   which is one of the selling points of Brzozowski's derivatives for regular expressions.
-*)
-
-Definition complement (r: regex) : regex :=
-  nor r r.
-
-Definition and (r s: regex) : regex :=
-  nor (nor r r) (nor s s).
-
-Definition or (r s: regex) : regex :=
-  nor (nor r s) (nor r s).
-
-Definition xor (r s: regex) : regex :=
-  or (and r (complement s)) (and (complement r) s).
-
-(* I matches all strings *)
-Definition I: regex :=
-    complement (emptyset).
