@@ -52,40 +52,17 @@ r&s = s&r
 r** = r*
 λ* = λ
 ∅* = λ
-not_lang_not_lang_is_lang: ~~r = r
+neg_lang_neg_lang_is_lang: ~~r = r
 *)
 
-Theorem not_lang_not_lang_is_lang: forall (r: regex),
-  not_lang (not_lang {{r}})
+Theorem neg_lang_neg_lang_is_lang: forall (r: regex),
+  neg_lang (neg_lang {{r}})
   {<->}
   {{r}}.
 Proof.
-intros.
-split.
-- assert (s \in {{ r }} \/ s \notin {{ r }}).
-  admit. (* TODO: apply denotation_is_decidable *)
-  intros.
-  wreckit.
-  + assumption.
-  + invs H0.
-    wreckit.
-    unfold not in L.
-    exfalso.
-    apply L.
-    constructor.
-    wreckit.
-    assumption.
-- assert (s \in {{ r }} \/ s \notin {{ r }}).
-  admit. (* TODO: apply denotation_is_decidable *)
-  intros.
-  constructor.
-  wreckit.
-  + unfold not.
-    intros.
-    invs H.
-    wreckit.
-    contradiction.
-  + contradiction.
+(* TODO: Good First Issue
+   You will need to use denotation_is_decidable.
+*)
 Abort.
 
 Theorem concat_lang_emptyset_l_is_emptyset: forall (r: lang),

@@ -64,34 +64,37 @@ destruct s.
       invs H.
 Qed.
 
-Lemma denotation_nor_is_decidable (p q: regex) (s: str):
+Lemma denotation_or_is_decidable (p q: regex) (s: str):
   s \in {{ p }} \/ s \notin {{ p }} ->
   s \in {{ q }} \/ s \notin {{ q }} ->
-  s \in {{ nor p q }} \/ s \notin {{ nor p q }}.
+  s \in {{ or p q }} \/ s \notin {{ or p q }}.
 Proof.
 simpl.
 intros.
 wreckit.
-- right.
-  untie.
-  invs H.
-  wreckit.
-  contradiction.
-- right.
-  untie.
-  invs H.
-  wreckit.
-  contradiction.
-- right.
-  untie.
-  invs H.
-  wreckit.
-  contradiction.
 - left.
   constructor.
-  wreckit.
-  * assumption.
-  * assumption.
+  auto.
+- left.
+  constructor.
+  auto.
+- left.
+  constructor.
+  auto.
+- right.
+  untie.
+  invs H.
+  wreckit; contradiction.
+Qed.
+
+Lemma denotation_neg_is_decidable (p: regex) (s: str):
+  s \in {{ p }} \/ s \notin {{ p }} ->
+  s \in {{ neg p }} \/ s \notin {{ neg p }}.
+Proof.
+intros.
+wreckit.
+- right. simpl. untie. invs H. contradiction.
+- left. simpl. untie. constructor. assumption.
 Qed.
 
 (*
@@ -688,13 +691,14 @@ induction r.
 - apply denotation_emptyset_is_decidable.
 - apply denotation_lambda_is_decidable.
 - intros. apply denotation_symbol_is_decidable.
+- intros. apply denotation_or_is_decidable.
+  + specialize IHr1 with s. assumption.
+  + specialize IHr2 with s. assumption.
+- intros. apply denotation_neg_is_decidable.
+  specialize IHr with s. assumption.
 - intros. apply denotation_concat_is_decidable;
   unfold regex_is_decidable;
   assumption.
 - apply denotation_star_is_decidable.
   assumption.
-- intros.
-  specialize IHr1 with s.
-  specialize IHr2 with s.
-  apply denotation_nor_is_decidable; assumption.
 Qed.

@@ -23,7 +23,7 @@ Definition x0 := symbol A0.
 Definition xI111I := concat I (concat x1 (concat x1 (concat x1 I))).
 Definition xI01 := concat I (concat x0 x1).
 Definition x11star := concat x1 (star x1).
-Definition exampleR := and xI111I (complement (or xI01 x11star)).
+Definition exampleR := and xI111I (neg (or xI01 x11star)).
 
 Theorem notelem_emptyset: forall (s: str),
   s \notin emptyset_lang.
@@ -208,33 +208,21 @@ Theorem test_exampleR_1110_elem:
     ([A1] ++ [A1] ++ [A1] ++ [A0]) \in {{exampleR}}.
 Proof.
 constructor.
-split.
-- untie.
-  invs H.
-  wreckit.
-  apply L.
+untie.
+invs H.
+destruct H0.
+- invs H.
+  apply H0.
   apply test_elem_xI111I_1110.
-- untie.
-  invs H.
-  wreckit.
-  apply L.
-  clear R.
-  clear L.
+- invs H.
+  apply H0.
   constructor.
-  wreckit.
   untie.
   invs H.
-  wreckit.
-  apply L.
-  clear L.
-  clear R.
-  constructor.
-  wreckit.
-  + untie.
-    apply test_notelem_xI01_1110.
+  destruct H1.
+  + apply  test_notelem_xI01_1110.
     assumption.
-  + untie.
-    apply test_notelem_x11star_1110.
+  + apply test_notelem_x11star_1110.
     assumption.
 Qed.
 
@@ -243,35 +231,30 @@ Theorem test_exampleR_111_notelem:
 Proof.
 untie.
 invs H.
-wreckit.
-apply R.
+apply H0.
 constructor.
-wreckit.
+right.
+constructor.
 untie.
 invs H.
-wreckit.
-apply L0.
+apply H1.
 constructor.
-wreckit.
-untie.
-invs H.
-wreckit.
-apply R1.
+right.
+unfold x11star.
 destruct_concat_lang.
 exists [A1].
 exists [A1; A1].
-exists eq_refl.
-wreckit.
+assert ([A1] ++ [A1; A1] = [A1; A1; A1]). listerine; reflexivity.
+exists H.
+split.
 - constructor.
 - apply mk_star_more with (p := [A1]) (q := [A1]).
   + listerine. reflexivity.
   + listerine.
-  + fold (denote_regex x1).
-    constructor.
-  + fold (denote_regex x1).
-    apply mk_star_more with (p := [A1]) (q := []).
-    * now listerine.
+  + constructor.
+  + apply mk_star_more with (p := [A1]) (q := []).
+    * listerine. reflexivity.
     * listerine.
     * constructor.
     * constructor.
-Qed.
+Qed.    

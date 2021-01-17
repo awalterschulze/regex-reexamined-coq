@@ -67,12 +67,18 @@ Inductive symbol_lang (a: alphabet): lang :=
 (*
     *Boolean function*. We shall denote any Boolean function of $P$ and $Q$ by $f(P, Q)$.
     Of course, all the laws of Boolean algebra apply.
-    `nor` is used to emulate `f`, since nor can be used to emulate all boolean functions.
+    `neg` and `or` are used to emulate `f`, since they can be used to emulate all boolean functions.
 *)
-Inductive nor_lang (P Q: lang): lang :=
-  | mk_nor : forall s,
-    s \notin P /\ s \notin Q ->
-    nor_lang P Q s
+Inductive or_lang (P Q: lang): lang :=
+  | mk_or : forall s,
+    s \in P \/  s \in Q ->
+    or_lang P Q s
+  .
+
+Inductive neg_lang (P: lang): lang :=
+  | mk_neg : forall s,
+    s \notin P ->
+    neg_lang P s
   .
 
 (* Concatenation*. $(P.Q) = \{ s | s = p.q; p \in P, q \in Q \}$. *)
@@ -102,9 +108,10 @@ Fixpoint denote_regex (r: regex): lang :=
   | emptyset => emptyset_lang
   | lambda => lambda_lang
   | symbol y => symbol_lang y
+  | or r1 r2 => or_lang {{r1}} {{r2}}
+  | neg r1 => neg_lang {{r1}}
   | concat r1 r2 => concat_lang {{r1}} {{r2}}
   | star r1 => star_lang {{r1}}
-  | nor r1 r2 => nor_lang {{r1}} {{r2}}
   end
 where "{{ r }}" := (denote_regex r).
 
