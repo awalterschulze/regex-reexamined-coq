@@ -11,6 +11,7 @@ Require Import CoqStock.WreckIt.
 
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.ConcatLang.
+Require Import Brzozowski.Decidable.
 Require Import Brzozowski.Language.
 Require Import Brzozowski.LogicOp.
 Require Import Brzozowski.Regex.
@@ -60,10 +61,27 @@ Theorem neg_lang_neg_lang_is_lang: forall (r: regex),
   {<->}
   {{r}}.
 Proof.
-(* TODO: Good First Issue
-   You will need to use denotation_is_decidable.
-*)
-Abort.
+unfold lang_iff.
+intros.
+specialize denotation_is_decidable with (s := s) (r := r) as D.
+destruct D.
+- split.
+  + auto.
+  + intros.
+    constructor.
+    untie.
+    invs H1.
+    contradiction.
+- split.
+  + intros.
+    invs H0.
+    exfalso.
+    apply H1.
+    constructor.
+    assumption.
+  + intros.
+    contradiction.
+Qed.
 
 Theorem concat_lang_emptyset_l_is_emptyset: forall (r: lang),
   concat_lang emptyset_lang r
@@ -134,4 +152,40 @@ split.
   split.
   + assumption.
   + constructor.
+Qed.
+
+Theorem or_lang_emptyset_r_is_l: forall (r: lang),
+  or_lang r emptyset_lang
+  {<->}
+  r.
+Proof.
+intros.
+split.
+- intros.
+  invs H.
+  destruct H0.
+  + assumption.
+  + invs H.
+- intros.
+  constructor.
+  left.
+  assumption.
+Qed.
+
+Theorem or_lang_emptyset_l_is_r: forall (r: lang),
+  or_lang emptyset_lang r
+  {<->}
+  r.
+Proof.
+intros.
+split.
+- intros.
+  invs H.
+  destruct H0.
+  + invs H.
+  + assumption.
+- intros.
+  constructor.
+  right.
+  assumption.
 Qed.

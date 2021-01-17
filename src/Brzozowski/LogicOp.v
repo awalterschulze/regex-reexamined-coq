@@ -1,5 +1,6 @@
 Require Import Coq.Setoids.Setoid.
 
+Require Import CoqStock.Invs.
 Require Import CoqStock.Untie.
 Require Import CoqStock.WreckIt.
 
@@ -49,6 +50,58 @@ Proof.
   cbn.
   unfold and_lang.
   reflexivity.
+Qed.
+
+Theorem and_lang_is_conj:
+  forall (p q: regex) (s: str),
+  s \in and_lang {{p}} {{q}} <-> s \in {{p}} /\ s \in {{q}}.
+Proof.
+intros.
+unfold and_lang.
+specialize denotation_is_decidable with (r := p) (s := s) as Dp.
+specialize denotation_is_decidable with (r := q) (s := s) as Dq.
+destruct Dp, Dq; split; intros; split; try assumption.
+- untie. 
+  invs H2.
+  invs H3; invs H2; contradiction. 
+- invs H1.
+  exfalso.
+  apply H2.
+  constructor.
+  right.
+  constructor.
+  assumption.
+- untie.
+  invs H2.
+  invs H1.
+  contradiction.
+- invs H1.
+  exfalso.
+  apply H2.
+  constructor.
+  left.
+  constructor.
+  assumption.
+- untie.
+  invs H2.
+  invs H1.
+  contradiction.
+- invs H1.
+  exfalso.
+  apply H2.
+  constructor.
+  left.
+  constructor.
+  assumption.
+- invs H1.
+  exfalso.
+  apply H2.
+  constructor.
+  left.
+  constructor.
+  assumption.
+- invs H1.
+  contradiction.
 Qed.
 
 Add Parametric Morphism: nor_lang
