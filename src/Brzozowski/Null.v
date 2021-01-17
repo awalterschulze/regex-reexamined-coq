@@ -215,10 +215,10 @@ Definition null_or (p q: regex): regex :=
 Theorem null_or_is_or:
   forall
     (p q: regex)
-    (dp dq: regex)
-    (null_p: null p dp)
-    (null_q: null q dq),
-    null (or p q) (null_or dp dq).
+    (pn qn: regex)
+    (null_p: null p pn)
+    (null_q: null q qn),
+    null (or p q) (null_or pn qn).
 Proof.
 intros.
 invs null_p; invs null_q; cbn; constructor; cbn.
@@ -635,6 +635,15 @@ inversion_clear H.
     constructor.
 Qed.
 
+Theorem null_iff_null_def:
+  forall (r s: regex),
+  null_def r = s <-> null r s.
+Proof.
+split.
+apply null_def_implies_null.
+apply null_implies_null_def.
+Qed.
+
 Theorem null_is_emptystr_or_emptyset (r: regex):
   null_def r = emptystr \/ null_def r = emptyset.
 Proof.
@@ -668,26 +677,3 @@ destruct H.
 - right. constructor. assumption.
 - left. constructor. assumption.
 Qed.
-
-(*
-null_split_emptystr_or splits a regular expression into
-a possible emptystr and the regular expression that does not match emptystr.
-This theorem is needed for finding the derive function for the concat operator.
-Let:
-  R = null_def(R) or R'
-  where null_def(R') = emptyset
-=>
-Let:
-  R = E or R'
-  E = null_def(R)
-  where null_def(R') = emptyset
-*)
-Theorem null_split_emptystr_or (r: regex):
-  exists
-    (e r': regex),
-    null r e /\
-    null r' emptyset /\
-    {{r}} {<->} {{or e r'}}.
-Proof.
-(* TODO: Help Wanted *)
-Abort.
