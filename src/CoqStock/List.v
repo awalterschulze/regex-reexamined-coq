@@ -17,6 +17,7 @@ Proof.
 Qed.
 
 (* The command Hint Resolve adds a new candidate proof step *)
+#[export]
 Hint Resolve length_zero_string_is_empty: list.
 
 Example example_length_zero_string_is_empty_with_auto {A: Type} (xs: list A):
@@ -25,6 +26,7 @@ Proof.
   debug auto with list. (* To see steps taken, see: debug auto with list *)
 Qed.
 
+#[export]
 Hint Resolve
   Coq.Lists.List.nil_cons (* [] <> x :: l *)
   Coq.Lists.List.app_nil_l (* [] ++ l = l *)
@@ -47,11 +49,13 @@ Hint Rewrite
   Coq.Lists.List.last_length (* length (l ++ a :: nil) = S (length l) *)
   : list.
 
+#[export]
 Hint Unfold
   Init.Logic.iff
   Init.Logic.not
   : list.
 
+#[export]
 Hint Constructors
   Coq.Init.Logic.and
   Coq.Init.Logic.or
@@ -66,6 +70,7 @@ inversion H.
 reflexivity.
 Qed.
 
+#[export]
 Hint Resolve
   lessthan_zero_is_zero
   : list.
@@ -92,6 +97,7 @@ Proof.
   auto with list.
 Qed.
 
+#[export]
 Hint Resolve
   Coq.Lists.List.firstn_nil (* firstn n [] = [] *)
   Coq.Lists.List.firstn_cons (* firstn (S n) (a::l) = a :: (firstn n l) *)
@@ -152,6 +158,7 @@ replace (skipn 0 ys) with ys in Hlast by (apply skipn_O).
 assumption.
 Qed.
 
+#[export]
 Hint Resolve
   firstn_app_length
   skipn_app_length
@@ -178,6 +185,7 @@ Proof.
   lia.
 Qed.
 
+#[export]
 Hint Resolve
   split_list
   prefix_leq_length
@@ -221,6 +229,7 @@ autorewrite with list.
 auto with arith.
 Qed.
 
+#[export]
 Hint Resolve
   prefix_length_leq
   : list.
@@ -235,6 +244,7 @@ induction xs.
   lia.
 Qed.
 
+#[export]
 Hint Resolve
   length_gt_zero
   : list.
@@ -251,6 +261,7 @@ remember (length_gt_zero prefix).
 auto.
 Qed.
 
+#[export]
 Hint Resolve
   prefix_is_gt_zero_and_leq
   : list.
@@ -268,6 +279,7 @@ induction index.
   + cbn. auto with list.
 Qed.
 
+#[export]
 Hint Resolve
   prefix_is_not_empty_with_index_gt_zero
   : list.
