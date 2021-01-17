@@ -274,7 +274,10 @@ End lemmas.
 Theorem is_sorted_and_is_sortedb_are_equivalent : forall {A: Type} {cmp: comparable A} (xs: list A),
   is_sorted xs <-> is_sortedb xs.
 Proof.
+
+#[export]
 Hint Unfold is_sortedb: sorted_db. (* TODO: deprecated *)
+#[export]
 Hint Resolve is_sortedb_induction_step: sorted_db.
 
 split.
