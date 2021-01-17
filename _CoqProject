@@ -28,6 +28,7 @@ src/Brzozowski/Null.v
 src/Brzozowski/Regex.v
 src/Brzozowski/Setoid.v
 src/Brzozowski/Simplify.v
+src/Brzozowski/SplitEmptyStr.v
 src/Brzozowski/StarLang.v
 
 src/Coinduction/Bisimilar.v
