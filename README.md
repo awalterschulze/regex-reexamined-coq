@@ -18,8 +18,8 @@ We try to prove some things that are mentioned in the papers as a way to teach o
 
 ## Setup
 
-1. Install Coq 8.12.0
-2. Remember to set coq in your PATH. For example, in your `~/.bash_profile` add `PATH="/Applications/CoqIDE_8.12.0.app/Contents/Resources/bin/:${PATH}"` and run `$ source ~/.bash_profile`.
+1. Install Coq 8.13.0
+2. Remember to set coq in your PATH. For example, in your `~/.bash_profile` add `PATH="/Applications/CoqIDE_8.13.0.app/Contents/Resources/bin/:${PATH}"` and run `$ source ~/.bash_profile`.
 3. Run make in this folder.
 
 Note:
