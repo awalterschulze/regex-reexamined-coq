@@ -57,7 +57,7 @@ The other definitions are:
   The definition allowing empty prefixes and using the existence statement is hidden in `concat_lang_ex`.
   This is the most difficult definition to use in Coq, but arguably the closest to the mathematical definition:
     *Star*. $P^{*} = \cup_{0}^{\infty} P^n$ , where $P^2 = P.P$, etc.
-    and $P^0 = \lambda$, the set consisting of the string of zero length.
+    and $P^0 = \epsilon$, the set consisting of the string of zero length.
 *)
 Inductive star_lang_ex_empty (R: lang): lang :=
   | mk_star_zero_ex_empty : forall (s: str),

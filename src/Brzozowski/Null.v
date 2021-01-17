@@ -18,16 +18,16 @@ Require Import Brzozowski.LogicOp.
 
     $$
     \begin{aligned}
-    \nu(R) & = \lambda\ \text{if}\ \lambda \in R \\
-              & = \emptyset\ \text{if}\ \lambda \notin R \\
+    \nu(R) & = \epsilon\ \text{if}\ \epsilon \in R \\
+              & = \emptyset\ \text{if}\ \epsilon \notin R \\
     \end{aligned}
     $$
 *)
 
 Inductive null: regex -> regex -> Prop :=
-  | null_lambda (r: regex):
+  | null_emptystr (r: regex):
     [] \in {{r}} ->
-    null r lambda
+    null r emptystr
   | null_emptyset (r: regex):
     [] \notin {{r}} ->
     null r emptyset
@@ -35,23 +35,23 @@ Inductive null: regex -> regex -> Prop :=
 
 (*
 null_and is only true when both regexes are true, where
-true = lambda
+true = emptystr
 false = emptyset
 *)
 Definition null_and (p q: regex): regex :=
   match (p, q) with
-  | (lambda, lambda) => lambda
+  | (emptystr, emptystr) => emptystr
   | _ => emptyset
   end.
 
 (*
 null_nor is only true when both regexes are false, where
-true = lambda
+true = emptystr
 false = emptyset
 *)
 Definition null_nor (p q: regex): regex :=
   match (p, q) with
-  | (emptyset, emptyset) => lambda
+  | (emptyset, emptyset) => emptystr
   | _ => emptyset
   end.
 
@@ -61,15 +61,15 @@ Definition null_nor (p q: regex): regex :=
   $$
   \begin{aligned}
   \nu(a) & = \emptyset\ \text{for any}\ a \in \Sigma_k, \\
-  \nu(\lambda) & = \lambda, \text{and} \\
+  \nu(\epsilon) & = \epsilon, \text{and} \\
   \nu(\emptyset) & = \emptyset . \\
   \end{aligned}
   $$
 *)
 
-Theorem null_lambda_is_lambda: null lambda lambda.
+Theorem null_emptystr_is_emptystr: null emptystr emptystr.
 Proof.
-apply null_lambda.
+apply null_emptystr.
 constructor.
 Qed.
 
@@ -96,25 +96,25 @@ Qed.
 
     $$
     \begin{aligned}
-    \nu(P* ) &= \lambda\ \text{(by definition of * ), and} \\
+    \nu(P* ) &= \epsilon\ \text{(by definition of * ), and} \\
     \nu(P.Q) &= \nu(P)\ \&\ \nu(Q).
     \end{aligned}
     $$
 *)
 
-(* \nu(P* ) = \lambda\ *)
-Theorem null_star_is_lambda: forall (r: regex),
-    null (star r) lambda.
+(* \nu(P* ) = \epsilon\ *)
+Theorem null_star_is_emptystr: forall (r: regex),
+    null (star r) emptystr.
 Proof.
 intros.
-apply null_lambda.
+apply null_emptystr.
 constructor.
 Qed.
 
-Theorem null_concat_is_and_lambda: forall (p q: regex),
-    null p lambda ->
-    null q lambda ->
-    null (concat p q) lambda.
+Theorem null_concat_is_and_emptystr: forall (p q: regex),
+    null p emptystr ->
+    null q emptystr ->
+    null (concat p q) emptystr.
 Proof.
 intros.
 constructor.
@@ -154,14 +154,14 @@ Qed.
 
 Theorem null_concat_is_and_emptyset_r: forall (p q: regex),
     null p emptyset ->
-    null q lambda ->
+    null q emptystr ->
     null (concat p q) emptyset.
 Proof.
 (*TODO: Good First Issue *)
 Abort.
 
 Theorem null_concat_is_and_emptyset_l: forall (p q: regex),
-    null p lambda ->
+    null p emptystr ->
     null q emptyset ->
     null (concat p q) emptyset.
 Proof.
@@ -183,17 +183,17 @@ Abort.
   \begin{aligned}
   \text{(3.1)}&\ \nu(P + Q)    &= \nu(P) + \nu(Q). \\
   \text{(3.2)}&\ \nu(P\ \&\ Q) &= \nu(P)\ \&\ \nu(Q). \\
-  \text{(3.3)}&\ \nu(P')       &= \lambda\ \text{if}\ \nu(P) = \emptyset \\
-              &                   &= \emptyset\ \text{if}\ \nu(P) = \lambda \\
+  \text{(3.3)}&\ \nu(P')       &= \epsilon\ \text{if}\ \nu(P) = \emptyset \\
+              &                   &= \emptyset\ \text{if}\ \nu(P) = \epsilon \\
   \end{aligned}
   $$
 
   where $\&$ and $+$ is defined for $\nu$ similar to
-  $\lambda$ being True and $\emptyset$ being False in a boolean equation.
+  $\epsilon$ being True and $\emptyset$ being False in a boolean equation.
 
   $$
   \begin{aligned}
-  A\ \&\ B = \lambda\ \text{if and only if}\ A = \lambda\ \text{and}\ B = \lambda \\
+  A\ \&\ B = \epsilon\ \text{if and only if}\ A = \epsilon\ \text{and}\ B = \epsilon \\
   A + B = \emptyset\ \text{if and only if}\ A = \emptyset\ \text{and}\ B = \emptyset
   \end{aligned}
   $$
@@ -201,13 +201,13 @@ Abort.
 
 (*
 null_or is only true when one of the regexes are true, where
-true = lambda
+true = emptystr
 false = emptyset
 *)
 Definition null_or (p q: regex): regex :=
   match (p, q) with
-  | (lambda, _) => lambda
-  | (_, lambda) => lambda
+  | (emptystr, _) => emptystr
+  | (_, emptystr) => emptystr
   | _ => emptyset
   end.
 
@@ -254,18 +254,18 @@ Qed.
 
 (*
 null_neg is only true if input is false and vice versa, where
-true = lambda
+true = emptystr
 false = emptyset
 *)
 Definition null_neg (p: regex): regex :=
   match p with
-  | lambda => emptyset
-  | _ => lambda
+  | emptystr => emptyset
+  | _ => emptystr
   end.
 
 (*
-\nu(P') = \lambda\ \text{if}\ \nu(P) = \emptyset \\
-\nu(P') = \emptyset\ \text{if}\ \nu(P) = \lambda
+\nu(P') = \epsilon\ \text{if}\ \nu(P) = \emptyset \\
+\nu(P') = \emptyset\ \text{if}\ \nu(P) = \epsilon
 *)
 Theorem null_neg_is_neg:
   forall
@@ -285,26 +285,26 @@ invs null_p; cbn; constructor.
   assumption.
 Qed.
 
-Theorem null_or_lambda: forall (p q: regex),
-    null p lambda ->
-    null q lambda ->
-    null (or p q) lambda.
+Theorem null_or_emptystr: forall (p q: regex),
+    null p emptystr ->
+    null q emptystr ->
+    null (or p q) emptystr.
 Proof.
 (* TODO: Good First Issue *)
 Abort.
 
-Theorem null_or_lambda_l: forall (p q: regex),
-    null p lambda ->
+Theorem null_or_emptystr_l: forall (p q: regex),
+    null p emptystr ->
     null q emptyset ->
-    null (or p q) lambda.
+    null (or p q) emptystr.
 Proof.
 (* TODO: Good First Issue *)
 Abort.
 
-Theorem null_or_lambda_r: forall (p q: regex),
+Theorem null_or_emptystr_r: forall (p q: regex),
     null p emptyset ->
-    null q lambda ->
-    null (or p q) lambda.
+    null q emptystr ->
+    null (or p q) emptystr.
 Proof.
 (* TODO: Good First Issue *)
 Abort.
@@ -317,10 +317,10 @@ Proof.
 (* TODO: Good First Issue *)
 Abort.
 
-Theorem null_and_lambda: forall (p q: regex),
-    null p lambda ->
-    null q lambda ->
-    null (and p q) lambda.
+Theorem null_and_emptystr: forall (p q: regex),
+    null p emptystr ->
+    null q emptystr ->
+    null (and p q) emptystr.
 Proof.
 (* TODO: Good First Issue *)
 Abort.
@@ -334,7 +334,7 @@ Abort.
 
 Theorem null_and_emptyset_l: forall (p q: regex),
     null p emptyset ->
-    null q lambda ->
+    null q emptystr ->
     null (and p q) emptyset.
 Proof.
 (* TODO: Good First Issue *)
@@ -358,7 +358,7 @@ assumption.
 Qed.
 
 Theorem null_and_emptyset_r: forall (p q: regex),
-    null p lambda ->
+    null p emptystr ->
     null q emptyset ->
     null (and p q) emptyset.
 Proof.
@@ -407,7 +407,7 @@ destruct H.
 Qed.
 
 Theorem null_neg_emptyset: forall (r: regex),
-    null r lambda ->
+    null r emptystr ->
     null (neg r) emptyset.
 Proof.
 intros.
@@ -419,16 +419,16 @@ invs H.
 contradiction.
 Qed.
 
-Theorem null_neg_lambda_emptyset:
-  null (neg lambda) emptyset.
+Theorem null_neg_emptystr_emptyset:
+  null (neg emptystr) emptyset.
 Proof.
 apply null_neg_emptyset.
-apply null_lambda_is_lambda.
+apply null_emptystr_is_emptystr.
 Qed.
 
-Theorem null_neg_lambda: forall (r: regex),
+Theorem null_neg_emptystr: forall (r: regex),
     null r emptyset ->
-    null (neg r) lambda.
+    null (neg r) emptystr.
 Proof.
 intros.
 constructor.
@@ -441,12 +441,12 @@ Qed.
 Fixpoint null_def (r: regex): regex :=
   match r with
   | emptyset => emptyset
-  | lambda => lambda
+  | emptystr => emptystr
   | symbol _ => emptyset
   | or s t => null_or (null_def s) (null_def t)
   | neg s => null_neg (null_def s)
   | concat s t => null_and (null_def s) (null_def t)
-  | star s => lambda
+  | star s => emptystr
 end.
 
 Theorem null_is_null_def:
@@ -459,7 +459,7 @@ induction r.
   apply null_emptyset.
   untie.
 - cbn.
-  apply null_lambda.
+  apply null_emptystr.
   constructor.
 - cbn.
   apply null_emptyset.
@@ -467,13 +467,13 @@ induction r.
   invs H.
 - cbn.
   invs IHr1; invs IHr2.
-  + apply null_lambda.
+  + apply null_emptystr.
     constructor.
     auto.
-  + apply null_lambda.
+  + apply null_emptystr.
     constructor.
     auto.
-  + apply null_lambda.
+  + apply null_emptystr.
     constructor.
     auto.
   + apply null_emptyset.
@@ -487,14 +487,14 @@ induction r.
     untie.
     invs H0.
     contradiction.
-  + apply null_lambda.
+  + apply null_emptystr.
     cbn.
     constructor.
     assumption.  
 - cbn.
   invs IHr1;
   invs IHr2.
-  + apply null_lambda.
+  + apply null_emptystr.
     destruct_concat_lang.
     exists [].
     exists [].
@@ -519,7 +519,7 @@ induction r.
     listerine.
     contradiction.
 - cbn.
-  apply null_lambda.
+  apply null_emptystr.
   constructor.
 Qed.
 
@@ -532,8 +532,8 @@ rewrite <- H.
 apply null_is_null_def.
 Qed.
 
-Theorem null_def_is_lambda_or_emptyset: forall (r: regex),
-  (null_def r = lambda) \/ (null_def r = emptyset).
+Theorem null_def_is_emptystr_or_emptyset: forall (r: regex),
+  (null_def r = emptystr) \/ (null_def r = emptyset).
 Proof.
 intros.
 induction r.
@@ -564,12 +564,12 @@ inversion_clear H.
     * apply IHr2 in B as B1.
       cbn.
       rewrite B1.
-      specialize null_def_is_lambda_or_emptyset with (r := r1).
+      specialize null_def_is_emptystr_or_emptyset with (r := r1).
       intros.
       destruct H; rewrite H; reflexivity.
   + invs H0.
     cbn.
-    specialize null_def_is_lambda_or_emptyset with (r := r).
+    specialize null_def_is_emptystr_or_emptyset with (r := r).
     intros.
     destruct H0.
     * apply null_def_implies_null in H0.
@@ -593,8 +593,8 @@ inversion_clear H.
     constructor.
   + cbn. reflexivity.
   + cbn.
-    specialize null_def_is_lambda_or_emptyset with (r := r1).
-    specialize null_def_is_lambda_or_emptyset with (r := r2).
+    specialize null_def_is_emptystr_or_emptyset with (r := r1).
+    specialize null_def_is_emptystr_or_emptyset with (r := r2).
     intros Dr1 Dr2.
     destruct Dr1, Dr2; rewrite H; (try rewrite H1);
     apply null_def_implies_null in H;
@@ -605,7 +605,7 @@ inversion_clear H.
     * exfalso. apply H0. cbn. constructor. auto.
     * reflexivity. 
   + cbn.
-    specialize null_def_is_lambda_or_emptyset with (r := r).
+    specialize null_def_is_emptystr_or_emptyset with (r := r).
     intros Dr.
     cbn in H0.
     destruct Dr; rewrite H; cbn;
@@ -635,8 +635,8 @@ inversion_clear H.
     constructor.
 Qed.
 
-Theorem null_is_lambda_or_emptyset (r: regex):
-  null_def r = lambda \/ null_def r = emptyset.
+Theorem null_is_emptystr_or_emptyset (r: regex):
+  null_def r = emptystr \/ null_def r = emptyset.
 Proof.
 induction r.
 - right.
@@ -659,8 +659,8 @@ induction r.
   reflexivity.
 Qed.
 
-Theorem null_only_emptyset_or_lambda (r: regex):
-  null r emptyset \/ null r lambda.
+Theorem null_only_emptyset_or_emptystr (r: regex):
+  null r emptyset \/ null r emptystr.
 Proof.
 specialize denotation_is_decidable with (r := r) (s := []).
 intros.
@@ -670,8 +670,8 @@ destruct H.
 Qed.
 
 (*
-null_split_lambda_or splits a regular expression into
-a possible lambda and the regular expression that does not match lambda.
+null_split_emptystr_or splits a regular expression into
+a possible emptystr and the regular expression that does not match emptystr.
 This theorem is needed for finding the derive function for the concat operator.
 Let:
   R = null_def(R) or R'
@@ -682,7 +682,7 @@ Let:
   E = null_def(R)
   where null_def(R') = emptyset
 *)
-Theorem null_split_lambda_or (r: regex):
+Theorem null_split_emptystr_or (r: regex):
   exists
     (e r': regex),
     null r e /\
