@@ -12,6 +12,7 @@ Require Import Brzozowski.Null.
 Require Import Brzozowski.Language.
 Require Import Brzozowski.LogicOp.
 Require Import Brzozowski.Regex.
+Require Import Brzozowski.Ring.
 Require Import Brzozowski.Simplify.
 Require Import Brzozowski.StarLang.
 
@@ -106,7 +107,15 @@ split; try split.
   + cbn.
     rewrite IHp.
     rewrite IHq.
-    admit. (*TODO: Help Wanted: ring*)
+    cbn.
+    (*TODO: Help Wanted: see Ring.v
+    And then apply the following tactics:
+    rewrite or_lang_assoc.
+    rewrite or_lang_assoc.
+    rewrite (or_lang_comm emptystr_lang _).
+    rewrite <- (or_lang_assoc {{p'}} emptystr_lang emptystr_lang).
+    truthy.
+    *)
 Abort.
 
 (*
@@ -222,7 +231,12 @@ destruct Hpn, Hqn.
   rewrite or_lang_emptyset_l_is_r.
   rewrite lift_or_lang_over_concat_lang.
   rewrite concat_lang_emptystr_r_is_r.
-  (* TODO: Help Wanted ring*)
+  truthy.
+  (* TODO: Help Wanted, see Brozozwoski Ring.v
+  and then apply these tactics:
+  rewrite <- or_lang_assoc.
+  truthy.
+  *)
 Abort.
 
 Lemma split_concat_into_null_or:
