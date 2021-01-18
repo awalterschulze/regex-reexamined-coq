@@ -32,7 +32,7 @@ Definition nor_lang (P Q: lang) : lang :=
 Definition and_lang (P Q: lang) : lang :=
   neg_lang (or_lang (neg_lang P) (neg_lang Q)).
 
-Lemma denote_regex_or_step:
+Lemma denote_regex_nor_step:
   forall (p q: regex),
   {{nor p q}} {<->} nor_lang {{p}} {{q}}.
 Proof.
@@ -61,9 +61,9 @@ unfold and_lang.
 specialize denotation_is_decidable with (r := p) (s := s) as Dp.
 specialize denotation_is_decidable with (r := q) (s := s) as Dq.
 destruct Dp, Dq; split; intros; split; try assumption.
-- untie. 
+- untie.
   invs H2.
-  invs H3; invs H2; contradiction. 
+  invs H3; invs H2; contradiction.
 - invs H1.
   exfalso.
   apply H2.
@@ -142,4 +142,20 @@ split.
   cbn in *.
   unfold nor_lang in H.
   assumption.
+Qed.
+
+Theorem or_denotes_or_lang:
+  forall (p q: regex),
+  {{or p q}} {<->} or_lang {{p}} {{q}}.
+Proof.
+  intros.
+  split; intros; constructor; inversion H; assumption.
+Qed.
+
+Theorem neg_denotes_neg_lang:
+  forall (p : regex),
+  {{neg p}} {<->} neg_lang {{p}}.
+Proof.
+  intros.
+  split; intros; constructor; inversion H; assumption.
 Qed.
