@@ -26,6 +26,7 @@ src/Brzozowski/Language.v
 src/Brzozowski/LogicOp.v
 src/Brzozowski/Null.v
 src/Brzozowski/Regex.v
+src/Brzozowski/Ring.v
 src/Brzozowski/Setoid.v
 src/Brzozowski/Simplify.v
 src/Brzozowski/SplitEmptyStr.v
