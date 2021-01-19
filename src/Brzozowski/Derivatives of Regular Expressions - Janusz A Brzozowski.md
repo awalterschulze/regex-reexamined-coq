@@ -61,11 +61,11 @@ We define another operation on a languages $R$, yielding a new language called a
 
 The notion of derivative of a set (under different names) was introduced previously {10, 14, 15}, but was not applied to regular expressions. We now present an algorithm for finding derivatives of regular expressions. We shall need to know when a regular expression contains $\lambda$. For this purpose we make the following definition.
 
-**Definition 3.2.** Given any language $R$ we define $\delta(R)$ to be
+**Definition 3.2.** Given any language $R$ we define $\nu(R)$ to be
 
 $$
 \begin{aligned}
-\delta(R) & = \lambda\ \text{if}\ \lambda \in R \\
+\nu(R) & = \lambda\ \text{if}\ \lambda \in R \\
           & = \emptyset\ \text{if}\ \lambda \notin R \\
 \end{aligned}
 $$
@@ -74,9 +74,9 @@ It is clear that:
 
 $$
 \begin{aligned}
-\delta(a) & = \emptyset\ \text{for any}\ a \in \Sigma_k, \\
-\delta(\lambda) & = \lambda, \text{and} \\
-\delta(\emptyset) & = \emptyset . \\
+\nu(a) & = \emptyset\ \text{for any}\ a \in \Sigma_k, \\
+\nu(\lambda) & = \lambda, \text{and} \\
+\nu(\emptyset) & = \emptyset . \\
 \end{aligned}
 $$
 
@@ -84,23 +84,23 @@ Furthermore
 
 $$
 \begin{aligned}
-\delta(P*) &= \lambda\ \text{(by definition of *), and} \\
-\delta(P.Q) &= \delta(P)\ \&\ \delta(Q).
+\nu(P*) &= \lambda\ \text{(by definition of *), and} \\
+\nu(P.Q) &= \nu(P)\ \&\ \nu(Q).
 \end{aligned}
 $$
 
-If $R = f(P, Q)$ it is also easy to determine $\delta(R)$. For example,
+If $R = f(P, Q)$ it is also easy to determine $\nu(R)$. For example,
 
 $$
 \begin{aligned}
-\text{(3.1)}&\ \delta(P + Q)    &= \delta(P) + \delta(Q). \\
-\text{(3.2)}&\ \delta(P\ \&\ Q) &= \delta(P)\ \&\ \delta(Q). \\
-\text{(3.3)}&\ \delta(P')       &= \lambda\ \text{if}\ \delta(P) = \emptyset \\
-            &                   &= \emptyset\ \text{if}\ \delta(P) = \lambda \\
+\text{(3.1)}&\ \nu(P + Q)    &= \nu(P) + \nu(Q). \\
+\text{(3.2)}&\ \nu(P\ \&\ Q) &= \nu(P)\ \&\ \nu(Q). \\
+\text{(3.3)}&\ \nu(P')       &= \lambda\ \text{if}\ \nu(P) = \emptyset \\
+            &                   &= \emptyset\ \text{if}\ \nu(P) = \lambda \\
 \end{aligned}
 $$
 
-where $\&$ and $+$ is defined for $\delta$ similar to $\lambda$ being True and $\emptyset$ being False in a boolean equation:
+where $\&$ and $+$ is defined for $\nu$ similar to $\lambda$ being True and $\emptyset$ being False in a boolean equation:
 
 $$
 \begin{aligned}
@@ -109,7 +109,7 @@ A + B = \emptyset\ \text{if and only if}\ A = \emptyset\ \text{and}\ B = \emptys
 \end{aligned}
 $$
 
-The $\delta$ function of any other Boolean expression can be obtained using rules (3.1)-(3.3), since the connectives $+$ and $'$ form a complete set of connectives.
+The $\nu$ function of any other Boolean expression can be obtained using rules (3.1)-(3.3), since the connectives $+$ and $'$ form a complete set of connectives.
 
 **THEOREM 3.1.** If $R$ is a regular expression, the derivative of $R$ with respect to a character $a \in \Sigma_k$ is found recursively as follows:
 
@@ -118,7 +118,7 @@ $$
 \text{(3.4)}&\ D_a a &=&\ \lambda, \\
 \text{(3.5)}&\ D_a b &=&\ \emptyset,\ \text{for}\ b = \lambda\ \text{or}\ b = \emptyset\ \text{or}\ b \in A_k\ \text{and}\ b \neq a, \\
 \text{(3.6)}&\ D_a (P^*) &=&\ (D_a P)P^*, \\
-\text{(3.7)}&\ D_a (PQ) &=&\ (D_a P)Q + \delta(P)(D_a Q). \\
+\text{(3.7)}&\ D_a (PQ) &=&\ (D_a P)Q + \nu(P)(D_a Q). \\
 \text{(3.8)}&\ D_a (f(P, Q)) &=&\ f(D_a P, D_a Q). \\
 \end{aligned}
 $$
@@ -141,19 +141,19 @@ $$
 
 It is clear that this rule can be extended to any number of regular expressions, i.e. that $D_a (R_1 + R_2 + \ldots) = D_a R_1 + D_a R_2 + \ldots$ even when the number of $R_j$ is countably infinite. Next, note that $a.D_a R + a.D_a R' = a.I$. Taking the derivative with respect to $a$ of both sides, we have $D_a R + D_a R' = I$. Also $(D_a R) \& (D_a R') = \emptyset$, and we have $D_a R' = (D_a R)'$. Thus rule (3.8) holds for union and complementation, and consequently for any Boolean function.
 
-Next consider $D_a P.Q$ . Let $P = \delta(P) + P_0$, where $\delta(P_0) = \emptyset$. Then
+Next consider $D_a P.Q$ . Let $P = \nu(P) + P_0$, where $\nu(P_0) = \emptyset$. Then
 
 $$
 \begin{aligned}
-D_a PQ  &= \{s | as \in (\delta(P) + P_0)Q\} \\
-        &= \{u | au \in \delta(P)Q\} + \{v | av \in P_0 Q\} \\
-        &= \delta(P) (D_a Q) + \{v_1 v_2 | a v_1 \in P_0, v_2 \in Q\} \\
-        &= \delta(P) (D_a Q) + \{v_1 | a v_1 \in P_0\} Q \\
-        &= \delta(P) (D_a Q) + (D_a P_0) Q. \\
+D_a PQ  &= \{s | as \in (\nu(P) + P_0)Q\} \\
+        &= \{u | au \in \nu(P)Q\} + \{v | av \in P_0 Q\} \\
+        &= \nu(P) (D_a Q) + \{v_1 v_2 | a v_1 \in P_0, v_2 \in Q\} \\
+        &= \nu(P) (D_a Q) + \{v_1 | a v_1 \in P_0\} Q \\
+        &= \nu(P) (D_a Q) + (D_a P_0) Q. \\
 \end{aligned}
 $$
 
-But $D_a P = D_a (P_0 + \lambda) = D_a P_0$; hence $D_a (PQ) = \delta(P) D_a Q + (D_a P) Q$,
+But $D_a P = D_a (P_0 + \lambda) = D_a P_0$; hence $D_a (PQ) = \nu(P) D_a Q + (D_a P) Q$,
 which is rule (3.7).
 
 Finally we have
@@ -169,12 +169,12 @@ But
 
 $$
 \begin{aligned}
-\sum^{\infty}_{n=1} D_a P^n   &= \sum^{\infty}_{n=1} ((D_a P)P^{n-1} + \delta(P) (D_a P^{n-1})) \\
+\sum^{\infty}_{n=1} D_a P^n   &= \sum^{\infty}_{n=1} ((D_a P)P^{n-1} + \nu(P) (D_a P^{n-1})) \\
                             &= \sum^{\infty}_{n=1} (D_a P)P^{n-1}, \\
 \end{aligned}
 $$
 
-since $\delta(P) (D_a^{n-1})$ is either $\emptyset$ or it is  $D_a P^{n-1}$, which is already included. Thus we have
+since $\nu(P) (D_a^{n-1})$ is either $\emptyset$ or it is  $D_a P^{n-1}$, which is already included. Thus we have
 
 $D_a P* = \sum^{\infty}_{n=1} (D_a P)P^{n-1} = (D_a P) \sum^{\infty}_{n=1}P^{n-1} = (D_a P)P*$,
 
@@ -196,7 +196,7 @@ The proof follows from Definition 3.1.
 ### TODO
 
  - [ ] Can we define Definition 3.1 ?
- - [ ] Define $\delta$ using Defintion 3.2
+ - [ ] Define $\nu$ using Defintion 3.2
  - [ ] See the proof in Appendix I and whether we should Define Theorem 3.1
  - [ ] Proof Theorem 3.2 using Definition 3.1
 
@@ -212,7 +212,7 @@ PROOF. It is clear from Theorem 3.2 that $D_{\lambda} R$ is regular and that $D_
 
 PROOF. If $\lambda \in D_s R$, then $s.\lambda = s \in R$ from Definition 3.1. Conversely, if $s \in R$, then $s.\lambda \in R$ and $\lambda \in D_s R$, again from Definition 3.1.
 
-Theorem 4.2 reduces the problem of testing whether a string $s$ is contained in a regular expression $R$ to the problem of testing whether $\lambda$ is contained in $D_s R$. The latter problem is solved through the use of $\delta(D_s R)$.
+Theorem 4.2 reduces the problem of testing whether a string $s$ is contained in a regular expression $R$ to the problem of testing whether $\lambda$ is contained in $D_s R$. The latter problem is solved through the use of $\nu(D_s R)$.
 
 Two regular expressions which are equal (but not necessarily identical in form) will be said to be of the same type.
 
@@ -241,14 +241,14 @@ INDUCTION STEP, $N > 0$. Assume that each expression $X$ with $N$ or fewer opera
 
 Case 1. $R = f(P,Q)$. It is easily verified from the definitions that $D_s R = D_s (P + Q) = D_s P + D_s Q$. Thus $d_R \leq d_P d_Q$. If $R = P'$ then $D_s R = (D_s P)'$. In this case, $d_R = d_P$. Since any Boolean function can be expressed using a finite number of sums and complements, it follows that the number of derivatives of $R$ (of the form $R = f(P, Q)$) is finite.
 
-Case 2. $R = P.Q$. Let $s = a_1 a_2 ... a_m$. Using the definitions of Section 3, we have $D_{a_1} R = (D_{a_1} P)Q + \delta(P) D_{a_1} Q$. Similarly, for a string of length 2, we have $D_{a_1 a_2} R = (D_{a_1 a_2} P)Q + \delta(D_{a_1} P)D_{a_2} Q + \delta(P)D_{a_1 a_2} Q$. In general, the derivative with respect to a string of length m will have the form
+Case 2. $R = P.Q$. Let $s = a_1 a_2 ... a_m$. Using the definitions of Section 3, we have $D_{a_1} R = (D_{a_1} P)Q + \nu(P) D_{a_1} Q$. Similarly, for a string of length 2, we have $D_{a_1 a_2} R = (D_{a_1 a_2} P)Q + \nu(D_{a_1} P)D_{a_2} Q + \nu(P)D_{a_1 a_2} Q$. In general, the derivative with respect to a string of length m will have the form
 
 $$
 \begin{aligned}
 \text{(II.1)}\ D_{a_1 \ldots a_m} R    &= (D_{a_1 \ldots a_m} P) Q \\
-                            &+ \delta(D_{a_1 \ldots a_{m-1}} P) D_{a_m}Q \ldots \\
-                            &+ \delta{D_{a_1} P} (\delta(D_{a_2 \ldots a_m} Q) \\
-                            &+ \delta(P) (D_{a_1 \ldots a_m} Q). \\
+                            &+ \nu(D_{a_1 \ldots a_{m-1}} P) D_{a_m}Q \ldots \\
+                            &+ \nu{D_{a_1} P} (\nu(D_{a_2 \ldots a_m} Q) \\
+                            &+ \nu(P) (D_{a_1 \ldots a_m} Q). \\
 \end{aligned}
 $$
 
@@ -259,8 +259,8 @@ Case 3. $R = P^*$. Again let us consider the formation of the derivative of $P^*
 $$
 \begin{aligned}
 D_{a_1} (P^*)        &= (D_{a_1} P)P^*, \\
-D_{a_1 a_2} (P^*)    &= (D_{a_1 a_2} P)P^* + \delta(D_{a_1} P) (D_{a_2} P^*) \\
-                     &= (D_{a_1 a_2} P)P^* + \delta(D_{a_1} P) (D_{a_2} P) P^*, etc. \\
+D_{a_1 a_2} (P^*)    &= (D_{a_1 a_2} P)P^* + \nu(D_{a_1} P) (D_{a_2} P^*) \\
+                     &= (D_{a_1 a_2} P)P^* + \nu(D_{a_1} P) (D_{a_2} P) P^*, etc. \\
 \end{aligned}
 $$
 
@@ -278,19 +278,19 @@ In the above discussion it is assumed that it is possible to decide when two der
 **THEOREM 4.4.** Every regular expression $R$ can be written in the form
 
 $$
-\text{(4.1)}\ R = \delta(R) + \sum_{a \in A_k} a D_a R,
+\text{(4.1)}\ R = \nu(R) + \sum_{a \in A_k} a D_a R,
 $$
 
 where the terms in the sum are disjoint.
 
-PROOF. First, $R$ may or may not contain $\lambda$; this is taken care of by $\delta(R)$. If $R$ contains a string $s$, then that, string must begin with a letter $a \in \Sigma_k$ of the input alphabet. In view of the definition of derivative, the set $a D_a R$ is exactly language of $R$ of strings beginning with $a$. The terms of the sum are obviously disjoint, for the string in one term begin with a letter of $\Sigma_k$ different from those in another term.
+PROOF. First, $R$ may or may not contain $\lambda$; this is taken care of by $\nu(R)$. If $R$ contains a string $s$, then that, string must begin with a letter $a \in \Sigma_k$ of the input alphabet. In view of the definition of derivative, the set $a D_a R$ is exactly language of $R$ of strings beginning with $a$. The terms of the sum are obviously disjoint, for the string in one term begin with a letter of $\Sigma_k$ different from those in another term.
 
 It follows from Theorem 4.4 that every regular expression can be represented by an infinite sum $R = \sum_{s \in I} s D_s R$. The number of types of derivatives is of course finite and so the series is redundant (e.g. the language of strings beginning with $ab$ is contained in the language of strings beginning with $a$). The expansion (4.1) is much more useful, as will be shown below.
 
 **THEOREM 4.5**. The relationship between the $d_R$ characteristic derivatives of $R$ can be represented by a unique set of $d_R$ equations of the form
 
 $$
-D_s R = \delta(D_s R) + \sum_{a \in A_k} a D_{u_a} R,
+D_s R = \nu(D_s R) + \sum_{a \in A_k} a D_{u_a} R,
 $$
 
 where $D_s R$ is a characteristic derivative and $D_{u_a} R$ is a characteristic derivative equal to $D_{sa} R$. Such equations will be called the characteristic equations of $R$.
@@ -299,11 +299,11 @@ The theorem follows directly from Theorems 4.3 and 4.4.
 
 **THEOREM4.6.** An equation of the form $X = A.X + B$ , where $\lambda(A) = \emptyset$, has the solution $X = A^* B$, which is unique (up to equality of regular expressions).
 
-The theorem is a modification of a theorem of Arden {8}, who has shown that $X = X.A + B$, $\delta(A) = \emptyset$, has the solution $X = BA^*$ . The proof of Theorem 4.6 parallels that of Arden's theorem and will not be given here.
+The theorem is a modification of a theorem of Arden {8}, who has shown that $X = X.A + B$, $\nu(A) = \emptyset$, has the solution $X = BA^*$ . The proof of Theorem 4.6 parallels that of Arden's theorem and will not be given here.
 
 **THEOREM 4.7.** The set of characteristic equations of $R$ can be solved for $R$ uniquely: (up to equality).
 
-PROOF. The proof follows from Theorem 4.6. The last characteristic derivative can be found in terms of the previous derivatives. Note that the coefficient $A$ in the equation for any derivative is either $\emptyset$ or it is one or more symbols of the input alphabet. Thus $\delta(A) = \emptyset$ in all cases and Theorem 4.6 applies. Next, the solution for the last derivative can be substituted in the first $(d_R - 1)$ equations, reducing the number of equations by 1. The process is repeated until the set of equations is solved for $D_{\lambda} R = R$.
+PROOF. The proof follows from Theorem 4.6. The last characteristic derivative can be found in terms of the previous derivatives. Note that the coefficient $A$ in the equation for any derivative is either $\emptyset$ or it is one or more symbols of the input alphabet. Thus $\nu(A) = \emptyset$ in all cases and Theorem 4.6 applies. Next, the solution for the last derivative can be substituted in the first $(d_R - 1)$ equations, reducing the number of equations by 1. The process is repeated until the set of equations is solved for $D_{\lambda} R = R$.
 
 Thus the regular expression can be always reconstructed from the characteristic equations (although it may be in a different form, depending on the order of elimination of derivatives from the equation).
 
@@ -346,11 +346,11 @@ Let $R = (0 + 1)^*.1$
 
 Then
 
-$D_{\lambda} = R$; introduce $q_{\lambda}$ with $Z = 0$, for $\delta(R) = \emptyset$ ,
+$D_{\lambda} = R$; introduce $q_{\lambda}$ with $Z = 0$, for $\nu(R) = \emptyset$ ,
 
 $D_0 = R$; return $q_{\lambda}$ under input $0$,
 
-$D_1 = R + \lambda$; introduce $q_1$, with output $Z = 1$ (for $\delta(D_1) = \lambda$), and a transition from $q_{\lambda}$ to $q_1$ under input $x = 1$. 
+$D_1 = R + \lambda$; introduce $q_1$, with output $Z = 1$ (for $\nu(D_1) = \lambda$), and a transition from $q_{\lambda}$ to $q_1$ under input $x = 1$. 
 
 $D_{00}, D_{01}$ need not be considered, for $D_0$ does not correspond to a new characteristic derivative, i.e. $0$ returns the state graph to $q_{\lambda}$. Continuing, we find
 
@@ -461,7 +461,7 @@ D_{00111} &= Q' &; \text{return to}\ q_{0011}. \\
 \end{aligned}
 $$
 
-This concludes the construction. The characteristic derivatives are $D_{\lambda}$, $D_0$, $D_{00}$, $D_{01}$, $D_{001}$ and $D_{0011}$. Therefore the state diagram has 6 states. One has to determine $\delta(D_s)$ to find the output associated with $q_s$. In this case only $D_{00}$ and $D_{0011}$ contain $\lambda$; hence the output is $Z = 1$ only for $q_{00}$ and $q_{0011}$.
+This concludes the construction. The characteristic derivatives are $D_{\lambda}$, $D_0$, $D_{00}$, $D_{01}$, $D_{001}$ and $D_{0011}$. Therefore the state diagram has 6 states. One has to determine $\nu(D_s)$ to find the output associated with $q_s$. In this case only $D_{00}$ and $D_{0011}$ contain $\lambda$; hence the output is $Z = 1$ only for $q_{00}$ and $q_{0011}$.
 
 *The original paper has a figure 3, showing these 6 states, with their transitions, which was left out here, but I think it is easy to imagine or draw oneself.*
 

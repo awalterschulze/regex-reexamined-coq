@@ -14,42 +14,42 @@ Require Import Brzozowski.LogicOp.
 
 (*
     **Definition 3.2.**
-    Given any language $R$ we define $\delta(R)$ to be
+    Given any language $R$ we define $\nu(R)$ to be
 
     $$
     \begin{aligned}
-    \delta(R) & = \lambda\ \text{if}\ \lambda \in R \\
+    \nu(R) & = \lambda\ \text{if}\ \lambda \in R \\
               & = \emptyset\ \text{if}\ \lambda \notin R \\
     \end{aligned}
     $$
 *)
 
-Inductive delta: regex -> regex -> Prop :=
-  | delta_lambda (r: regex):
+Inductive null: regex -> regex -> Prop :=
+  | null_lambda (r: regex):
     [] \in {{r}} ->
-    delta r lambda
-  | delta_emptyset (r: regex):
+    null r lambda
+  | null_emptyset (r: regex):
     [] \notin {{r}} ->
-    delta r emptyset
+    null r emptyset
     .
 
 (*
-delta_and is only true when both regexes are true, where
+null_and is only true when both regexes are true, where
 true = lambda
 false = emptyset
 *)
-Definition delta_and (p q: regex): regex :=
+Definition null_and (p q: regex): regex :=
   match (p, q) with
   | (lambda, lambda) => lambda
   | _ => emptyset
   end.
 
 (*
-delta_nor is only true when both regexes are false, where
+null_nor is only true when both regexes are false, where
 true = lambda
 false = emptyset
 *)
-Definition delta_nor (p q: regex): regex :=
+Definition null_nor (p q: regex): regex :=
   match (p, q) with
   | (emptyset, emptyset) => lambda
   | _ => emptyset
@@ -60,32 +60,32 @@ Definition delta_nor (p q: regex): regex :=
 
   $$
   \begin{aligned}
-  \delta(a) & = \emptyset\ \text{for any}\ a \in \Sigma_k, \\
-  \delta(\lambda) & = \lambda, \text{and} \\
-  \delta(\emptyset) & = \emptyset . \\
+  \nu(a) & = \emptyset\ \text{for any}\ a \in \Sigma_k, \\
+  \nu(\lambda) & = \lambda, \text{and} \\
+  \nu(\emptyset) & = \emptyset . \\
   \end{aligned}
   $$
 *)
 
-Theorem delta_lambda_is_lambda: delta lambda lambda.
+Theorem null_lambda_is_lambda: null lambda lambda.
 Proof.
-apply delta_lambda.
+apply null_lambda.
 constructor.
 Qed.
 
-Theorem delta_emptyset_is_emptyset: delta emptyset emptyset.
+Theorem null_emptyset_is_emptyset: null emptyset emptyset.
 Proof.
-apply delta_emptyset.
+apply null_emptyset.
 unfold not.
 intros.
 inversion H.
 Qed.
 
-Theorem delta_symbol_is_emptyset: forall (a: alphabet),
-    delta (symbol a) emptyset.
+Theorem null_symbol_is_emptyset: forall (a: alphabet),
+    null (symbol a) emptyset.
 Proof.
 intros.
-apply delta_emptyset.
+apply null_emptyset.
 unfold not.
 intros.
 inversion H.
@@ -96,25 +96,25 @@ Qed.
 
     $$
     \begin{aligned}
-    \delta(P* ) &= \lambda\ \text{(by definition of * ), and} \\
-    \delta(P.Q) &= \delta(P)\ \&\ \delta(Q).
+    \nu(P* ) &= \lambda\ \text{(by definition of * ), and} \\
+    \nu(P.Q) &= \nu(P)\ \&\ \nu(Q).
     \end{aligned}
     $$
 *)
 
-(* \delta(P* ) = \lambda\ *)
-Theorem delta_star_is_lambda: forall (r: regex),
-    delta (star r) lambda.
+(* \nu(P* ) = \lambda\ *)
+Theorem null_star_is_lambda: forall (r: regex),
+    null (star r) lambda.
 Proof.
 intros.
-apply delta_lambda.
+apply null_lambda.
 constructor.
 Qed.
 
-Theorem delta_concat_is_and_lambda: forall (p q: regex),
-    delta p lambda ->
-    delta q lambda ->
-    delta (concat p q) lambda.
+Theorem null_concat_is_and_lambda: forall (p q: regex),
+    null p lambda ->
+    null q lambda ->
+    null (concat p q) lambda.
 Proof.
 intros.
 constructor.
@@ -130,17 +130,17 @@ split.
   exact  H2.
 Qed.
 
-(* \delta(P.Q) = \delta(P)\ \&\ \delta(Q) *)
-Theorem delta_concat_is_and:
+(* \nu(P.Q) = \nu(P)\ \&\ \nu(Q) *)
+Theorem null_concat_is_and:
   forall (p q: regex)
          (dp dq: regex)
          (dc: regex)
-         (delta_p: delta p dp)
-         (delta_q: delta q dq),
-  delta (concat p q) (delta_and dp dq).
+         (null_p: null p dp)
+         (null_q: null q dq),
+  null (concat p q) (null_and dp dq).
 Proof.
 intros.
-invs delta_p; invs delta_q; cbn; constructor; try untie.
+invs null_p; invs null_q; cbn; constructor; try untie.
 - destruct_concat_lang.
   exists []. exists []. exists eq_refl.
   split; assumption.
@@ -152,43 +152,43 @@ invs delta_p; invs delta_q; cbn; constructor; try untie.
   apply H. assumption.
 Qed.
 
-Theorem delta_concat_is_and_emptyset_r: forall (p q: regex),
-    delta p emptyset ->
-    delta q lambda ->
-    delta (concat p q) emptyset.
+Theorem null_concat_is_and_emptyset_r: forall (p q: regex),
+    null p emptyset ->
+    null q lambda ->
+    null (concat p q) emptyset.
 Proof.
 (*TODO: Good First Issue *)
 Abort.
 
-Theorem delta_concat_is_and_emptyset_l: forall (p q: regex),
-    delta p lambda ->
-    delta q emptyset ->
-    delta (concat p q) emptyset.
+Theorem null_concat_is_and_emptyset_l: forall (p q: regex),
+    null p lambda ->
+    null q emptyset ->
+    null (concat p q) emptyset.
 Proof.
 (* TODO: Good First Issue *)
 Abort.
 
-Theorem delta_concat_is_and_emptyset: forall (p q: regex),
-    delta p emptyset ->
-    delta q emptyset ->
-    delta (concat p q) emptyset.
+Theorem null_concat_is_and_emptyset: forall (p q: regex),
+    null p emptyset ->
+    null q emptyset ->
+    null (concat p q) emptyset.
 Proof.
 (* TODO: Good First Issue *)
 Abort.
 
 (*
-  If $R = f(P, Q)$ it is also easy to determine $\delta(R)$. For example,
+  If $R = f(P, Q)$ it is also easy to determine $\nu(R)$. For example,
 
   $$
   \begin{aligned}
-  \text{(3.1)}&\ \delta(P + Q)    &= \delta(P) + \delta(Q). \\
-  \text{(3.2)}&\ \delta(P\ \&\ Q) &= \delta(P)\ \&\ \delta(Q). \\
-  \text{(3.3)}&\ \delta(P')       &= \lambda\ \text{if}\ \delta(P) = \emptyset \\
-              &                   &= \emptyset\ \text{if}\ \delta(P) = \lambda \\
+  \text{(3.1)}&\ \nu(P + Q)    &= \nu(P) + \nu(Q). \\
+  \text{(3.2)}&\ \nu(P\ \&\ Q) &= \nu(P)\ \&\ \nu(Q). \\
+  \text{(3.3)}&\ \nu(P')       &= \lambda\ \text{if}\ \nu(P) = \emptyset \\
+              &                   &= \emptyset\ \text{if}\ \nu(P) = \lambda \\
   \end{aligned}
   $$
 
-  where $\&$ and $+$ is defined for $\delta$ similar to
+  where $\&$ and $+$ is defined for $\nu$ similar to
   $\lambda$ being True and $\emptyset$ being False in a boolean equation.
 
   $$
@@ -200,45 +200,45 @@ Abort.
 *)
 
 (*
-delta_or is only true when one of the regexes are true, where
+null_or is only true when one of the regexes are true, where
 true = lambda
 false = emptyset
 *)
-Definition delta_or (p q: regex): regex :=
+Definition null_or (p q: regex): regex :=
   match (p, q) with
   | (lambda, _) => lambda
   | (_, lambda) => lambda
   | _ => emptyset
   end.
 
-(* \delta(P + Q) = \delta(P) + \delta(Q) *)
-Theorem delta_or_is_or:
+(* \nu(P + Q) = \nu(P) + \nu(Q) *)
+Theorem null_or_is_or:
   forall
     (p q: regex)
     (dp dq: regex)
-    (delta_p: delta p dp)
-    (delta_q: delta q dq),
-    delta (or p q) (delta_or dp dq).
+    (null_p: null p dp)
+    (null_q: null q dq),
+    null (or p q) (null_or dp dq).
 Proof.
 intros.
-invs delta_p; invs delta_q; cbn; constructor; cbn.
+invs null_p; invs null_q; cbn; constructor; cbn.
 - constructor. auto. 
 - constructor. auto. 
 - constructor. auto.
 - untie. invs H1. wreckit; contradiction.
 Qed.
 
-(* \delta(P\ \&\ Q) = \delta(P)\ \&\ \delta(Q). *)
-Theorem delta_and_is_and:
+(* \nu(P\ \&\ Q) = \nu(P)\ \&\ \nu(Q). *)
+Theorem null_and_is_and:
   forall
     (p q: regex)
     (dp dq: regex)
-    (delta_p: delta p dp)
-    (delta_q: delta q dq),
-    delta (and p q) (delta_and dp dq).
+    (null_p: null p dp)
+    (null_q: null q dq),
+    null (and p q) (null_and dp dq).
 Proof.
 intros.
-invs delta_p; invs delta_q; cbn; constructor; cbn;
+invs null_p; invs null_q; cbn; constructor; cbn;
   try constructor;
   untie.
 - invs H1. destruct H2.
@@ -253,29 +253,29 @@ invs delta_p; invs delta_q; cbn; constructor; cbn;
 Qed.
 
 (*
-delta_neg is only true if input is false and vice versa, where
+null_neg is only true if input is false and vice versa, where
 true = lambda
 false = emptyset
 *)
-Definition delta_neg (p: regex): regex :=
+Definition null_neg (p: regex): regex :=
   match p with
   | lambda => emptyset
   | _ => lambda
   end.
 
 (*
-\delta(P') = \lambda\ \text{if}\ \delta(P) = \emptyset \\
-\delta(P') = \emptyset\ \text{if}\ \delta(P) = \lambda
+\nu(P') = \lambda\ \text{if}\ \nu(P) = \emptyset \\
+\nu(P') = \emptyset\ \text{if}\ \nu(P) = \lambda
 *)
-Theorem delta_neg_is_neg:
+Theorem null_neg_is_neg:
   forall
     (p: regex)
     (dp: regex)
-    (delta_p: delta p dp),
-    delta (neg p) (delta_neg dp).
+    (null_p: null p dp),
+    null (neg p) (null_neg dp).
 Proof.
 intros.
-invs delta_p; cbn; constructor.
+invs null_p; cbn; constructor.
 - untie.
   cbn in H0.
   invs H0.
@@ -285,64 +285,64 @@ invs delta_p; cbn; constructor.
   assumption.
 Qed.
 
-Theorem delta_or_lambda: forall (p q: regex),
-    delta p lambda ->
-    delta q lambda ->
-    delta (or p q) lambda.
+Theorem null_or_lambda: forall (p q: regex),
+    null p lambda ->
+    null q lambda ->
+    null (or p q) lambda.
 Proof.
 (* TODO: Good First Issue *)
 Abort.
 
-Theorem delta_or_lambda_l: forall (p q: regex),
-    delta p lambda ->
-    delta q emptyset ->
-    delta (or p q) lambda.
+Theorem null_or_lambda_l: forall (p q: regex),
+    null p lambda ->
+    null q emptyset ->
+    null (or p q) lambda.
 Proof.
 (* TODO: Good First Issue *)
 Abort.
 
-Theorem delta_or_lambda_r: forall (p q: regex),
-    delta p emptyset ->
-    delta q lambda ->
-    delta (or p q) lambda.
+Theorem null_or_lambda_r: forall (p q: regex),
+    null p emptyset ->
+    null q lambda ->
+    null (or p q) lambda.
 Proof.
 (* TODO: Good First Issue *)
 Abort.
 
-Theorem delta_or_emptyset: forall (p q: regex),
-    delta p emptyset ->
-    delta q emptyset ->
-    delta (or p q) emptyset.
+Theorem null_or_emptyset: forall (p q: regex),
+    null p emptyset ->
+    null q emptyset ->
+    null (or p q) emptyset.
 Proof.
 (* TODO: Good First Issue *)
 Abort.
 
-Theorem delta_and_lambda: forall (p q: regex),
-    delta p lambda ->
-    delta q lambda ->
-    delta (and p q) lambda.
+Theorem null_and_lambda: forall (p q: regex),
+    null p lambda ->
+    null q lambda ->
+    null (and p q) lambda.
 Proof.
 (* TODO: Good First Issue *)
 Abort.
 
-Theorem delta_and_l_emptyset: forall (p q: regex),
-  delta p emptyset ->
-  delta (and p q) emptyset.
+Theorem null_and_l_emptyset: forall (p q: regex),
+  null p emptyset ->
+  null (and p q) emptyset.
 Proof.
 (* TODO: Good First Issue *)
 Abort.
 
-Theorem delta_and_emptyset_l: forall (p q: regex),
-    delta p emptyset ->
-    delta q lambda ->
-    delta (and p q) emptyset.
+Theorem null_and_emptyset_l: forall (p q: regex),
+    null p emptyset ->
+    null q lambda ->
+    null (and p q) emptyset.
 Proof.
 (* TODO: Good First Issue *)
 Abort.
 
-Theorem delta_and_r_emptyset: forall (p q: regex),
-  delta q emptyset ->
-  delta (and p q) emptyset.
+Theorem null_and_r_emptyset: forall (p q: regex),
+  null q emptyset ->
+  null (and p q) emptyset.
 Proof.
 intros.
 constructor.
@@ -357,30 +357,30 @@ constructor.
 assumption.
 Qed.
 
-Theorem delta_and_emptyset_r: forall (p q: regex),
-    delta p lambda ->
-    delta q emptyset ->
-    delta (and p q) emptyset.
+Theorem null_and_emptyset_r: forall (p q: regex),
+    null p lambda ->
+    null q emptyset ->
+    null (and p q) emptyset.
 Proof.
 intros.
-apply delta_and_r_emptyset.
+apply null_and_r_emptyset.
 assumption.
 Qed.
 
-Theorem delta_and_emptyset: forall (p q: regex),
-    delta p emptyset ->
-    delta q emptyset ->
-    delta (and p q) emptyset.
+Theorem null_and_emptyset: forall (p q: regex),
+    null p emptyset ->
+    null q emptyset ->
+    null (and p q) emptyset.
 Proof.
 intros.
-apply delta_and_r_emptyset.
+apply null_and_r_emptyset.
 assumption.
 Qed.
 
-Theorem delta_and_emptyset_either: forall (p q: regex),
-    delta p emptyset \/
-    delta q emptyset ->
-    delta (and p q) emptyset.
+Theorem null_and_emptyset_either: forall (p q: regex),
+    null p emptyset \/
+    null q emptyset ->
+    null (and p q) emptyset.
 Proof.
 intros.
 destruct H.
@@ -406,9 +406,9 @@ destruct H.
   assumption.
 Qed.
 
-Theorem delta_neg_emptyset: forall (r: regex),
-    delta r lambda ->
-    delta (neg r) emptyset.
+Theorem null_neg_emptyset: forall (r: regex),
+    null r lambda ->
+    null (neg r) emptyset.
 Proof.
 intros.
 constructor.
@@ -419,16 +419,16 @@ invs H.
 contradiction.
 Qed.
 
-Theorem delta_neg_lambda_emptyset:
-  delta (neg lambda) emptyset.
+Theorem null_neg_lambda_emptyset:
+  null (neg lambda) emptyset.
 Proof.
-apply delta_neg_emptyset.
-apply delta_lambda_is_lambda.
+apply null_neg_emptyset.
+apply null_lambda_is_lambda.
 Qed.
 
-Theorem delta_neg_lambda: forall (r: regex),
-    delta r emptyset ->
-    delta (neg r) lambda.
+Theorem null_neg_lambda: forall (r: regex),
+    null r emptyset ->
+    null (neg r) lambda.
 Proof.
 intros.
 constructor.
@@ -438,102 +438,102 @@ constructor.
 assumption.
 Qed.
 
-Fixpoint delta_def (r: regex): regex :=
+Fixpoint null_def (r: regex): regex :=
   match r with
   | emptyset => emptyset
   | lambda => lambda
   | symbol _ => emptyset
-  | or s t => delta_or (delta_def s) (delta_def t)
-  | neg s => delta_neg (delta_def s)
-  | concat s t => delta_and (delta_def s) (delta_def t)
+  | or s t => null_or (null_def s) (null_def t)
+  | neg s => null_neg (null_def s)
+  | concat s t => null_and (null_def s) (null_def t)
   | star s => lambda
 end.
 
-Theorem delta_is_delta_def:
+Theorem null_is_null_def:
   forall (r: regex),
-  delta r (delta_def r).
+  null r (null_def r).
 Proof.
 intros.
 induction r.
 - cbn.
-  apply delta_emptyset.
+  apply null_emptyset.
   untie.
 - cbn.
-  apply delta_lambda.
+  apply null_lambda.
   constructor.
 - cbn.
-  apply delta_emptyset.
+  apply null_emptyset.
   untie.
   invs H.
 - cbn.
   invs IHr1; invs IHr2.
-  + apply delta_lambda.
+  + apply null_lambda.
     constructor.
     auto.
-  + apply delta_lambda.
+  + apply null_lambda.
     constructor.
     auto.
-  + apply delta_lambda.
+  + apply null_lambda.
     constructor.
     auto.
-  + apply delta_emptyset.
+  + apply null_emptyset.
     untie.
     invs H2.
     invs H4; contradiction.
 - cbn.
   invs IHr.
-  + apply delta_emptyset.
+  + apply null_emptyset.
     cbn.
     untie.
     invs H0.
     contradiction.
-  + apply delta_lambda.
+  + apply null_lambda.
     cbn.
     constructor.
     assumption.  
 - cbn.
   invs IHr1;
   invs IHr2.
-  + apply delta_lambda.
+  + apply null_lambda.
     destruct_concat_lang.
     exists [].
     exists [].
     exists eq_refl.
     split; assumption.
-  + apply delta_emptyset.
+  + apply null_emptyset.
     untie.
     invs H2.
     wreckit.
     listerine.
     contradiction.
-  + apply delta_emptyset.
+  + apply null_emptyset.
     untie.
     invs H2.
     wreckit.
     listerine.
     contradiction.
-  + apply delta_emptyset.
+  + apply null_emptyset.
     untie.
     invs H2.
     wreckit.
     listerine.
     contradiction.
 - cbn.
-  apply delta_lambda.
+  apply null_lambda.
   constructor.
 Qed.
 
-Theorem delta_def_implies_delta:
+Theorem null_def_implies_null:
   forall (r s: regex),
-  delta_def r = s -> delta r s.
+  null_def r = s -> null r s.
 Proof.
 intros.
 rewrite <- H.
-apply delta_is_delta_def.
+apply null_is_null_def.
 Qed.
 
-Theorem delta_def_is_lambda_or_emptyset: forall (r: regex),
-  (delta_def r = lambda) \/ (delta_def r = emptyset).
+Theorem null_def_is_lambda_or_emptyset: forall (r: regex),
+  (null_def r = lambda) \/ (null_def r = emptyset).
 Proof.
 intros.
 induction r.
@@ -546,9 +546,9 @@ induction r.
 - cbn. auto.
 Qed. 
 
-Theorem delta_implies_delta_def:
+Theorem null_implies_null_def:
   forall (r s: regex),
-  delta r s -> delta_def r = s.
+  null r s -> null_def r = s.
 Proof.
 intros.
 inversion_clear H.
@@ -564,15 +564,15 @@ inversion_clear H.
     * apply IHr2 in B as B1.
       cbn.
       rewrite B1.
-      specialize delta_def_is_lambda_or_emptyset with (r := r1).
+      specialize null_def_is_lambda_or_emptyset with (r := r1).
       intros.
       destruct H; rewrite H; reflexivity.
   + invs H0.
     cbn.
-    specialize delta_def_is_lambda_or_emptyset with (r := r).
+    specialize null_def_is_lambda_or_emptyset with (r := r).
     intros.
     destruct H0.
-    * apply delta_def_implies_delta in H0.
+    * apply null_def_implies_null in H0.
       invs H0.
       contradiction.
     * rewrite H0.
@@ -593,32 +593,32 @@ inversion_clear H.
     constructor.
   + cbn. reflexivity.
   + cbn.
-    specialize delta_def_is_lambda_or_emptyset with (r := r1).
-    specialize delta_def_is_lambda_or_emptyset with (r := r2).
+    specialize null_def_is_lambda_or_emptyset with (r := r1).
+    specialize null_def_is_lambda_or_emptyset with (r := r2).
     intros Dr1 Dr2.
     destruct Dr1, Dr2; rewrite H; (try rewrite H1);
-    apply delta_def_implies_delta in H;
-    apply delta_def_implies_delta in H1;
+    apply null_def_implies_null in H;
+    apply null_def_implies_null in H1;
     invs H; invs H1.
     * exfalso. apply H0. cbn. constructor. auto.
     * exfalso. apply H0. cbn. constructor. auto.
     * exfalso. apply H0. cbn. constructor. auto.
     * reflexivity. 
   + cbn.
-    specialize delta_def_is_lambda_or_emptyset with (r := r).
+    specialize null_def_is_lambda_or_emptyset with (r := r).
     intros Dr.
     cbn in H0.
     destruct Dr; rewrite H; cbn;
-    apply delta_def_implies_delta in H.
+    apply null_def_implies_null in H.
     * reflexivity.
     * invs H. exfalso. apply H0. constructor. assumption.  
   + cbn.
-    remember (delta_def r1) as dr1.
-    remember (delta_def r2) as dr2.
+    remember (null_def r1) as dr1.
+    remember (null_def r2) as dr2.
     symmetry in Heqdr1.
     symmetry in Heqdr2.
-    apply delta_def_implies_delta in Heqdr1.
-    apply delta_def_implies_delta in Heqdr2.
+    apply null_def_implies_null in Heqdr1.
+    apply null_def_implies_null in Heqdr2.
     induction dr1; inversion_clear Heqdr1.
     * reflexivity.
     * induction dr2; inversion_clear Heqdr2.
@@ -635,8 +635,8 @@ inversion_clear H.
     constructor.
 Qed.
 
-Theorem delta_is_lambda_or_emptyset (r: regex):
-  delta_def r = lambda \/ delta_def r = emptyset.
+Theorem null_is_lambda_or_emptyset (r: regex):
+  null_def r = lambda \/ null_def r = emptyset.
 Proof.
 induction r.
 - right.
@@ -659,8 +659,8 @@ induction r.
   reflexivity.
 Qed.
 
-Theorem delta_only_emptyset_or_lambda (r: regex):
-  delta r emptyset \/ delta r lambda.
+Theorem null_only_emptyset_or_lambda (r: regex):
+  null r emptyset \/ null r lambda.
 Proof.
 specialize denotation_is_decidable with (r := r) (s := []).
 intros.
@@ -670,23 +670,23 @@ destruct H.
 Qed.
 
 (*
-delta_split_lambda_or splits a regular expression into
+null_split_lambda_or splits a regular expression into
 a possible lambda and the regular expression that does not match lambda.
 This theorem is needed for finding the derive function for the concat operator.
 Let:
-  R = delta_def(R) or R'
-  where delta_def(R') = emptyset
+  R = null_def(R) or R'
+  where null_def(R') = emptyset
 =>
 Let:
   R = E or R'
-  E = delta_def(R)
-  where delta_def(R') = emptyset
+  E = null_def(R)
+  where null_def(R') = emptyset
 *)
-Theorem delta_split_lambda_or (r: regex):
+Theorem null_split_lambda_or (r: regex):
   exists
     (e r': regex),
-    delta r e /\
-    delta r' emptyset /\
+    null r e /\
+    null r' emptyset /\
     {{r}} {<->} {{or e r'}}.
 Proof.
 (* TODO: Help Wanted *)
