@@ -108,15 +108,27 @@ split; try split.
     rewrite IHp.
     rewrite IHq.
     cbn.
-    (*TODO: Help Wanted: see Ring.v
-    And then apply the following tactics:
     rewrite or_lang_assoc.
     rewrite or_lang_assoc.
     rewrite (or_lang_comm emptystr_lang _).
     rewrite <- (or_lang_assoc {{p'}} emptystr_lang emptystr_lang).
     truthy.
-    *)
-Abort.
+  + cbn.
+    rewrite IHp.
+    rewrite IHq.
+    cbn.
+    truthy.
+  + cbn.
+    rewrite IHp.
+    rewrite IHq.
+    cbn.
+    truthy.
+  + cbn.
+    rewrite IHp.
+    rewrite IHq.
+    cbn.
+    truthy.
+Qed.
 
 (*
   We can split a regex (not r) into
@@ -229,15 +241,45 @@ destruct Hpn, Hqn.
   rewrite or_lang_emptyset_l_is_r.
   cbn.
   rewrite or_lang_emptyset_l_is_r.
-  rewrite lift_or_lang_over_concat_lang.
+  rewrite lift_or_lang_over_concat_lang_r.
   rewrite concat_lang_emptystr_r_is_r.
-  truthy.
-  (* TODO: Help Wanted, see Brozozwoski Ring.v
-  and then apply these tactics:
   rewrite <- or_lang_assoc.
   truthy.
+- subst.
+  cbn.
+  truthy.
+  rewrite lift_or_lang_over_concat_lang_l.
+  truthy.
+  rewrite or_lang_assoc.
+  rewrite (or_lang_comm (concat_lang {{p}} {{q}}) (concat_lang emptystr_lang {{q}})).
+  rewrite <- or_lang_assoc.
+  truthy.
+- subst.
+  cbn.
+  repeat rewrite lift_or_lang_over_concat_lang_l.
+  repeat rewrite lift_or_lang_over_concat_lang_r.
+  repeat rewrite concat_lang_emptystr_r_is_r.
+  repeat rewrite concat_lang_emptystr_l_is_l.
+  (* or (or emptystr q) (or p (concat p q)) *)
+  (* or
+      emptystr
+      (or
+        (or
+          p
+          (concat p q)
+        )
+        (or
+          q
+          (concat p q)
+        )
+      )
   *)
-Abort.
+  symmetry.
+  rewrite <- or_lang_assoc.
+  rewrite (or_lang_comm (concat_lang {{p}} {{q}}) _).
+  rewrite <- or_lang_assoc.
+  truthy.
+Qed.
 
 Lemma split_concat_into_null_or:
   forall
@@ -273,14 +315,12 @@ split; try split.
   rewrite IHp.
   rewrite IHq.
   simpl denote_regex.
-  (* TODO: Help Wanted
-     apply split_concat_into_null.
+  apply split_concat_into_null.
   + invs nullp'. assumption.
   + invs nullq'. assumption.
   + invs nullp; auto.
   + invs nullq; auto.
-  *)
-Abort.
+Qed.
 
 (*
 If r does not contain emptystr then (r, star r) does not contain emptystr.
@@ -374,9 +414,8 @@ induction r.
 - apply split_emptyset_into_emptyset_or_emptyset.
 - apply split_emptystr_into_emptystr_or_emptyset.
 - apply split_symbol_into_emptyset_or_symbol.
-- admit. (* TODO: Help Wanted apply split_or_into_null_or; assumption. *)
+- apply split_or_into_null_or; assumption.
 - apply split_neg_into_null_or; assumption.
-- admit. (* TODO: Help Wanted apply split_concat_into_null_or; assumption. *)
-- apply split_star_into_null_or.
-(* TODO: Help Wanted *)
-Abort.
+- apply split_concat_into_null_or; assumption.
+- apply split_star_into_null_or; assumption.
+Qed.

@@ -154,7 +154,7 @@ split.
   + constructor.
 Qed.
 
-Theorem lift_or_lang_over_concat_lang: forall (p q r: lang),
+Theorem lift_or_lang_over_concat_lang_r: forall (p q r: lang),
   (concat_lang p (or_lang q r))
   {<->}
   or_lang (concat_lang p q) (concat_lang p r).
@@ -198,6 +198,52 @@ split; intros.
     * constructor.
       right.
       assumption.
+Qed.
+
+Theorem lift_or_lang_over_concat_lang_l: forall (p q r: lang),
+  (concat_lang (or_lang p q) r)
+  {<->}
+  or_lang (concat_lang p r) (concat_lang q r).
+Proof.
+split; intros.
+- constructor.
+  invs H.
+  invs H1.
+  destruct H.
+  + left.
+    destruct_concat_lang.
+    exists p0.
+    exists q0.
+    exists eq_refl.
+    auto.
+  + right.
+    destruct_concat_lang.
+    exists p0.
+    exists q0.
+    exists eq_refl.
+    auto.
+- invs H.
+  invs H0.
+  + destruct_concat_lang.
+    invs H.
+    exists p0.
+    exists q0.
+    exists eq_refl.
+    split.
+    * constructor.
+      left.
+      assumption.
+    * assumption.
+  + destruct_concat_lang.
+    invs H.
+    exists p0.
+    exists q0.
+    exists eq_refl.
+    split.
+    * constructor.
+      right.
+      assumption.
+    * assumption.
 Qed.
 
 Theorem or_lang_emptyset_r_is_l: forall (r: lang),
