@@ -1,28 +1,25 @@
-Require Import Coq.micromega.Lia.
-
-Require Import CoqStock.Untie.
+Require Import CoqStock.Invs.
 Require Import CoqStock.List.
 
 Require Import Brzozowski.Alphabet.
-Require Import Brzozowski.Decidable.
 Require Import Brzozowski.Derive.
 Require Import Brzozowski.Language.
-Require Import Brzozowski.LogicOp.
-Require Import Brzozowski.Regex.
 
 CoInductive bisimilar : lang -> lang -> Prop :=
-  | bisim : forall (s s': lang),
-      ([] \in s <-> [] \in s')
+  | bisim : forall (P Q: lang),
+      ([] \in P <-> [] \in Q)
     /\
       (forall (a: alphabet),
-        bisimilar (derive_lang_a s a) (derive_lang_a s' a)
+        bisimilar (derive_lang_a P a) (derive_lang_a Q a)
       )
-    -> bisimilar s s'.
+    -> bisimilar P Q.
+
+Notation "P <<->> Q" := (bisimilar P Q) (at level 80).
 
 Lemma equivalence_impl_derive_lang_a_is_equivalent:
-    forall (l l': lang) (a: alphabet),
-    l {<->} l' ->
-    derive_lang_a l a {<->} derive_lang_a l' a.
+    forall (P Q: lang) (a: alphabet),
+    P {<->} Q ->
+    derive_lang_a P a {<->} derive_lang_a Q a.
 Proof.
 unfold lang_iff.
 intros.
@@ -33,8 +30,8 @@ assumption.
 Qed.
 
 Lemma equivalence_impl_bisimilar:
-  forall (l l': lang),
-  l {<->} l' -> bisimilar l l'.
+  forall (P Q: lang),
+  P {<->} Q -> P <<->> Q.
 Proof.
 cofix G.
 intros.
@@ -49,8 +46,8 @@ split.
 Qed.
 
 Lemma fold_derive_lang_a:
-  forall (l: lang) (a: alphabet) (s: str),
-  (a :: s) \in l <-> s \in (derive_lang_a l a).
+  forall (R: lang) (a: alphabet) (s: str),
+  (a :: s) \in R <-> s \in (derive_lang_a R a).
 Proof.
 intros.
 unfold derive_lang_a.
@@ -59,13 +56,13 @@ reflexivity.
 Qed.
 
 Lemma bisimilar_impl_equivalence:
-  forall (l l': lang),
-  bisimilar l l' -> l {<->} l'.
+  forall (P Q: lang),
+  P <<->> Q -> P {<->} Q.
 Proof.
 unfold lang_iff.
 intros.
-generalize dependent l.
-generalize dependent l'.
+generalize dependent P.
+generalize dependent Q.
 induction s.
 - intros.
   inversion H.
@@ -76,49 +73,17 @@ induction s.
   destruct H0.
   specialize H3 with (a := a).
   subst.
-  rewrite (fold_derive_lang_a l a s).
-  rewrite (fold_derive_lang_a l' a s).
+  rewrite (fold_derive_lang_a P a s).
+  rewrite (fold_derive_lang_a Q a s).
   apply IHs.
   assumption.
 Qed.
 
 Theorem bisimilar_is_equivalence:
-  forall (l l': lang),
-  bisimilar l l' <-> l {<->} l'.
+  forall (P Q: lang),
+  P <<->> Q <-> P {<->} Q.
 Proof.
 split.
 - apply bisimilar_impl_equivalence.
 - apply equivalence_impl_bisimilar.
 Qed.
-
-Theorem star_star_bisimilar: forall (r: lang),
-  bisimilar
-  (star_lang r)
-  (star_lang (star_lang r)).
-Proof.
-(* TODO: Help Wanted *)
-Abort.
-
-Theorem or_lang_commutativity_bisimilar: forall (a b: lang),
-  bisimilar
-  (or_lang a b)
-  (or_lang b a).
-Proof.
-(* TODO: Help Wanted *)
-Abort.
-
-Theorem concat_lang_assoc_bisimilar: forall (a b c: lang),
-  bisimilar
-  (concat_lang a (concat_lang b c))
-  (concat_lang (concat_lang a b) c).
-Proof.
-(* TODO: Help Wanted *)
-Abort.
-
-Theorem concat_lang_emptyset_l_bisimilar_emptyset: forall (r: lang),
-    bisimilar
-    (concat_lang emptyset_lang r)
-    emptyset_lang.
-Proof.
-(* TODO: Help Wanted *)
-Abort.
