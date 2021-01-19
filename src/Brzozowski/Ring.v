@@ -12,6 +12,7 @@ Require Import CoqStock.WreckIt.
 
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Language.
+Require Import Brzozowski.LogicOp.
 Require Import Brzozowski.Regex.
 Require Import Brzozowski.Setoid.
 Require Import Brzozowski.Simplify.
@@ -20,13 +21,6 @@ Require Import Brzozowski.Simplify.
    Some are theorems that need to be proven or simply applied from Simplify.v
    Other parts are uncommentable once the theorems are proven.
 *)
-
-(* TODO: Move to LogicOp.v and replace and_lang *)
-Inductive and_lang (P Q: lang): lang :=
-  | mk_and : forall s,
-    s \in P /\ s \in Q ->
-    and_lang P Q s
-  .
 
 Theorem or_lang_emptyset_l:
   forall n : lang, or_lang emptyset_lang n {<->} n.
@@ -94,9 +88,8 @@ Lemma Eq_lang_s_ext: sring_eq_ext or_lang and_lang lang_iff.
 Proof.
 constructor.
 - exact or_lang_morph_Proper.
-(* TODO: Good First Issue *)
-(* - exact and_lang_morph_Proper. *)
-Abort.
+- exact and_lang_morph_Proper.
+Qed.
 
 (* TODO: Good First Issue *)
 (* Add Ring lang_semi_ring: lang_semi_ring

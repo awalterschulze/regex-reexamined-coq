@@ -26,92 +26,123 @@ Definition xor (r s: regex) : regex :=
 Definition I: regex :=
   neg (emptyset).
 
-Definition nor_lang (P Q: lang) : lang :=
-  neg_lang (or_lang P Q).
+Inductive nor_lang (P Q: lang): lang :=
+  | mk_nor : forall s,
+    s \notin P /\ s \notin Q ->
+    nor_lang P Q s.
 
-Definition and_lang (P Q: lang) : lang :=
-  neg_lang (or_lang (neg_lang P) (neg_lang Q)).
+Inductive and_lang (P Q: lang): lang :=
+  | mk_and : forall s,
+    s \in P /\ s \in Q ->
+    and_lang P Q s.
 
-Lemma denote_regex_nor_step:
+Lemma nor_denotes_nor_lang:
   forall (p q: regex),
   {{nor p q}} {<->} nor_lang {{p}} {{q}}.
 Proof.
-  intros.
-  cbn.
-  unfold nor_lang.
-  reflexivity.
+intros.
+cbn.
+split; intros.
+- specialize denotation_is_decidable with (s := s) (r := p) as Dp.
+  specialize denotation_is_decidable with (s := s) (r := q) as Dq.
+  invs H.
+  constructor.
+  split.
+  + destruct Dp.
+    * exfalso.
+      apply H0.
+      constructor.
+      left.
+      assumption.
+    * assumption.
+  + destruct Dq.
+    * exfalso.
+      apply H0.
+      constructor.
+      right.
+      assumption.
+    * assumption.
+- constructor.
+  invs H.
+  untie.
+  invs H.
+  invs H0.
+  invs H1; contradiction.
 Qed.
 
-Lemma denote_regex_and_step:
+Lemma and_denotes_and_lang:
   forall (p q: regex),
   {{and p q}} {<->} and_lang {{p}} {{q}}.
 Proof.
-  intros.
-  cbn.
-  unfold and_lang.
-  reflexivity.
-Qed.
-
-Theorem and_lang_is_conj:
-  forall (p q: regex) (s: str),
-  s \in and_lang {{p}} {{q}} <-> s \in {{p}} /\ s \in {{q}}.
-Proof.
 intros.
-unfold and_lang.
-specialize denotation_is_decidable with (r := p) (s := s) as Dp.
-specialize denotation_is_decidable with (r := q) (s := s) as Dq.
-destruct Dp, Dq; split; intros; split; try assumption.
-- untie.
-  invs H2.
-  invs H3; invs H2; contradiction.
-- invs H1.
-  exfalso.
-  apply H2.
+cbn.
+split.
+- intros.
+  specialize denotation_is_decidable with (r := p) (s := s) as Dp.
+  specialize denotation_is_decidable with (r := q) (s := s) as Dq.
+  destruct Dp, Dq.
+  + constructor. auto.
+  + constructor.
+    split.
+    * assumption.
+    * exfalso.
+      invs H.
+      apply H2.
+      constructor.
+      right.
+      constructor.
+      assumption.
+  + constructor.
+    split.
+    * exfalso.
+      invs H.
+      apply H2.
+      constructor.
+      left.
+      constructor.
+      assumption.
+    * assumption.
+  + exfalso.
+    invs H.
+    apply H2.
+    constructor.
+    left.
+    constructor.
+    assumption.
+- intros.
+  invs H.
+  destruct H0.
   constructor.
-  right.
-  constructor.
-  assumption.
-- untie.
-  invs H2.
+  untie.
   invs H1.
-  contradiction.
-- invs H1.
-  exfalso.
-  apply H2.
-  constructor.
-  left.
-  constructor.
-  assumption.
-- untie.
   invs H2.
-  invs H1.
-  contradiction.
-- invs H1.
-  exfalso.
-  apply H2.
-  constructor.
-  left.
-  constructor.
-  assumption.
-- invs H1.
-  exfalso.
-  apply H2.
-  constructor.
-  left.
-  constructor.
-  assumption.
-- invs H1.
-  contradiction.
+  + invs H1.
+    contradiction.
+  + invs H1.
+    contradiction.
 Qed.
 
 Add Parametric Morphism: nor_lang
   with signature lang_iff ==> lang_iff ==> lang_iff as nor_lang_morph.
 Proof.
 intros.
-unfold nor_lang.
-rewrite H.
-rewrite H0.
-reflexivity.
+unfold lang_iff in *.
+intros.
+specialize H with (s := s).
+specialize H0 with (s := s).
+split; intros.
+- constructor.
+  invs H1.
+  destruct H2.
+  rewrite H in H1.
+  rewrite H0 in H2.
+  auto.
+- constructor.
+  invs H1.
+  destruct H2.
+  rewrite <- H in H1.
+  rewrite <- H0 in H2.
+  auto.
 Qed.
 
 Existing Instance nor_lang_morph_Proper.
@@ -120,29 +151,24 @@ Add Parametric Morphism: and_lang
   with signature lang_iff ==> lang_iff ==> lang_iff as and_lang_morph.
 Proof.
 intros.
-unfold and_lang.
-rewrite H.
-rewrite H0.
-reflexivity.
+unfold lang_iff in *.
+intros.
+specialize H with s.
+specialize H0 with s.
+split; intros.
+- invs H1.
+  constructor.
+  rewrite <- H.
+  rewrite <- H0.
+  auto.
+- invs H1.
+  constructor.
+  rewrite H.
+  rewrite H0.
+  auto.
 Qed.
 
 Existing Instance and_lang_morph_Proper.
-
-Theorem nor_denotes_nor_lang:
-  forall (p q: regex),
-  {{nor p q}} {<->} nor_lang {{p}} {{q}}.
-Proof.
-intros.
-split.
-- intros.
-  cbn in *.
-  unfold nor_lang.
-  assumption.
-- intros.
-  cbn in *.
-  unfold nor_lang in H.
-  assumption.
-Qed.
 
 Theorem or_denotes_or_lang:
   forall (p q: regex),
