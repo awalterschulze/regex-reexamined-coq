@@ -221,11 +221,11 @@ Theorem delta_or_is_or:
     delta (or p q) (delta_or dp dq).
 Proof.
 intros.
-invs delta_p; invs delta_q; cbn; constructor;
-  try (constructor; split); untie;
-  invs H1; wreckit; try contradiction.
-- apply L. constructor.
-  split; assumption.
+invs delta_p; invs delta_q; cbn; constructor; cbn.
+- constructor. auto. 
+- constructor. auto. 
+- constructor. auto.
+- untie. invs H1. wreckit; contradiction.
 Qed.
 
 (* \delta(P\ \&\ Q) = \delta(P)\ \&\ \delta(Q). *)
@@ -238,23 +238,26 @@ Theorem delta_and_is_and:
     delta (and p q) (delta_and dp dq).
 Proof.
 intros.
-invs delta_p; invs delta_q; cbn; constructor;
-  try (constructor; split);
-  untie;
-  invs H1;
-  wreckit;
-  try contradiction.
-- apply R. constructor. wreckit. assumption.
-- apply L. constructor. wreckit. assumption.
-- apply L. constructor. wreckit. assumption.
+invs delta_p; invs delta_q; cbn; constructor; cbn;
+  try constructor;
+  untie.
+- invs H1. destruct H2.
+  + invs H1. contradiction.
+  + invs H1. contradiction.
+- invs H1. destruct H2.
+  constructor. right. constructor. assumption.
+- invs H1. destruct H2.
+  constructor. left. constructor. assumption.
+- invs H1. destruct H2.
+  constructor. left. constructor. assumption.
 Qed.
 
 (*
-delta_not is only true if input is false and vice versa, where
+delta_neg is only true if input is false and vice versa, where
 true = lambda
 false = emptyset
 *)
-Definition delta_not (p: regex): regex :=
+Definition delta_neg (p: regex): regex :=
   match p with
   | lambda => emptyset
   | _ => lambda
@@ -264,24 +267,21 @@ Definition delta_not (p: regex): regex :=
 \delta(P') = \lambda\ \text{if}\ \delta(P) = \emptyset \\
 \delta(P') = \emptyset\ \text{if}\ \delta(P) = \lambda
 *)
-Theorem delta_not_is_not:
+Theorem delta_neg_is_neg:
   forall
     (p: regex)
     (dp: regex)
     (delta_p: delta p dp),
-    delta (complement p) (delta_not dp).
+    delta (neg p) (delta_neg dp).
 Proof.
 intros.
 invs delta_p; cbn; constructor.
 - untie.
   cbn in H0.
   invs H0.
-  wreckit.
-  apply L.
-  assumption.
+  contradiction.
 - cbn.
   constructor.
-  wreckit.
   assumption.
 Qed.
 
@@ -348,11 +348,13 @@ intros.
 constructor.
 untie.
 invs H0.
-wreckit.
-apply R.
+apply H1.
 invs H.
 constructor.
-split; assumption.
+right.
+cbn.
+constructor.
+assumption.
 Qed.
 
 Theorem delta_and_emptyset_r: forall (p q: regex),
@@ -385,53 +387,55 @@ destruct H.
 - constructor.
   untie.
   invs H0.
-  wreckit.
-  apply L.
-  invs H.
+  apply H1.
   constructor.
-  split; assumption.
+  invs H.
+  left.
+  cbn.
+  constructor.
+  assumption.
 - constructor.
   untie.
   invs H0.
-  wreckit.
-  apply R.
   invs H.
+  apply H1.
   constructor.
-  split; assumption.
+  right.
+  cbn.
+  constructor.
+  assumption.
 Qed.
 
-Theorem delta_not_emptyset: forall (r: regex),
+Theorem delta_neg_emptyset: forall (r: regex),
     delta r lambda ->
-    delta (complement r) emptyset.
+    delta (neg r) emptyset.
 Proof.
 intros.
 constructor.
-inversion H.
-unfold not.
-intros.
-inversion H2.
-clear H2.
-subst.
-inversion H3.
+invs H.
+cbn.
+untie.
+invs H.
 contradiction.
 Qed.
 
-Theorem delta_not_lambda_emptyset:
-  delta (complement lambda) emptyset.
+Theorem delta_neg_lambda_emptyset:
+  delta (neg lambda) emptyset.
 Proof.
-apply delta_not_emptyset.
+apply delta_neg_emptyset.
 apply delta_lambda_is_lambda.
 Qed.
 
-Theorem delta_not_lambda: forall (r: regex),
+Theorem delta_neg_lambda: forall (r: regex),
     delta r emptyset ->
-    delta (complement r) lambda.
+    delta (neg r) lambda.
 Proof.
 intros.
 constructor.
-inversion H.
+invs H.
+cbn.
 constructor.
-constructor; assumption.
+assumption.
 Qed.
 
 Fixpoint delta_def (r: regex): regex :=
@@ -439,9 +443,10 @@ Fixpoint delta_def (r: regex): regex :=
   | emptyset => emptyset
   | lambda => lambda
   | symbol _ => emptyset
+  | or s t => delta_or (delta_def s) (delta_def t)
+  | neg s => delta_neg (delta_def s)
   | concat s t => delta_and (delta_def s) (delta_def t)
   | star s => lambda
-  | nor s t => delta_nor (delta_def s) (delta_def t)
 end.
 
 Theorem delta_is_delta_def:
@@ -460,6 +465,32 @@ induction r.
   apply delta_emptyset.
   untie.
   invs H.
+- cbn.
+  invs IHr1; invs IHr2.
+  + apply delta_lambda.
+    constructor.
+    auto.
+  + apply delta_lambda.
+    constructor.
+    auto.
+  + apply delta_lambda.
+    constructor.
+    auto.
+  + apply delta_emptyset.
+    untie.
+    invs H2.
+    invs H4; contradiction.
+- cbn.
+  invs IHr.
+  + apply delta_emptyset.
+    cbn.
+    untie.
+    invs H0.
+    contradiction.
+  + apply delta_lambda.
+    cbn.
+    constructor.
+    assumption.  
 - cbn.
   invs IHr1;
   invs IHr2.
@@ -490,26 +521,6 @@ induction r.
 - cbn.
   apply delta_lambda.
   constructor.
-- cbn.
-  invs IHr1; invs IHr2.
-  + apply delta_emptyset.
-    untie.
-    inversion H2.
-    wreckit.
-    contradiction.
-  + apply delta_emptyset.
-    untie.
-    inversion H2.
-    wreckit.
-    contradiction.
-  + apply delta_emptyset.
-    untie.
-    inversion H2.
-    wreckit.
-    contradiction.
-  + apply delta_lambda.
-    constructor.
-    split; assumption.
 Qed.
 
 Theorem delta_def_implies_delta:
@@ -521,6 +532,20 @@ rewrite <- H.
 apply delta_is_delta_def.
 Qed.
 
+Theorem delta_def_is_lambda_or_emptyset: forall (r: regex),
+  (delta_def r = lambda) \/ (delta_def r = emptyset).
+Proof.
+intros.
+induction r.
+- cbn. auto.
+- cbn. auto.
+- cbn. auto.
+- cbn. destruct IHr1; destruct IHr2; rewrite H; (try rewrite H0); auto.
+- cbn. destruct IHr; rewrite H; cbn; auto.
+- cbn. destruct IHr1; destruct IHr2; rewrite H; (try rewrite H0); auto.
+- cbn. auto.
+Qed. 
+
 Theorem delta_implies_delta_def:
   forall (r s: regex),
   delta r s -> delta_def r = s.
@@ -531,6 +556,28 @@ inversion_clear H.
   + inversion H0.
   + cbn. reflexivity.
   + inversion H0.
+  + invs H0. wreckit.
+    * apply IHr1 in B as B1.
+      cbn.
+      rewrite B1.
+      reflexivity.
+    * apply IHr2 in B as B1.
+      cbn.
+      rewrite B1.
+      specialize delta_def_is_lambda_or_emptyset with (r := r1).
+      intros.
+      destruct H; rewrite H; reflexivity.
+  + invs H0.
+    cbn.
+    specialize delta_def_is_lambda_or_emptyset with (r := r).
+    intros.
+    destruct H0.
+    * apply delta_def_implies_delta in H0.
+      invs H0.
+      contradiction.
+    * rewrite H0.
+      cbn.
+      reflexivity. 
   + invs H0. listerine. subst.
     remember (IHr1 H1).
     remember (IHr2 H2).
@@ -539,30 +586,32 @@ inversion_clear H.
     rewrite e0.
     reflexivity.
   + cbn. reflexivity.
-  + invs H0. wreckit.
-    cbn.
-    remember (delta_def r1).
-    remember (delta_def r2).
-    induction r;
-      symmetry in Heqr;
-      apply delta_def_implies_delta in Heqr;
-      symmetry in Heqr0;
-      apply delta_def_implies_delta in Heqr0;
-      inversion Heqr;
-      inversion Heqr0.
-    * remember (R H1).
-      inversion f.
-    * reflexivity.
-    * remember (L H).
-      inversion f.
-    * remember (L H).
-      inversion f.
 - induction r.
   + cbn. reflexivity.
   + exfalso.
     apply H0.
     constructor.
   + cbn. reflexivity.
+  + cbn.
+    specialize delta_def_is_lambda_or_emptyset with (r := r1).
+    specialize delta_def_is_lambda_or_emptyset with (r := r2).
+    intros Dr1 Dr2.
+    destruct Dr1, Dr2; rewrite H; (try rewrite H1);
+    apply delta_def_implies_delta in H;
+    apply delta_def_implies_delta in H1;
+    invs H; invs H1.
+    * exfalso. apply H0. cbn. constructor. auto.
+    * exfalso. apply H0. cbn. constructor. auto.
+    * exfalso. apply H0. cbn. constructor. auto.
+    * reflexivity. 
+  + cbn.
+    specialize delta_def_is_lambda_or_emptyset with (r := r).
+    intros Dr.
+    cbn in H0.
+    destruct Dr; rewrite H; cbn;
+    apply delta_def_implies_delta in H.
+    * reflexivity.
+    * invs H. exfalso. apply H0. constructor. assumption.  
   + cbn.
     remember (delta_def r1) as dr1.
     remember (delta_def r2) as dr2.
@@ -584,19 +633,6 @@ inversion_clear H.
   + exfalso.
     apply H0.
     constructor.
-  + cbn.
-    remember (delta_def r1) as dr1.
-    remember (delta_def r2) as dr2.
-    symmetry in Heqdr1.
-    symmetry in Heqdr2.
-    apply delta_def_implies_delta in Heqdr1.
-    apply delta_def_implies_delta in Heqdr2.
-    induction dr1; inversion_clear Heqdr1.
-    * induction dr2; inversion_clear Heqdr2.
-      -- exfalso. apply H0. constructor.
-         split; assumption.
-      -- reflexivity.
-    * reflexivity.
 Qed.
 
 Theorem delta_is_lambda_or_emptyset (r: regex):
@@ -610,16 +646,17 @@ induction r.
 - right.
   cbn; reflexivity.
 - wreckit; (cbn;
+  try rewrite B0;
+  try rewrite B);
+  auto.
+- wreckit; cbn; rewrite B; auto. 
+- wreckit; (cbn;
     try rewrite B0;
     try rewrite B);
     auto.
 - left.
   cbn.
   reflexivity.
-- wreckit; (cbn;
-    try rewrite B0;
-    try rewrite B);
-  auto.
 Qed.
 
 Theorem delta_only_emptyset_or_lambda (r: regex):

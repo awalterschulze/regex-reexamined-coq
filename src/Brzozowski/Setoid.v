@@ -59,8 +59,8 @@ Existing Instance lang_setoid.
    nor_lang_morph allows rewrite to work inside nor_lang parameters
    see Example NorLangMorphSetoidRewrite
 *)
-Add Parametric Morphism: nor_lang
-  with signature lang_iff ==> lang_iff ==> lang_iff as nor_lang_morph.
+Add Parametric Morphism: or_lang
+  with signature lang_iff ==> lang_iff ==> lang_iff as or_lang_morph.
 Proof.
 intros.
 unfold "{<->}" in *.
@@ -68,29 +68,44 @@ unfold "\in" in *.
 intros.
 specialize H with s.
 specialize H0 with s.
-constructor;
-  intros;
-  constructor;
-  wreckit;
-    untie;
-    unfold "\in" in *;
-    invs H1;
-    wreckit.
-- apply L.
-  apply H.
+constructor.
+- intros.
+  constructor.
+  invs H1.
+  rewrite <- H.
+  rewrite <- H0.
   assumption.
-- apply R.
-  apply H0.
-  assumption.
-- apply L.
-  apply H.
-  assumption.
-- apply R.
-  apply H0.
+- intros.
+  constructor.
+  invs H1.
+  rewrite H.
+  rewrite H0.
   assumption.
 Qed.
 
-Existing Instance nor_lang_morph_Proper.
+Existing Instance or_lang_morph_Proper.
+
+Add Parametric Morphism: neg_lang
+  with signature lang_iff ==> lang_iff as neg_lang_morph.
+Proof.
+intros.
+unfold "{<->}" in *.
+intros.
+specialize H with s.
+split.
+- intros.
+  constructor.
+  invs H0.
+  rewrite <- H.
+  assumption.
+- intros.
+  constructor.
+  invs H0.
+  rewrite H.
+  assumption.
+Qed.
+
+Existing Instance neg_lang_morph_Proper.
 
 (*
    concat_lang_morph allows rewrite to work inside concat_lang parameters
@@ -180,22 +195,22 @@ reflexivity.
 Qed.
 
 (*
-  The implementation of not_lang_morph allows the use of rewrite inside nor_lang parameters.
+  The implementation of or_lang_morph allows the use of rewrite inside or_lang parameters.
 *)
-Example NorLangMorphSetoidRewrite: forall (r s: lang),
-  nor_lang (concat_lang emptyset_lang r) s
+Example OrLangMorphSetoidRewrite: forall (r s: lang),
+  or_lang (concat_lang emptyset_lang r) s
   {<->}
-  nor_lang emptyset_lang s.
+  or_lang emptyset_lang s.
 Proof.
 intros.
 rewrite lemma_for_setoid_example_concat_lang_emptyset_l_is_emptyset.
 reflexivity.
 Qed.
 
-Example StarLangNorLangMorphSetoidRewrite: forall (r s: lang),
-  star_lang (nor_lang (concat_lang emptyset_lang r) s)
+Example StarLangOrLangMorphSetoidRewrite: forall (r s: lang),
+  star_lang (or_lang (concat_lang emptyset_lang r) s)
   {<->}
-  star_lang (nor_lang emptyset_lang s).
+  star_lang (or_lang emptyset_lang s).
 Proof.
 intros.
 rewrite lemma_for_setoid_example_concat_lang_emptyset_l_is_emptyset.

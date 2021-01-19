@@ -239,11 +239,12 @@ Fixpoint derive_def (r: regex) (a: alphabet) : regex :=
     if (eqa b a)
     then lambda
     else emptyset
+  | or s t => or (derive_def s a) (derive_def t a)
+  | neg s => neg (derive_def s a)
   | concat s t =>
     or (concat (derive_def s a) t)
        (concat (delta_def s) (derive_def t a))
   | star s => concat (derive_def s a) (star s)
-  | nor s t => nor (derive_def s a) (derive_def t a)
   end.
 
 (* A helper Lemma for derive_commutes_a *)
@@ -316,25 +317,25 @@ Qed.
   and consequently for any Boolean function.
 *)
 
-(* A helper Lemma for commutes_a_nor *)
-Lemma nor_lang_distributes: forall (p q: regex) (a: alphabet),
-  derive_lang_a {{nor p q}} a {<->}
-  nor_lang (derive_lang_a {{p}} a) (derive_lang_a {{q}} a).
+(* A helper Lemma for commutes_a_or *)
+Lemma or_lang_distributes: forall (p q: regex) (a: alphabet),
+  derive_lang_a {{or p q}} a {<->}
+  or_lang (derive_lang_a {{p}} a) (derive_lang_a {{q}} a).
 Proof.
 intros.
-split; intros; invs H; constructor; wreckit; untie.
+split; intros; invs H; constructor; unfold derive_lang_a in *; unfold "\in" in *; auto.
 Qed.
 
 (* A helper Lemma for derive_commutes_a *)
-Lemma commutes_a_nor: forall (p q: regex) (a: alphabet)
+Lemma commutes_a_or: forall (p q: regex) (a: alphabet)
   (IHp: derive_lang_a {{p}} a {<->} {{derive_def p a}})
   (IHq: derive_lang_a {{q}} a {<->} {{derive_def q a}}),
-  derive_lang_a {{ nor p q }} a
+  derive_lang_a {{ or p q }} a
   {<->}
-  {{ derive_def (nor p q) a }}.
+  {{ derive_def (or p q) a }}.
 Proof.
 intros.
-rewrite nor_lang_distributes.
+rewrite or_lang_distributes.
 rewrite IHp.
 rewrite IHq.
 dubstep derive_def.
@@ -358,28 +359,23 @@ invs C.
 wreckit.
 cbn.
 constructor.
-wreckit.
-untie.
-invs H.
-invs H2.
-wreckit.
 listerine.
 - apply delta_lambda in H0.
   apply delta_implies_delta_def in H0.
   apply R2 in H1.
-  apply R.
+  rewrite H0.
+  right.
   destruct_concat_lang.
   exists [].
   exists s.
   exists eq_refl.
   split.
-  + rewrite H0.
-    constructor.
+  + constructor.
   + assumption.
 - apply R1 in H0.
-  apply L.
+  left.
   destruct_concat_lang.
-  exists L0.
+  exists L.
   exists q.
   exists eq_refl.
   split.
@@ -401,16 +397,10 @@ intros r2 a s C.
 cbn in C.
 invs C.
 wreckit.
-exfalso.
-apply R.
-constructor.
-split.
-- untie.
-  invs H.
-  invs H1.
-- untie.
-  invs H.
-  invs H1.
+- invs B.
+  invs H0.
+- invs B.
+  invs H0.
 Qed.
 
 (* A helper Lemma for commutes_a_concat *)
@@ -426,16 +416,10 @@ unfold "{->}".
 intros r1 a s C.
 cbn in C.
 invs C.
-wreckit.
-exfalso.
-apply R.
-constructor.
-split.
-- untie.
-  invs H.
+destruct H.
+- invs H.
   invs H2.
-- untie.
-  invs H.
+- invs H.
   invs H2.
 Qed.
 
@@ -490,17 +474,6 @@ simpl derive_def.
 set (dp := derive_def p a).
 set (dq := derive_def q a).
 intros.
-case (delta_def p).
-unfold derive_lang_a.
-rewrite or_denotes_or_lang.
-specialize or_lang_is_disj with (
-  p := concat (derive_def p a) q
-) (
-  q := concat (delta_def p) (derive_def q a)
-) as or_disj.
-unfold lang_iff.
-intros.
-specialize or_disj with (s := s).
 (* TODO: Help Wanted *)
 Abort.
 
@@ -551,6 +524,11 @@ induction r; intros.
 - apply commutes_a_emptyset.
 - apply commutes_a_lambda.
 - apply commutes_a_symbol.
+- apply commutes_a_or.
+  + apply IHr1.
+  + apply IHr2.
+(* - apply commutes_a_neg.
+  + apply IHr. *)
 - (*TODO Help Wanted
     Proof theorem commutes_a_concat and then apply it.
   apply commutes_a_concat.
@@ -562,9 +540,7 @@ Proof theorem commutes_a_concat and then apply it.
   apply commutes_a_star.
   + apply IHr.
 *) admit.
-- apply commutes_a_nor.
-  + apply IHr1.
-  + apply IHr2.
+
 Abort.
 
 Definition derive_defs (r: regex) (s: str) : regex :=
@@ -777,59 +753,6 @@ split.
         invs H
       )
     ).
-Qed.
-
-Theorem commutes_nor_emptyset_emptyset: forall (s: str),
-  derive_lang {{ nor emptyset emptyset }} s
-  {<->}
-  {{ derive_defs (nor emptyset emptyset) s }}.
-Proof.
-intros.
-split.
-- intros.
-  induction s; cbn.
-  + constructor. wreckit. untie.
-  + apply IHs. constructor. wreckit. untie.
-- intros.
-  constructor. wreckit. untie.
-Qed.
-
-Theorem commutes_nor_emptyset_lambda: forall (s: str),
-  derive_lang {{ nor emptyset lambda }} s
-  {<->}
-  {{ derive_defs (nor emptyset lambda) s }}.
-Proof.
-intros.
-split.
-- intros.
-  invs H.
-  wreckit.
-  clear L.
-  induction s.
-  + cbn.
-    constructor.
-    wreckit.
-    * untie.
-    * untie.
-  + clear R.
-    cbn.
-    fold (derive_defs (nor emptyset emptyset) s).
-    apply commutes_nor_emptyset_emptyset.
-    constructor.
-    wreckit.
-    untie.
-- intros.
-  constructor.
-  wreckit.
-  + untie.
-  + induction s.
-    * invs H.
-      wreckit.
-      listerine.
-      assumption.
-    * cbn.
-      untie.
-      invs H0.
 Qed.
 
 Theorem derive_commutes: forall (r: regex) (s: str),
