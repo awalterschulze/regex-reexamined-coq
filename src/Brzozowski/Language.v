@@ -114,4 +114,3 @@ Fixpoint denote_regex (r: regex): lang :=
   | star r1 => star_lang {{r1}}
   end
 where "{{ r }}" := (denote_regex r).
-
