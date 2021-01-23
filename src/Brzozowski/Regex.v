@@ -4,7 +4,7 @@ Inductive regex :=
   (* emptyset matches absolutely no strings *)
   | emptyset : regex
   (* lambda matches only the empty string *)
-  | lambda : regex
+  | emptystr : regex
   (* symbol matches only strings of length 1 containing the exact alphabet symbol *)
   | symbol : alphabet -> regex
   (* or takes the union of two regular expressions *)

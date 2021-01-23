@@ -29,8 +29,8 @@ R + ∅ = R
 ∅ + R = R
 concat_lang_emptyset_r_is_emptyset: R,∅ = ∅
 concat_lang_emptyset_l_is_emptyset: ∅,R = ∅
-concat_lang_lambda_r_is_r: R,λ = R
-concat_lang_lambda_l_is_l: λ,R = R
+concat_lang_emptystr_r_is_r: R,λ = R
+concat_lang_emptystr_l_is_l: λ,R = R
 
 ~∅+X = ~∅
 ~∅&X = X
@@ -91,8 +91,8 @@ split.
   invs H.
 Qed.
 
-Theorem concat_lang_lambda_l_is_l: forall (r: lang),
-  concat_lang lambda_lang r
+Theorem concat_lang_emptystr_l_is_l: forall (r: lang),
+  concat_lang emptystr_lang r
   {<->}
   r.
 Proof.
@@ -112,8 +112,8 @@ split.
   + assumption.
 Qed.
 
-Theorem concat_lang_lambda_r_is_r: forall (r: lang),
-  concat_lang r lambda_lang
+Theorem concat_lang_emptystr_r_is_r: forall (r: lang),
+  concat_lang r emptystr_lang
   {<->}
   r.
 Proof.

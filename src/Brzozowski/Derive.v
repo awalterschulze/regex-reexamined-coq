@@ -23,7 +23,7 @@ Definition derive_lang (R: lang) (s: str) (t: str): Prop :=
   (s ++ t) \in R.
 
 (* Part of THEOREM 3.2
-   For completeness, if s = \lambda, then D_[] R = R
+   For completeness, if s = \epsilon, then D_[] R = R
 *)
 Theorem derive_lang_empty: forall (R: lang),
   derive_lang R [] {<->} R.
@@ -51,7 +51,7 @@ D_s R = D_{a_1 a_2 ... a_m} R &= D_{a_m} (D_{a_1 a_2 ... a_{m-1}} R), \\
 \end{aligned}
 $$
 
-For completeness, if $s = \lambda$, then $D_{\lambda} R = R$.
+For completeness, if $s = \epsilon$, then $D_{\epsilon} R = R$.
 The proof follows from Definition 3.1.
 *)
 Theorem derive_lang_is_recursive:
@@ -223,8 +223,8 @@ recursively as follows:
 
 $$
 \begin{aligned}
-\text{(3.4)}&\ D_a a &=&\ \lambda, \\
-\text{(3.5)}&\ D_a b &=&\ \emptyset,\ \text{for}\ b = \lambda\ \text{or}\ b = \emptyset\ \text{or}\ b \in A_k\ \text{and}\ b \neq a, \\
+\text{(3.4)}&\ D_a a &=&\ \epsilon, \\
+\text{(3.5)}&\ D_a b &=&\ \emptyset,\ \text{for}\ b = \epsilon\ \text{or}\ b = \emptyset\ \text{or}\ b \in A_k\ \text{and}\ b \neq a, \\
 \text{(3.6)}&\ D_a (P^* ) &=&\ (D_a P)P^*, \\
 \text{(3.7)}&\ D_a (PQ) &=&\ (D_a P)Q + \nu(P)(D_a Q). \\
 \text{(3.8)}&\ D_a (f(P, Q)) &=&\ f(D_a P, D_a Q). \\
@@ -234,10 +234,10 @@ $$
 Fixpoint derive_def (r: regex) (a: alphabet) : regex :=
   match r with
   | emptyset => emptyset
-  | lambda => emptyset
+  | emptystr => emptyset
   | symbol b =>
     if (eqa b a)
-    then lambda
+    then emptystr
     else emptyset
   | or s t => or (derive_def s a) (derive_def t a)
   | neg s => neg (derive_def s a)
@@ -259,10 +259,10 @@ apply emptyset_terminates_a.
 Qed.
 
 (* A helper Lemma for derive_commutes_a *)
-Lemma commutes_a_lambda: forall (a: alphabet),
-  derive_lang_a {{ lambda }} a
+Lemma commutes_a_emptystr: forall (a: alphabet),
+  derive_lang_a {{ emptystr }} a
   {<->}
-  {{ derive_def lambda a }}.
+  {{ derive_def emptystr a }}.
 Proof.
 intros.
 split.
@@ -360,7 +360,7 @@ wreckit.
 cbn.
 constructor.
 listerine.
-- apply null_lambda in H0.
+- apply null_emptystr in H0.
   apply null_implies_null_def in H0.
   apply R2 in H1.
   rewrite H0.
@@ -450,7 +450,7 @@ Qed.
 
   But:
   derive_lang_a P a
-  {<->} derive_lang_a (or_lang P_0 lambda_lang) a
+  {<->} derive_lang_a (or_lang P_0 emptystr_lang) a
   {<->} derive_lang_a P_0 a
   ; hence:
   derive_lang_a (concat_lang P Q)
@@ -482,8 +482,8 @@ Abort.
 
   $$
   \begin{aligned}
-  D_a P^* &= D_a (\lambda + P + PP + PPP + \ldots) \\
-          &= D_a \lambda + D_a P + D_a P ^2 + \ldots D_a P^n \ldots. \\
+  D_a P^* &= D_a (\epsilon + P + PP + PPP + \ldots) \\
+          &= D_a \epsilon + D_a P + D_a P ^2 + \ldots D_a P^n \ldots. \\
   \end{aligned}
   $$
 
@@ -522,7 +522,7 @@ Theorem derive_commutes_a: forall (r: regex) (a: alphabet),
 Proof.
 induction r; intros.
 - apply commutes_a_emptyset.
-- apply commutes_a_lambda.
+- apply commutes_a_emptystr.
 - apply commutes_a_symbol.
 - apply commutes_a_or.
   + apply IHr1.
@@ -689,10 +689,10 @@ induction s.
     invs H.
 Qed.
 
-Theorem commutes_lambda: forall (s: str),
-  derive_lang {{ lambda }} s
+Theorem commutes_emptystr: forall (s: str),
+  derive_lang {{ emptystr }} s
   {<->}
-  {{ derive_defs lambda s }}.
+  {{ derive_defs emptystr s }}.
 Proof.
 intros.
 split.

@@ -19,7 +19,7 @@ In this paper we use regular expressions, which can have any number of logical c
 We are concerned with:
  - the usual model of a finite automaton $M$ (Moore model {11}). 
  - the finite alphabet of inputs $\Sigma$, of size $k$, written as $\Sigma_k$.  Hopefully this can be ignored: Each character can also be represented as binary $0$ and $1$. The $n$ binary values $x_1, x_2, \ldots, x_n$ of a sequence are represented by a single $2^n$ valued input $x$, taking the values from $\Sigma_k = {0, 1, ... , k - 1}$, where $k = 2^n$.  In other words, $\Sigma_k$ represents all sequences up to length $log_2 (k)$.
- - the internal states of $M$, $q_1, q_2, \ldots, q_m$ and one of these, $q_lambda$, is the starting state of $M$ and finally
+ - the internal states of $M$, $q_1, q_2, \ldots, q_m$ and one of these, $q_{\epsilon}$, is the starting state of $M$ and finally
  - the transitions between states are specified by a flow table or by a state diagram.
 
 # 2. Regular Expressions
@@ -30,12 +30,12 @@ A regular expression defines a language. We define the following operations on l
 (Sometimes the dot is omitted for convenience. Also, since the operation is associative we omit parentheses.)
 
 *Iterate or Star Operation*. $P^{*} = \cup_{0}^{\infty} P^n$ , where $P^2 = P.P$, etc. 
-and $P^0 = \lambda$, the set consisting of the string of zero length, which has the property $\lambda . R = R .\lambda = R$.
+and $P^0 = \epsilon$, the set consisting of the string of zero length, which has the property $\epsilon . R = R .\epsilon = R$.
 
 *Boolean function*. We shall denote any Boolean function of $P$ and $Q$ by $f(P, Q)$. The empty set is denoted by $\emptyset$ and the universal set by $I$. Thus we have the complement $P'$ (with respect to $I$) of $P$, the *intersection* $P \& Q$, the sum or union $P + Q$, the modulo-two sum (exclusive OR) $P \oplus Q$, etc. Of course, all the laws of Boolean algebra apply. The operators: product, star and $f$ are called regular operators. For economy of notation, we use the same symbol for a string $s$ as for the language consisting of only that string $s$.
 
 **Definition 2.1.** A regular expression is defined recursively as follows:
-1. The symbols of the alphabet $\Sigma_k$, $\lambda$ and $\emptyset$ are regular expressions.
+1. The symbols of the alphabet $\Sigma_k$, $\epsilon$ and $\emptyset$ are regular expressions.
 2. If $P$ and $Q$ are regular expressions, then so are $P.Q$, $P^*$, and $f(P, Q)$,
    where $f$ is any Boolean function of $P$ and $Q$.
 3. Nothing else is a regular expression unless its being so follows from a
@@ -50,7 +50,7 @@ $$
 ### TODO
 
  - [ ] Define Inductive type for regular expressions as described
- - [ ] Prove $\lambda.R = R.\lambda = R$.
+ - [ ] Prove $\epsilon.R = R.\epsilon = R$.
  - [ ] Write tests for $(I.1.1.1.I)\&(I.0.1+1.1^{*})'$.
 
 ## 3. Derivatives of Regular Expressions
@@ -59,14 +59,14 @@ We define another operation on a languages $R$, yielding a new language called a
 
 **Definition 3.1.** Given a language $R$ and a finite string $s$, the derivative of $R$ with respect to $s$ is denoted by $D_s R$ and is $D_s R = \{t | s.t \in R \}$.
 
-The notion of derivative of a set (under different names) was introduced previously {10, 14, 15}, but was not applied to regular expressions. We now present an algorithm for finding derivatives of regular expressions. We shall need to know when a regular expression contains $\lambda$. For this purpose we make the following definition.
+The notion of derivative of a set (under different names) was introduced previously {10, 14, 15}, but was not applied to regular expressions. We now present an algorithm for finding derivatives of regular expressions. We shall need to know when a regular expression contains $\epsilon$. For this purpose we make the following definition.
 
 **Definition 3.2.** Given any language $R$ we define $\nu(R)$ to be
 
 $$
 \begin{aligned}
-\nu(R) & = \lambda\ \text{if}\ \lambda \in R \\
-          & = \emptyset\ \text{if}\ \lambda \notin R \\
+\nu(R) & = \epsilon\ \text{if}\ \epsilon \in R \\
+          & = \emptyset\ \text{if}\ \epsilon \notin R \\
 \end{aligned}
 $$
 
@@ -75,7 +75,7 @@ It is clear that:
 $$
 \begin{aligned}
 \nu(a) & = \emptyset\ \text{for any}\ a \in \Sigma_k, \\
-\nu(\lambda) & = \lambda, \text{and} \\
+\nu(\epsilon) & = \epsilon, \text{and} \\
 \nu(\emptyset) & = \emptyset . \\
 \end{aligned}
 $$
@@ -84,7 +84,7 @@ Furthermore
 
 $$
 \begin{aligned}
-\nu(P*) &= \lambda\ \text{(by definition of *), and} \\
+\nu(P*) &= \epsilon\ \text{(by definition of *), and} \\
 \nu(P.Q) &= \nu(P)\ \&\ \nu(Q).
 \end{aligned}
 $$
@@ -95,16 +95,16 @@ $$
 \begin{aligned}
 \text{(3.1)}&\ \nu(P + Q)    &= \nu(P) + \nu(Q). \\
 \text{(3.2)}&\ \nu(P\ \&\ Q) &= \nu(P)\ \&\ \nu(Q). \\
-\text{(3.3)}&\ \nu(P')       &= \lambda\ \text{if}\ \nu(P) = \emptyset \\
-            &                   &= \emptyset\ \text{if}\ \nu(P) = \lambda \\
+\text{(3.3)}&\ \nu(P')       &= \epsilon\ \text{if}\ \nu(P) = \emptyset \\
+            &                   &= \emptyset\ \text{if}\ \nu(P) = \epsilon \\
 \end{aligned}
 $$
 
-where $\&$ and $+$ is defined for $\nu$ similar to $\lambda$ being True and $\emptyset$ being False in a boolean equation:
+where $\&$ and $+$ is defined for $\nu$ similar to $\epsilon$ being True and $\emptyset$ being False in a boolean equation:
 
 $$
 \begin{aligned}
-A\ \&\ B = \lambda\ \text{if and only if}\ A = \lambda\ \text{and}\ B = \lambda \\
+A\ \&\ B = \epsilon\ \text{if and only if}\ A = \epsilon\ \text{and}\ B = \epsilon \\
 A + B = \emptyset\ \text{if and only if}\ A = \emptyset\ \text{and}\ B = \emptyset
 \end{aligned}
 $$
@@ -115,8 +115,8 @@ The $\nu$ function of any other Boolean expression can be obtained using rules (
 
 $$
 \begin{aligned}
-\text{(3.4)}&\ D_a a &=&\ \lambda, \\
-\text{(3.5)}&\ D_a b &=&\ \emptyset,\ \text{for}\ b = \lambda\ \text{or}\ b = \emptyset\ \text{or}\ b \in A_k\ \text{and}\ b \neq a, \\
+\text{(3.4)}&\ D_a a &=&\ \epsilon, \\
+\text{(3.5)}&\ D_a b &=&\ \emptyset,\ \text{for}\ b = \epsilon\ \text{or}\ b = \emptyset\ \text{or}\ b \in A_k\ \text{and}\ b \neq a, \\
 \text{(3.6)}&\ D_a (P^*) &=&\ (D_a P)P^*, \\
 \text{(3.7)}&\ D_a (PQ) &=&\ (D_a P)Q + \nu(P)(D_a Q). \\
 \text{(3.8)}&\ D_a (f(P, Q)) &=&\ f(D_a P, D_a Q). \\
@@ -153,15 +153,15 @@ D_a PQ  &= \{s | as \in (\nu(P) + P_0)Q\} \\
 \end{aligned}
 $$
 
-But $D_a P = D_a (P_0 + \lambda) = D_a P_0$; hence $D_a (PQ) = \nu(P) D_a Q + (D_a P) Q$,
+But $D_a P = D_a (P_0 + \epsilon) = D_a P_0$; hence $D_a (PQ) = \nu(P) D_a Q + (D_a P) Q$,
 which is rule (3.7).
 
 Finally we have
 
 $$
 \begin{aligned}
-D_a P^* &= D_a (\lambda + P + PP + PPP + \ldots) \\
-        &= D_a \lambda + D_a P + D_a P ^2 + \ldots D_a P^n \ldots. \\
+D_a P^* &= D_a (\epsilon + P + PP + PPP + \ldots) \\
+        &= D_a \epsilon + D_a P + D_a P ^2 + \ldots D_a P^n \ldots. \\
 \end{aligned}
 $$
 
@@ -190,7 +190,7 @@ D_s R = D_{a_1 a_2 ... a_m} R &= D_{a_m} (D_{a_1 a_2 ... a_{m-1}} R), \\
 \end{aligned}
 $$
 
-For completeness, if $s = \lambda$, then $D_{\lambda} R = R$.
+For completeness, if $s = \epsilon$, then $D_{\epsilon} R = R$.
 The proof follows from Definition 3.1.
 
 ### TODO
@@ -206,13 +206,13 @@ It will be shown that the use of derivatives of a regular expression $R$ leads t
 
 **THEOREM 4.1.** The derivative $D_s R$ of any regular expression $R$ with respect to any string $s$ is a regular expression.
 
-PROOF. It is clear from Theorem 3.2 that $D_{\lambda} R$ is regular and that $D_s R$ is regular (for $s$ of length greater than 1) if $D_a R$ is regular (where $a$ is a string of length 1). The construction of Theorem 3.1 shows that $D_a R$ is regular, since only a finite number of regular operations is required to find the derivative.
+PROOF. It is clear from Theorem 3.2 that $D_{\epsilon} R$ is regular and that $D_s R$ is regular (for $s$ of length greater than 1) if $D_a R$ is regular (where $a$ is a string of length 1). The construction of Theorem 3.1 shows that $D_a R$ is regular, since only a finite number of regular operations is required to find the derivative.
 
-**THEOREM 4.2.** A string $s$ is contained in a regular expression $R$ if and only if $\lambda$ is contained in $D_s R$.
+**THEOREM 4.2.** A string $s$ is contained in a regular expression $R$ if and only if $\epsilon$ is contained in $D_s R$.
 
-PROOF. If $\lambda \in D_s R$, then $s.\lambda = s \in R$ from Definition 3.1. Conversely, if $s \in R$, then $s.\lambda \in R$ and $\lambda \in D_s R$, again from Definition 3.1.
+PROOF. If $\epsilon \in D_s R$, then $s.\epsilon = s \in R$ from Definition 3.1. Conversely, if $s \in R$, then $s.\epsilon \in R$ and $\epsilon \in D_s R$, again from Definition 3.1.
 
-Theorem 4.2 reduces the problem of testing whether a string $s$ is contained in a regular expression $R$ to the problem of testing whether $\lambda$ is contained in $D_s R$. The latter problem is solved through the use of $\nu(D_s R)$.
+Theorem 4.2 reduces the problem of testing whether a string $s$ is contained in a regular expression $R$ to the problem of testing whether $\epsilon$ is contained in $D_s R$. The latter problem is solved through the use of $\nu(D_s R)$.
 
 Two regular expressions which are equal (but not necessarily identical in form) will be said to be of the same type.
 
@@ -221,21 +221,21 @@ Two regular expressions which are equal (but not necessarily identical in form) 
  - (a) Every regular expression $R$ has a finite number $d_R$ types of derivatives. 
  - (b) At least one derivative of each type must be found among the derivatives with respect to strings of length not exceeding $d_R - 1$.
 
-**PROOF. Part (a)** of Theorem 4.3 is proved by induction on a number $N$ of regular operators. BASIS, $N = 0$. The theorem is certainly true when $R$ is one of $\emptyset$, $\lambda$ or $a \in \Sigma_k$, for we have
+**PROOF. Part (a)** of Theorem 4.3 is proved by induction on a number $N$ of regular operators. BASIS, $N = 0$. The theorem is certainly true when $R$ is one of $\emptyset$, $\epsilon$ or $a \in \Sigma_k$, for we have
 
 $D_s \emptyset = \emptyset$, for all $s \in I$,
 
-$D_{\lambda} \lambda = \lambda$, and 
+$D_{\epsilon} \epsilon = \epsilon$, and 
 
-$D_s \lambda = \emptyset$, for all $s \in I$, $s \neq \lambda$.
+$D_s \epsilon = \emptyset$, for all $s \in I$, $s \neq \epsilon$.
 
-$D_{\lambda} a = a$. 
+$D_{\epsilon} a = a$. 
 
-$D_a a = \lambda$. 
+$D_a a = \epsilon$. 
 
-$D_s a = \emptyset$ for all $s \in I$, $s \neq \lambda$, $s \neq a$.
+$D_s a = \emptyset$ for all $s \in I$, $s \neq \epsilon$, $s \neq a$.
 
-Thus we have $d_{\emptyset} = 1$, $d_{\lambda} = 2$ and $d_a = 3$.
+Thus we have $d_{\emptyset} = 1$, $d_{\epsilon} = 2$ and $d_a = 3$.
 
 INDUCTION STEP, $N > 0$. Assume that each expression $X$ with $N$ or fewer operators has a finite number $d_x$ of derivatives. If $R$ is an expression with $N + 1$ operators, there are three cases.
 
@@ -267,9 +267,9 @@ $$
 It can be seen that, in general, $D_s R$ will be the sum of terms of the form $D_t (P) P*$. If $P$ has $d_P$ types of derivatives, then $R$ has at most $d_R \leq 2^{d_P} - 1$ types of derivatives. This concludes the inductive step.
 
 **PROOF. Part (b)** of Theorem 4.3 indicates a method of finding all the $d_R$ different types of derivatives, which will be called the characteristic derivatives of $R$. The strings from $\Sigma_k$ can be arranged in order of increasing length; 
-for example, $\Sigma_2$ = {0, 1}, so we have the following strings arranged in increasing length $\lambda, 0, 1, 00, 01, 10, 11, 000, \ldots$
+for example, $\Sigma_2$ = {0, 1}, so we have the following strings arranged in increasing length $\epsilon, 0, 1, 00, 01, 10, 11, 000, \ldots$
 
-The derivatives are now found in the above order, i.e. $D_{\lambda} R$, $D_0 R$, $D_1 R$, $D_{00} R$, $D_{01} R$, $D_{10} R$, $D_{11} R$, $D_{000} R$, $\ldots$
+The derivatives are now found in the above order, i.e. $D_{\epsilon} R$, $D_0 R$, $D_1 R$, $D_{00} R$, $D_{01} R$, $D_{10} R$, $D_{11} R$, $D_{000} R$, $\ldots$
 If for strings $s$ of length $L(s) = m$ no new types of derivatives are found, the process terminates. For, if no new derivatives are found for $L(s) = m$, then every $D_s R$ is equal to (of the same type as) another derivative $D_t R$, where $L(t) < m$. Consider $D_{sa} R = D_a (D_s R) = D_a (D_t R) = D_{ta} R$, where $a \in \Sigma_k$ and $L(ta) < (m+1)$. Thus every derivative with respect to a string $sa$ of length $m+1$ will be equal to some derivative with respect to a string $ta$ of length $L(ta) < (m+1)$. Hence, if no new types of derivatives are found for 
 $L(s) = m$, then no new types will be found for $L(s) = m+l$, etc. Therefore at least one new type of derivative must be found for each $L(s)$ or, otherwise, the process terminates.
 
@@ -283,7 +283,7 @@ $$
 
 where the terms in the sum are disjoint.
 
-PROOF. First, $R$ may or may not contain $\lambda$; this is taken care of by $\nu(R)$. If $R$ contains a string $s$, then that, string must begin with a letter $a \in \Sigma_k$ of the input alphabet. In view of the definition of derivative, the set $a D_a R$ is exactly language of $R$ of strings beginning with $a$. The terms of the sum are obviously disjoint, for the string in one term begin with a letter of $\Sigma_k$ different from those in another term.
+PROOF. First, $R$ may or may not contain $\epsilon$; this is taken care of by $\nu(R)$. If $R$ contains a string $s$, then that, string must begin with a letter $a \in \Sigma_k$ of the input alphabet. In view of the definition of derivative, the set $a D_a R$ is exactly language of $R$ of strings beginning with $a$. The terms of the sum are obviously disjoint, for the string in one term begin with a letter of $\Sigma_k$ different from those in another term.
 
 It follows from Theorem 4.4 that every regular expression can be represented by an infinite sum $R = \sum_{s \in I} s D_s R$. The number of types of derivatives is of course finite and so the series is redundant (e.g. the language of strings beginning with $ab$ is contained in the language of strings beginning with $a$). The expansion (4.1) is much more useful, as will be shown below.
 
@@ -297,13 +297,13 @@ where $D_s R$ is a characteristic derivative and $D_{u_a} R$ is a characteristic
 
 The theorem follows directly from Theorems 4.3 and 4.4.
 
-**THEOREM4.6.** An equation of the form $X = A.X + B$ , where $\lambda(A) = \emptyset$, has the solution $X = A^* B$, which is unique (up to equality of regular expressions).
+**THEOREM4.6.** An equation of the form $X = A.X + B$ , where $\epsilon(A) = \emptyset$, has the solution $X = A^* B$, which is unique (up to equality of regular expressions).
 
 The theorem is a modification of a theorem of Arden {8}, who has shown that $X = X.A + B$, $\nu(A) = \emptyset$, has the solution $X = BA^*$ . The proof of Theorem 4.6 parallels that of Arden's theorem and will not be given here.
 
 **THEOREM 4.7.** The set of characteristic equations of $R$ can be solved for $R$ uniquely: (up to equality).
 
-PROOF. The proof follows from Theorem 4.6. The last characteristic derivative can be found in terms of the previous derivatives. Note that the coefficient $A$ in the equation for any derivative is either $\emptyset$ or it is one or more symbols of the input alphabet. Thus $\nu(A) = \emptyset$ in all cases and Theorem 4.6 applies. Next, the solution for the last derivative can be substituted in the first $(d_R - 1)$ equations, reducing the number of equations by 1. The process is repeated until the set of equations is solved for $D_{\lambda} R = R$.
+PROOF. The proof follows from Theorem 4.6. The last characteristic derivative can be found in terms of the previous derivatives. Note that the coefficient $A$ in the equation for any derivative is either $\emptyset$ or it is one or more symbols of the input alphabet. Thus $\nu(A) = \emptyset$ in all cases and Theorem 4.6 applies. Next, the solution for the last derivative can be substituted in the first $(d_R - 1)$ equations, reducing the number of equations by 1. The process is repeated until the set of equations is solved for $D_{\epsilon} R = R$.
 
 Thus the regular expression can be always reconstructed from the characteristic equations (although it may be in a different form, depending on the order of elimination of derivatives from the equation).
 
@@ -320,7 +320,7 @@ Thus the regular expression can be always reconstructed from the characteristic 
 
 ## 5. State Diagram Construction
 
-Definition 5.1. A string $s$ is accepted by an automaton $M$ (Moore Model {11})with starting state $q_{\lambda}$ iff when $s$ is applied to $M$ in $q_{\lambda}$ the output is 1 at the end of $s$. Otherwise, $s$ is rejected by $M$. A string $s$ is accepted by a state $q_j$ of $M$ iff when $M$ is started in $q_j$ the output is 1 at the end of $s$.
+Definition 5.1. A string $s$ is accepted by an automaton $M$ (Moore Model {11})with starting state $q_{\epsilon}$ iff when $s$ is applied to $M$ in $q_{\epsilon}$ the output is 1 at the end of $s$. Otherwise, $s$ is rejected by $M$. A string $s$ is accepted by a state $q_j$ of $M$ iff when $M$ is started in $q_j$ the output is 1 at the end of $s$.
 
 Two states $q_j$ and $q_k$ of $M$ are indistinguishable {11} iff every string $s$ applied to $M$ started in $q_j$ produces the same output string as that produced by applying $s$ to $M$ started in $q_k$.
 
@@ -328,17 +328,17 @@ Two states $q_j$ and $q_k$ of $M$ are indistinguishable {11} iff every string $s
 
 PROOF. (The theorem has been proved by Lee {7} in a more general form.) If $q_i$ and $q_k$ are indistinguishable then $M$ started in $q_j$ and $M$ started in $q_k$ produce identical output string for any input string. In particular, the languages of strings ending in $Z = 1$ must be identical, i.e. $R_j = R_k$. Now suppose that $R_j = R_k$, but $q_j$ and $q_k$ are distinguishable. Then there must exist an $s$ producing different output strings. Consider the first position in which the output strings differ; clearly, the initial portion of $s$ up to and including that position is accepted in one case and rejected in the other, contradicting $R_j = R_k$.
 
-It is clear that, if a string $s$ takes $M$ (which accepts $R$) from $q_{\lambda}$ to $q_j$, then the regular expression $R_j$ is simply the derivative of $R$ with respect to $s$. If we take the first $s$ that takes $M$ from $q_{\lambda}$ to $q_j$., then with each state we can associate a unique derivative with respect to that first $s$. Theorem 5.1 can now be restated as follows.
+It is clear that, if a string $s$ takes $M$ (which accepts $R$) from $q_{\epsilon}$ to $q_j$, then the regular expression $R_j$ is simply the derivative of $R$ with respect to $s$. If we take the first $s$ that takes $M$ from $q_{\epsilon}$ to $q_j$., then with each state we can associate a unique derivative with respect to that first $s$. Theorem 5.1 can now be restated as follows.
 
-**THEOREM 5.1 (a).** Two states $q_j$ and $q_k$ of an automaton $M$ characterized by the regular expression $R$ are indistinguishable iff their derivatives are equal, i.e. $D_{s_j} R = D_{s_k} R$, where $s_j$ and $s_k$ are any two strings taking $M$ from state $q_{\lambda}$ to $q_j$ and $q_k$ respectively.
+**THEOREM 5.1 (a).** Two states $q_j$ and $q_k$ of an automaton $M$ characterized by the regular expression $R$ are indistinguishable iff their derivatives are equal, i.e. $D_{s_j} R = D_{s_k} R$, where $s_j$ and $s_k$ are any two strings taking $M$ from state $q_{\epsilon}$ to $q_j$ and $q_k$ respectively.
 
 Thus by the arguments presented in this and the preceding sections we have established a very close relationship between derivatives of a regular expression and the states of the corresponding finite automaton. These results are summarized as follows:
 
-1. To obtain a regular expression from a state diagram or a flow table, write the set of characteristic equations and solve for $R$. There is one equation for each state. If the transition under input a takes the graph from $q_j$ to $q_k$ then the equation for $R_j$ contains the term $a.R_k$ ; and $\lambda$ is a term of $R_j$. if and only if the output for $q_j$ is $Z = 1$.
+1. To obtain a regular expression from a state diagram or a flow table, write the set of characteristic equations and solve for $R$. There is one equation for each state. If the transition under input a takes the graph from $q_j$ to $q_k$ then the equation for $R_j$ contains the term $a.R_k$ ; and $\epsilon$ is a term of $R_j$. if and only if the output for $q_j$ is $Z = 1$.
 
 There are other methods {3, 5, 8} of obtaining the regular expressions, but this otto is most closely related to the derivative approach.
 
-2. To obtain the minimal state diagram from a regular expression, find the characteristic derivatives and associate one internal state with each characteristic derivative. The output associated with a state is $Z = 1$ iff the corresponding characteristic derivative contains $\lambda$.
+2. To obtain the minimal state diagram from a regular expression, find the characteristic derivatives and associate one internal state with each characteristic derivative. The output associated with a state is $Z = 1$ iff the corresponding characteristic derivative contains $\epsilon$.
 
 This procedure is illustrated in the following example.
 
@@ -346,25 +346,25 @@ Let $R = (0 + 1)^*.1$
 
 Then
 
-$D_{\lambda} = R$; introduce $q_{\lambda}$ with $Z = 0$, for $\nu(R) = \emptyset$ ,
+$D_{\epsilon} = R$; introduce $q_{\epsilon}$ with $Z = 0$, for $\nu(R) = \emptyset$ ,
 
-$D_0 = R$; return $q_{\lambda}$ under input $0$,
+$D_0 = R$; return $q_{\epsilon}$ under input $0$,
 
-$D_1 = R + \lambda$; introduce $q_1$, with output $Z = 1$ (for $\nu(D_1) = \lambda$), and a transition from $q_{\lambda}$ to $q_1$ under input $x = 1$. 
+$D_1 = R + \epsilon$; introduce $q_1$, with output $Z = 1$ (for $\nu(D_1) = \epsilon$), and a transition from $q_{\epsilon}$ to $q_1$ under input $x = 1$. 
 
-$D_{00}, D_{01}$ need not be considered, for $D_0$ does not correspond to a new characteristic derivative, i.e. $0$ returns the state graph to $q_{\lambda}$. Continuing, we find
+$D_{00}, D_{01}$ need not be considered, for $D_0$ does not correspond to a new characteristic derivative, i.e. $0$ returns the state graph to $q_{\epsilon}$. Continuing, we find
 
-$D_{10} = R$; go from $q_1$ to $q_{\lambda}$ under $x = 0$,
+$D_{10} = R$; go from $q_1$ to $q_{\epsilon}$ under $x = 0$,
 
-$D_{11} = R + \lambda$; return from $q_1$ to $q_1$ under $x = 1$.
+$D_{11} = R + \epsilon$; return from $q_1$ to $q_1$ under $x = 1$.
 
 This completes the process. The resulting state diagram is shown in Figure 1(a).
 
 $$
 \begin{aligned}
-q_{\lambda/0} \xrightarrow{0} q_{\lambda/0} \\
-q_{\lambda/0} \xrightarrow{1} q_{1/1} \\
-q_{1/1} \xrightarrow{0} q_{\lambda/0} \\
+q_{\epsilon/0} \xrightarrow{0} q_{\epsilon/0} \\
+q_{\epsilon/0} \xrightarrow{1} q_{1/1} \\
+q_{1/1} \xrightarrow{0} q_{\epsilon/0} \\
 q_{1/1} \xrightarrow{1} q_{1/1} \\
 \end{aligned}
 $$
@@ -399,14 +399,14 @@ Proceeding with Case 2 above, if $R = P.Q$ we can write $D_s R$ in the form of (
 
 Finally, the same argument is applicable to $R = P^*$, and hence the theorem holds.
 
-As a consequence of this result, *a state diagram can be constructed even if only similarity among the derivatives is recognized*. However, such a method has a serious disadvantage since, in general, the diagram so constructed will be far from minimal. This arises because of the frequent appearance of $\lambda$ and $\emptyset$ in the derivatives. For example, consider $R = (0 + 1)^* (01)$ and the derivative $D_1 R$.
+As a consequence of this result, *a state diagram can be constructed even if only similarity among the derivatives is recognized*. However, such a method has a serious disadvantage since, in general, the diagram so constructed will be far from minimal. This arises because of the frequent appearance of $\epsilon$ and $\emptyset$ in the derivatives. For example, consider $R = (0 + 1)^* (01)$ and the derivative $D_1 R$.
 
 $$
 \begin{aligned}
 D_1 R &= (D_1 (0 + 1)^*).0.1 + (D_1 0.1) \\
       &= ((D_1 (0 + 1)).(0 + 1)^*).0.1 + (D_1 0).1 \\
       &= ((D_1 0 + D_1 1) (0 + 1)^*)(0.1) + (D_1 0).1 \\
-      &= ((\emptyset + \lambda)(0 + 1)^*).(0.1) + \emptyset .1 \\
+      &= ((\emptyset + \epsilon)(0 + 1)^*).(0.1) + \emptyset .1 \\
 \end{aligned}
 $$
 
@@ -416,7 +416,7 @@ $$
 \begin{aligned}
 \text{(5.1)}\ & R + \emptyset &= \emptyset + R &= R \\
 \text{(5.2)}\ & R . \emptyset &= \emptyset . R &= \emptyset \\
-\text{(5.3)}\ & R . \lambda &= \lambda . R &= R \\
+\text{(5.3)}\ & R . \epsilon &= \epsilon . R &= R \\
 \end{aligned}
 $$
 
@@ -424,7 +424,7 @@ The expression for $D_1 R$ then becomes
 
 $$
 \begin{aligned}
-D_1 R &= ((\emptyset + \lambda)(0 + 1)*).(0.1) + \emptyset . 1 \\
+D_1 R &= ((\emptyset + \epsilon)(0 + 1)*).(0.1) + \emptyset . 1 \\
       &= (0 + 1)^*.(0.1) + \emptyset \\
       &= (0 + 1)^*.(0.1) \\
       &= R \\
@@ -437,7 +437,7 @@ We conclude this section with a more complicated example. Let it be desired to h
 
 $$
 \begin{aligned}
-D_{\lambda} &= R = P \& Q' &; \text{introduce}\ q_{\lambda}, \\
+D_{\epsilon} &= R = P \& Q' &; \text{introduce}\ q_{\epsilon}, \\
 D_0 &= (P + 0.I) \& (Q + 1)' &; \text{introduce}\ q_0, \\
 D_1 &= P \& Q' &; \text{introduce}\ q_1, \\
 D_{00} &= (P + 0.I + I) \& (Q + 1)' &; \text{introduce}\ q_{00}. \\
@@ -449,11 +449,11 @@ Here we note that $I + X = I$ and $I \& X = X$. Hence we may write $D_{00}$ in a
 $$
 \begin{aligned}
 D_{00} &= (Q + 1)', \\
-D_{01} &= P \& (Q + \lambda)' &; \text{introduce}\ q_{01}, \\
+D_{01} &= P \& (Q + \epsilon)' &; \text{introduce}\ q_{01}, \\
 D_{000} &= (Q + 1)' &; \text{return to}\ q_{00}, \\
-D_{001} &= (Q + \lambda)' &; \text{introduce}\ q_{001}, \\
+D_{001} &= (Q + \epsilon)' &; \text{introduce}\ q_{001}, \\
 D_{010} &= (P + 0.I) \& (Q + 1)' &; \text{return to}\ q_0, \\
-D_{011} &= P \& Q' &; \text{return to}\ q_{\lambda}, \\
+D_{011} &= P \& Q' &; \text{return to}\ q_{\epsilon}, \\
 D_{0010} &= (Q + 1)' &; \text{return to}\ q_{00}, \\
 D_{0011} &= Q' &; \text{introduce}\ q_{0011}, \\
 D_{00110} &= (Q + 1)' &; \text{return to}\ q_{00}, \\
@@ -461,17 +461,17 @@ D_{00111} &= Q' &; \text{return to}\ q_{0011}. \\
 \end{aligned}
 $$
 
-This concludes the construction. The characteristic derivatives are $D_{\lambda}$, $D_0$, $D_{00}$, $D_{01}$, $D_{001}$ and $D_{0011}$. Therefore the state diagram has 6 states. One has to determine $\nu(D_s)$ to find the output associated with $q_s$. In this case only $D_{00}$ and $D_{0011}$ contain $\lambda$; hence the output is $Z = 1$ only for $q_{00}$ and $q_{0011}$.
+This concludes the construction. The characteristic derivatives are $D_{\epsilon}$, $D_0$, $D_{00}$, $D_{01}$, $D_{001}$ and $D_{0011}$. Therefore the state diagram has 6 states. One has to determine $\nu(D_s)$ to find the output associated with $q_s$. In this case only $D_{00}$ and $D_{0011}$ contain $\epsilon$; hence the output is $Z = 1$ only for $q_{00}$ and $q_{0011}$.
 
 *The original paper has a figure 3, showing these 6 states, with their transitions, which was left out here, but I think it is easy to imagine or draw oneself.*
 
-Upon examining the state diagram it is seen that states $q_{\lambda}$ $q_{01}$ are indistinguishable and that the reduced state diagram contains only 5 states. We have failed to discover this because we have failed to recognize the equivalence
+Upon examining the state diagram it is seen that states $q_{\epsilon}$ $q_{01}$ are indistinguishable and that the reduced state diagram contains only 5 states. We have failed to discover this because we have failed to recognize the equivalence
 
-$D_{01} = P \& (Q + \lambda)' = P \& Q' \& \lambda' = P \& Q' = D_{\lambda}$
+$D_{01} = P \& (Q + \epsilon)' = P \& Q' \& \epsilon' = P \& Q' = D_{\epsilon}$
 
 ### TODO
 
- - [ ] Prove that $P \& Q' \& \lambda' = P \& Q'$
+ - [ ] Prove that $P \& Q' \& \epsilon' = P \& Q'$
  - [ ] Read section again and find more todos
 
 # 7. Conclusion
