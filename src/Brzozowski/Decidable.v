@@ -30,8 +30,8 @@ right.
 untie.
 Qed.
 
-Lemma denotation_lambda_is_decidable (s: str):
-  s \in {{ lambda }} \/ s \notin {{ lambda }}.
+Lemma denotation_emptystr_is_decidable (s: str):
+  s \in {{ emptystr }} \/ s \notin {{ emptystr }}.
 Proof.
 destruct s.
 - left. constructor.
@@ -689,7 +689,7 @@ Proof.
 generalize dependent s.
 induction r.
 - apply denotation_emptyset_is_decidable.
-- apply denotation_lambda_is_decidable.
+- apply denotation_emptystr_is_decidable.
 - intros. apply denotation_symbol_is_decidable.
 - intros. apply denotation_or_is_decidable.
   + specialize IHr1 with s. assumption.

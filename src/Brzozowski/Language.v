@@ -39,16 +39,16 @@ Inductive emptyset_lang: lang :=
   ```
   *)
 
-Inductive lambda_lang: lang :=
-  | mk_lambda: lambda_lang []
+Inductive emptystr_lang: lang :=
+  | mk_emptystr: emptystr_lang []
   .
   (*
   This is equivalent to:
   ```
-  | mk_lambda:
+  | mk_emptystr:
     forall (s: str),
     s = [] ->
-    lambda_lang s
+    emptystr_lang s
   ```
   *)
 
@@ -106,7 +106,7 @@ Reserved Notation "{{ r }}" (r at level 60, no associativity).
 Fixpoint denote_regex (r: regex): lang :=
   match r with
   | emptyset => emptyset_lang
-  | lambda => lambda_lang
+  | emptystr => emptystr_lang
   | symbol y => symbol_lang y
   | or r1 r2 => or_lang {{r1}} {{r2}}
   | neg r1 => neg_lang {{r1}}
