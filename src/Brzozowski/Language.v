@@ -12,9 +12,9 @@ Require Import Brzozowski.Regex.
 Definition str := list alphabet.
 (* A regular expression denotes a set of strings called a _language_. *)
 Definition lang := str -> Prop.
-Definition elem (l: lang) (s: str): Prop := l s.
-Notation " p \in P " := (elem P p) (at level 20).
-Notation " p \notin P " := (not (elem P p)) (at level 20).
+Definition elem (s: str) (l: lang): Prop := l s.
+Notation " p \in P " := (elem p P) (at level 20).
+Notation " p \notin P " := (not (elem p P)) (at level 20).
 
 Definition lang_if (s1 s2: lang): Prop :=
   forall (s: str),

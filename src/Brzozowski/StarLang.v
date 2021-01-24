@@ -167,26 +167,26 @@ Qed.
 Proposition star_lang_ex_equivalent (R: lang):
     star_lang R {<->} star_lang_ex R.
 Proof.
-  split.
-  - intro Hmatch.
-    induction Hmatch.
-    + subst. now constructor.
-    + eapply (mk_star_more_ex R s); try (exact H).
-      constructor.
-      destruct p.
-      * contradiction.
-      * exists p.
-        exists a.
-        exists q.
-        exists H.
-        split; assumption.
-  - intro Hmatch.
-    apply (star_lang_ex_ind_better R).
-    + now constructor.
-    + intros.
-      destruct H as [p [q [Hconcat [ Hnon_empty [ Hp_match [Hq_match IH]]]]]].
-      constructor 2 with (p := p) (q := q); assumption.
-    + assumption.
+split.
+- intro Hmatch.
+  induction Hmatch.
+  + subst. now constructor.
+  + eapply (mk_star_more_ex R s); try (exact H).
+    constructor.
+    destruct p.
+    * contradiction.
+    * exists p.
+      exists a.
+      exists q.
+      exists H.
+      split; assumption.
+- intro Hmatch.
+  apply (star_lang_ex_ind_better R (star_lang R)).
+  + now constructor.
+  + intros.
+    destruct H as [p [q [Hconcat [ Hnon_empty [ Hp_match [Hq_match IH]]]]]].
+    constructor 2 with (p := p) (q := q); assumption.
+  + assumption.
 Qed.
 
 Local Proposition star_lang_ex_empty_ind_better:
@@ -236,7 +236,7 @@ Proof.
         exists H.
         split; assumption.
   - intro Hmatch.
-    apply (star_lang_ex_empty_ind_better R).
+    apply (star_lang_ex_empty_ind_better R (star_lang R)).
     + now constructor.
     + intros.
       destruct H as [p [q [Hconcat [ Hp_match [Hq_match IH]]]]].
