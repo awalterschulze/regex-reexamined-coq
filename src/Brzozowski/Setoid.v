@@ -107,6 +107,29 @@ Qed.
 
 Existing Instance neg_lang_morph_Proper.
 
+Add Parametric Morphism {s}: (elem s)
+  with signature lang_iff ==> iff
+  as elem_morph.
+Proof.
+intros.
+unfold elem.
+unfold "{<->}" in H.
+specialize H with (s := s).
+unfold "\in" in H.
+assumption.
+Qed.
+
+Example example_rewriting_using_lang_iff_in_iff:
+  forall (p q: regex)
+  (pq: {{p}} {<->} {{q}}),
+  forall s: str,
+  s \in {{q}} <-> s \in {{p}}.
+Proof.
+intros.
+rewrite pq.
+reflexivity.
+Qed.
+
 (*
    concat_lang_morph allows rewrite to work inside concat_lang parameters
 *)
