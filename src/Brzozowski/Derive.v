@@ -7,10 +7,12 @@ Require Import CoqStock.List.
 
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.ConcatLang.
+Require Import Brzozowski.SplitEmptyStr.
 Require Import Brzozowski.Null.
 Require Import Brzozowski.LogicOp.
 Require Import Brzozowski.Regex.
 Require Import Brzozowski.Setoid.
+Require Import Brzozowski.Simplify.
 Require Import Brzozowski.Language.
 
 (*
@@ -21,6 +23,19 @@ $D_s R = \{t | s.t \in R \}$.
 *)
 Definition derive_lang (R: lang) (s: str) (t: str): Prop :=
   (s ++ t) \in R.
+
+(*
+D_a R = { t | a.t \in R}
+*)
+Definition derive_lang_a (R: lang) (a: alphabet) (t: str): Prop :=
+  (a :: t) \in R.
+
+(* Alternative inductive predicate for derive_lang *)
+Inductive derive_lang_a' (R: lang) (a: alphabet) (t: str): Prop :=
+  | mk_derive_lang:
+    (a :: t) \in R ->
+    t \in (derive_lang_a' R a)
+  .
 
 (* Part of THEOREM 3.2
    For completeness, if s = \epsilon, then D_[] R = R
@@ -92,12 +107,6 @@ split.
   assumption.
 Qed.
 
-(*
-D_a R = { t | a.t \in R}
-*)
-Definition derive_lang_a (R: lang) (a: alphabet) (t: str): Prop :=
-  (a :: t) \in R.
-
 Theorem derive_lang_a_single: forall (R: lang) (a: alphabet),
   derive_lang R [a] {<->} derive_lang_a R a.
 Proof.
@@ -148,13 +157,6 @@ intros.
 listerine.
 easy.
 Qed.
-
-(* Alternative inductive predicate for derive_lang *)
-Inductive derive_lang_a' (R: lang) (a: alphabet) (t: str): Prop :=
-  | mk_derive_lang:
-    (a :: t) \in R ->
-    t \in (derive_lang_a' R a)
-  .
 
 Theorem derive_lang_a_star_a:
   forall (a: alphabet),
@@ -423,6 +425,20 @@ destruct H.
   invs H2.
 Qed.
 
+Lemma commutes_a_concat_step_1:
+  forall (p q: regex) (e p': regex)
+    (np: null p e)
+    (np': null p' emptyset)
+    (splitp: {{p}} {<->} {{or e p'}}),
+    (concat_lang {{p}} {{q}})
+    {<->}
+    (concat_lang (or_lang {{e}} {{p'}}) {{q}}).
+Proof.
+intros.
+rewrite splitp.
+reflexivity.
+Qed.
+
 (*
   Next consider:
   derive_lang_a (R: lang) (a: alphabet) (t: str): Prop :=
@@ -469,11 +485,24 @@ Lemma commutes_a_concat: forall (a : alphabet) (p q: regex)
     {{derive_def (concat p q) a}}
   ).
 Proof.
-intros a p q.
-simpl derive_def.
-set (dp := derive_def p a).
-set (dq := derive_def q a).
-intros.
+unfold derive_lang_a.
+intros a p q dp dq.
+cbn.
+specialize null_split_emptystr_or with (r := p) as Np.
+destruct Np as [e [p' [np [np' splitp]]]].
+set (commutes_a_concat_step_1 p q e p' np np' splitp) as step1.
+unfold "{<->}".
+unfold "\in".
+intros s.
+fold ((a :: s) \in (concat_lang {{p}} {{q}})).
+rewrite step1.
+(* specialize lift_or_lang_over_concat_lang_l {{e}} {{q0}} {{q}}. *)
+
+(* specialize null_split_emptystr_or with (r := p) as splitp.
+destruct splitp as []
+rewrite lift_or_lang_over_concat_lang_l. *)
+
+
 (* TODO: Help Wanted *)
 Abort.
 
