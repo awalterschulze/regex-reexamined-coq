@@ -11,20 +11,20 @@ Given a language $R$ of and a finite sequence $s$,
 the derivative of $R$ with respect to $s$ is denoted by $D_s R$ and is
 $D_s R = \{t | s.t \in R \}$.
 *)
-Definition derive_lang (R: lang) (s: str) (t: str): Prop :=
+Definition derive_langs (s: str) (R: lang) (t: str): Prop :=
   (s ++ t) \in R.
 
 (*
 D_a R = { t | a.t \in R}
 *)
-Definition derive_lang_a (R: lang) (a: alphabet) (t: str): Prop :=
+Definition derive_lang (a: alphabet) (R: lang) (t: str): Prop :=
   (a :: t) \in R.
 
 (* Alternative inductive predicate for derive_lang *)
-Inductive derive_lang_a' (R: lang) (a: alphabet) (t: str): Prop :=
+Inductive derive_lang' (a: alphabet) (R: lang) (t: str): Prop :=
   | mk_derive_lang:
     (a :: t) \in R ->
-    t \in (derive_lang_a' R a)
+    t \in (derive_lang' a R)
   .
 
 (*
