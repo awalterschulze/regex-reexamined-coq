@@ -21,6 +21,7 @@ src/Brzozowski/Alphabet.v
 src/Brzozowski/Decidable.v
 src/Brzozowski/ConcatLang.v
 src/Brzozowski/Derive.v
+src/Brzozowski/DeriveCommutes.v
 src/Brzozowski/ExampleR.v
 src/Brzozowski/Language.v
 src/Brzozowski/LogicOp.v
