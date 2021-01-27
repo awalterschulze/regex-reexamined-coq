@@ -20,11 +20,11 @@ Require Import Brzozowski.Language.
 (* Part of THEOREM 3.2
    For completeness, if s = \epsilon, then D_[] R = R
 *)
-Theorem derive_lang_empty: forall (R: lang),
-  derive_lang R [] {<->} R.
+Theorem derive_langs_empty: forall (R: lang),
+  derive_langs [] R {<->} R.
 Proof.
 intros.
-unfold derive_lang.
+unfold derive_langs.
 cbn.
 unfold "\in".
 unfold "{<->}".
@@ -49,88 +49,88 @@ $$
 For completeness, if $s = \epsilon$, then $D_{\epsilon} R = R$.
 The proof follows from Definition 3.1.
 *)
-Theorem derive_lang_is_recursive:
+Theorem derive_langs_is_recursive:
   forall (R: lang) (init: str) (last: alphabet),
-  derive_lang R (init ++ [last]) {<->}
-  derive_lang (derive_lang R init) [last].
+  derive_langs (init ++ [last]) R {<->}
+  derive_langs [last] (derive_langs init R).
 Proof.
 intros.
 split.
-- unfold derive_lang.
+- unfold derive_langs.
   unfold "\in".
   intros.
   rewrite app_assoc.
   assumption.
-- unfold derive_lang.
+- unfold derive_langs.
   unfold "\in".
   intros.
   rewrite app_assoc in H.
   assumption.
 Qed.
 
-Theorem derive_lang_is_recursive':
+Theorem derive_langs_is_recursive':
   forall (R: lang) (head: alphabet) (tail: str),
-  derive_lang R (head :: tail) {<->}
-  derive_lang (derive_lang R [head]) tail.
+  derive_langs (head :: tail) R {<->}
+  derive_langs tail (derive_langs [head] R).
 Proof.
 intros.
 split.
-- unfold derive_lang.
+- unfold derive_langs.
   unfold "\in".
   intros.
   cbn in *.
   assumption.
-- unfold derive_lang.
+- unfold derive_langs.
   unfold "\in".
   intros.
   cbn in *.
   assumption.
 Qed.
 
-Theorem derive_lang_a_single: forall (R: lang) (a: alphabet),
-  derive_lang R [a] {<->} derive_lang_a R a.
+Theorem derive_langs_a_single: forall (R: lang) (a: alphabet),
+  derive_langs [a] R {<->} derive_lang a R.
 Proof.
 intros.
+unfold derive_langs.
 unfold derive_lang.
-unfold derive_lang_a.
 unfold "{<->}".
 intros.
 cbn.
 easy.
 Qed.
 
-Theorem derive_lang_single: forall (R: lang) (a: alphabet) (s s0: str),
-  s0 \in derive_lang R (a :: s) <->
-  (s ++ s0) \in derive_lang R (a :: []).
+Theorem derive_langs_single: forall (R: lang) (a: alphabet) (s s0: str),
+  s0 \in derive_langs (a :: s) R <->
+  (s ++ s0) \in derive_langs (a :: []) R.
 Proof.
 intros.
 split;
   intros;
-  unfold derive_lang in *;
+  unfold derive_langs in *;
   unfold "\in" in *;
   listerine;
   assumption.
 Qed.
 
-Theorem derive_lang_double: forall (R: lang) (a a0: alphabet) (s s0: str),
-  s0 \in derive_lang R (a :: a0 :: s) <->
-  (s ++ s0) \in derive_lang R (a :: a0 :: []).
+Theorem derive_langs_double: forall (R: lang) (a a0: alphabet) (s s0: str),
+  s0 \in derive_langs (a :: a0 :: s) R <->
+  (s ++ s0) \in derive_langs (a :: a0 :: []) R.
 Proof.
 intros.
 split;
   intros;
-  unfold derive_lang in *;
+  unfold derive_langs in *;
   unfold "\in" in *;
   listerine;
   assumption.
 Qed.
 
-Theorem derive_lang_step: forall (R: lang) (a: alphabet) (s: str),
-  derive_lang R (a :: s) {<->} derive_lang (derive_lang_a R a) s.
+Theorem derive_langs_step: forall (R: lang) (a: alphabet) (s: str),
+  derive_langs (a :: s) R {<->} derive_langs s (derive_lang a R).
 Proof.
 intros.
+unfold derive_langs.
 unfold derive_lang.
-unfold derive_lang_a.
 unfold "{<->}".
 unfold "\in".
 intros.
@@ -138,9 +138,9 @@ listerine.
 easy.
 Qed.
 
-Theorem derive_lang_a_star_a:
+Theorem derive_lang_star_a:
   forall (a: alphabet),
-  derive_lang_a {{ star (symbol a) }} a
+  derive_lang a {{ star (symbol a) }}
   {<->}
   {{ star (symbol a) }}.
 Proof.
@@ -159,7 +159,7 @@ split.
     constructor.
   + inversion H2.
     subst.
-    unfold derive_lang.
+    unfold derive_langs.
     cbn.
     apply mk_star_more with (p := [a]) (q := (a :: q)).
     now listerine.
@@ -173,7 +173,7 @@ split.
 Qed.
 
 Theorem emptyset_terminates_a: forall (a: alphabet),
-  derive_lang_a emptyset_lang a
+  derive_lang a emptyset_lang
   {<->}
   emptyset_lang.
 Proof.
@@ -186,7 +186,7 @@ split.
 Qed.
 
 Theorem emptyset_terminates: forall (s: str),
-  derive_lang emptyset_lang s
+  derive_langs s emptyset_lang
   {<->}
   emptyset_lang.
 Proof.
@@ -200,7 +200,7 @@ Qed.
 
 (* A helper Lemma for derive_commutes_a *)
 Lemma commutes_a_emptyset: forall (a: alphabet),
-  derive_lang_a {{ emptyset }} a
+  derive_lang a {{ emptyset }}
   {<->}
   {{ derive_def emptyset a }}.
 Proof.
@@ -211,7 +211,7 @@ Qed.
 
 (* A helper Lemma for derive_commutes_a *)
 Lemma commutes_a_emptystr: forall (a: alphabet),
-  derive_lang_a {{ emptystr }} a
+  derive_lang a {{ emptystr }}
   {<->}
   {{ derive_def emptystr a }}.
 Proof.
@@ -225,7 +225,7 @@ Qed.
 
 (* A helper Lemma for derive_commutes_a *)
 Lemma commutes_a_symbol: forall (a b: alphabet),
-  derive_lang_a {{ symbol b }} a
+  derive_lang a {{ symbol b }}
   {<->}
   {{ derive_def (symbol b) a }}.
 Proof.
@@ -270,18 +270,18 @@ Qed.
 
 (* A helper Lemma for commutes_a_or *)
 Lemma or_lang_distributes: forall (p q: regex) (a: alphabet),
-  derive_lang_a {{or p q}} a {<->}
-  or_lang (derive_lang_a {{p}} a) (derive_lang_a {{q}} a).
+  derive_lang a {{or p q}} {<->}
+  or_lang (derive_lang a {{p}}) (derive_lang a {{q}}).
 Proof.
 intros.
-split; intros; invs H; constructor; unfold derive_lang_a in *; unfold "\in" in *; auto.
+split; intros; invs H; constructor; unfold derive_lang in *; unfold "\in" in *; auto.
 Qed.
 
 (* A helper Lemma for derive_commutes_a *)
 Lemma commutes_a_or: forall (p q: regex) (a: alphabet)
-  (IHp: derive_lang_a {{p}} a {<->} {{derive_def p a}})
-  (IHq: derive_lang_a {{q}} a {<->} {{derive_def q a}}),
-  derive_lang_a {{ or p q }} a
+  (IHp: derive_lang a {{p}} {<->} {{derive_def p a}})
+  (IHq: derive_lang a {{q}} {<->} {{derive_def q a}}),
+  derive_lang a {{ or p q }}
   {<->}
   {{ derive_def (or p q) a }}.
 Proof.
@@ -296,10 +296,10 @@ Qed.
 
 (* A helper Lemma for commutes_a_concat *)
 Lemma concat_lang_a_impl_def: forall (r1 r2: regex) (a: alphabet),
-  derive_lang_a {{r1}} a {->} {{derive_def r1 a}} ->
-  derive_lang_a {{r2}} a {->} {{derive_def r2 a}} ->
+  derive_lang a {{r1}} {->} {{derive_def r1 a}} ->
+  derive_lang a {{r2}} {->} {{derive_def r2 a}} ->
   (
-    derive_lang_a {{ concat r1 r2 }} a
+    derive_lang a {{ concat r1 r2 }}
     {->}
     {{ derive_def (concat r1 r2) a }}
   ).
@@ -340,7 +340,7 @@ Lemma concat_emptyset_l_def_impl_lang_a:
   (
     {{ derive_def (concat emptyset r2) a }}
     {->}
-    derive_lang_a {{ concat emptyset r2 }} a
+    derive_lang a {{ concat emptyset r2 }}
   ).
 Proof.
 unfold "{->}".
@@ -360,7 +360,7 @@ Lemma concat_emptyset_r_def_impl_lang_a:
   (
     {{ derive_def (concat r1 emptyset) a }}
     {->}
-    derive_lang_a {{ concat r1 emptyset }} a
+    derive_lang a {{ concat r1 emptyset }}
   ).
 Proof.
 unfold "{->}".
@@ -390,51 +390,51 @@ Qed.
 
 (*
   Next consider:
-  derive_lang_a (R: lang) (a: alphabet) (t: str): Prop :=
+  derive_lang (a: alphabet) (R: lang) (t: str): Prop :=
   (a :: t) \in R.
-  derive_lang_a (concat_lang P Q)
+  derive_lang _ (concat_lang P Q)
   Let:
   P = null_def(P) or P_0
   where null_def(P_0) = emptyset
   Then:
-  derive_lang_a (concat_lang P Q) a
+  derive_lang a (concat_lang P Q)
     {<->} {s | (a :: s) \in (concat_lang P Q)}
     {<->} {s | (a :: s) \in (concat_lang (or_lang {{null_def(P)}} P_0) Q)}
     {<->} {u | (a :: u) \in (concat_lang {{null_def(P)}} Q)}
           \/
           {v | (a :: v) \in (concat_lang P_0 Q)}
-    {<->} concat_lang {{null_def(P)}} (derive_lang_a Q a)
+    {<->} concat_lang {{null_def(P)}} (derive_langs a Q)
           \/
           {v_1 ++ v_2 | (a :: v_1) \in P_0, v_2 \in Q}
-    {<->} concat_lang {{null_def(P)}} (derive_lang_a Q a)
+    {<->} concat_lang {{null_def(P)}} (derive_langs a Q)
           \/
           concat_lang ({v_1 | (a :: v_1) \in P_0}) Q
-    {<->} concat_lang {{null_def(P)}} (derive_lang_a Q a)
+    {<->} concat_lang {{null_def(P)}} (derive_langs a Q)
           \/
-          concat_lang (derive_lang_a P_0 a) Q.
+          concat_lang (derive_lang a P_0) Q.
 
   But:
-  derive_lang_a P a
-  {<->} derive_lang_a (or_lang P_0 emptystr_lang) a
-  {<->} derive_lang_a P_0 a
+  derive_lang a P
+  {<->} derive_lang a (or_lang P_0 emptystr_lang)
+  {<->} derive_lang a P_0
   ; hence:
-  derive_lang_a (concat_lang P Q)
-  {<->} concat_lang {{null_def(P)}} (derive_lang_a Q a)
+  derive_lang _ (concat_lang P Q)
+  {<->} concat_lang {{null_def(P)}} (derive_lang a Q)
         \/
-        concat_lang (derive_lang_a P a) Q
+        concat_lang (derive_lang a P) Q
         concat_lang ((a :: s) \in P) Q
   which is rule (3.7).
 *)
 Lemma commutes_a_concat: forall (a : alphabet) (p q: regex)
-  (IHp: derive_lang_a {{p}} a {<->} {{derive_def p a}})
-  (IHq: derive_lang_a {{q}} a {<->} {{derive_def q a}}),
+  (IHp: derive_lang a {{p}} {<->} {{derive_def p a}})
+  (IHq: derive_lang a {{q}} {<->} {{derive_def q a}}),
   (
-    derive_lang_a {{concat p q}} a
+    derive_lang a {{concat p q}}
     {<->}
     {{derive_def (concat p q) a}}
   ).
 Proof.
-unfold derive_lang_a.
+unfold derive_lang.
 intros a p q dp dq.
 cbn.
 specialize null_split_emptystr_or with (r := p) as Np.
@@ -483,9 +483,9 @@ Abort.
   which is rule (3.6).
 *)
 Lemma commutes_a_star: forall (a : alphabet) (r : regex)
-  (IH: derive_lang_a {{r}} a {<->} {{derive_def r a}}),
+  (IH: derive_lang a {{r}} {<->} {{derive_def r a}}),
   (
-    derive_lang_a {{star r}} a
+    derive_lang a {{star r}}
     {<->}
     {{derive_def (star r) a}}
   ).
@@ -494,7 +494,7 @@ Proof.
 Abort.
 
 Theorem derive_commutes_a: forall (r: regex) (a: alphabet),
-  derive_lang_a {{ r }} a
+  derive_lang a {{ r }}
   {<->}
   {{ derive_def r a }}.
 Proof.
@@ -546,21 +546,21 @@ TODO: Help Wanted
 Prove that the derive square commutes
 Regex --denote_regex-{{}}-> Language
    |                            |
-derive_defs                  derive_lang
+derive_defs                  derive_langs
    |                            |
   \ /                          \ /
    .                            .
 Derived Regex---{{}}------> Derived Language
 *)
 
-Theorem derive_lang_commutes_empty: forall (r: regex),
-  derive_lang {{r}} [] {<->} {{derive_defs r []}}.
+Theorem derive_langs_commutes_empty: forall (r: regex),
+  derive_langs [] {{r}} {<->} {{derive_defs r []}}.
 Proof.
 intros.
 rewrite derive_defs_empty.
 unfold "{<->}".
 intro s.
-remember (derive_lang_empty {{r}} s) as E; destruct E.
+remember (derive_langs_empty {{r}} s) as E; destruct E.
 split.
 - intros.
   apply e.
@@ -570,21 +570,21 @@ split.
   assumption.
 Qed.
 
-Theorem derive_lang_commutes_single:
+Theorem derive_langs_commutes_single:
   forall (r: regex) (a: alphabet),
     (
       forall (r': regex) (a: alphabet),
-      derive_lang_a {{r'}} a {<->} {{derive_def r' a}}
+      derive_lang a {{r'}} {<->} {{derive_def r' a}}
     )
   ->
-    derive_lang {{r}} [a] {<->} {{derive_defs r [a]}}
+    derive_langs [a] {{r}} {<->} {{derive_defs r [a]}}
   .
 Proof.
 intros.
-remember (derive_lang_commutes_empty (derive_def r a)) as H0.
+remember (derive_langs_commutes_empty (derive_def r a)) as H0.
 clear HeqH0.
 rewrite <- derive_defs_step in H0.
-remember derive_lang_step as S. clear HeqS.
+remember derive_langs_step as S. clear HeqS.
 unfold "{<->}" in *.
 intros.
 specialize H with (s := s).
@@ -597,13 +597,13 @@ split; intros.
   destruct S0.
   apply H3 in H2.
   apply H in H2.
-  apply derive_lang_empty.
+  apply derive_langs_empty.
   exact H2.
 - remember (S {{r}} a [] s) as S0.
   clear HeqS0.
   destruct S0.
   apply H4.
-  apply derive_lang_empty.
+  apply derive_langs_empty.
   apply H.
   rewrite derive_defs_step in H2.
   rewrite derive_defs_empty in H2.
@@ -611,37 +611,37 @@ split; intros.
 Qed.
 
 (* Part of Theorem 3.2 *)
-Theorem derive_lang_commutes_star:
+Theorem derive_langs_commutes_star:
   forall (r: regex) (s: str),
     (
       forall (r': regex) (a: alphabet),
-      derive_lang_a {{r'}} a {<->} {{derive_def r' a}}
+      derive_lang a {{r'}} {<->} {{derive_def r' a}}
     )
   ->
-    derive_lang {{r}} s {<->} {{derive_defs r s}}
+    derive_langs s {{r}} {<->} {{derive_defs r s}}
   .
 Proof.
 intros.
 induction s.
-- apply derive_lang_commutes_empty.
+- apply derive_langs_commutes_empty.
 - intros.
   induction s.
-  + apply derive_lang_commutes_single.
+  + apply derive_langs_commutes_single.
     apply H.
   + clear IHs0.
     rewrite derive_defs_step.
     unfold "{<->}" in *.
     intros.
-    remember (derive_lang_step {{r}} a (a0 :: s) s0) as Dr.
+    remember (derive_langs_step {{r}} a (a0 :: s) s0) as Dr.
       clear HeqDr.
       destruct Dr as [Dr0 Dr1].
-    remember (derive_lang_step {{derive_def r a}} a0 s s0) as Dr2.
+    remember (derive_langs_step {{derive_def r a}} a0 s s0) as Dr2.
       clear HeqDr2.
       destruct Dr2 as [Dr2 Dr3].
     remember (H (derive_def r a) a0 (s ++ s0)) as H2.
       clear HeqH2.
       destruct H2 as [H0 H1].
-    remember (derive_lang_double {{r}} a a0 s s0) as DD.
+    remember (derive_langs_double {{r}} a a0 s s0) as DD.
       clear HeqDD.
       destruct DD as [DD0 DD1].
     split; intros.
@@ -649,7 +649,7 @@ induction s.
 Abort.
 
 Theorem commutes_emptyset: forall (s: str),
-  derive_lang {{ emptyset }} s
+  derive_langs s {{ emptyset }}
   {<->}
   {{ derive_defs emptyset s }}.
 Proof.
@@ -667,7 +667,7 @@ induction s.
 Qed.
 
 Theorem commutes_emptystr: forall (s: str),
-  derive_lang {{ emptystr }} s
+  derive_langs s {{ emptystr }}
   {<->}
   {{ derive_defs emptystr s }}.
 Proof.
@@ -693,7 +693,7 @@ split.
 Qed.
 
 Theorem commutes_symbol: forall (b: alphabet) (s: str),
-  derive_lang {{ symbol b }} s
+  derive_langs s {{ symbol b }}
   {<->}
   {{ derive_defs (symbol b) s }}.
 Proof.
@@ -733,7 +733,7 @@ split.
 Qed.
 
 Theorem derive_commutes: forall (r: regex) (s: str),
-  derive_lang {{ r }} s
+  derive_langs s {{ r }}
   {<->}
   {{ derive_defs r s }}.
 Proof.
@@ -744,7 +744,7 @@ set derive_commutes_a as commutes.
 intros.
 generalize dependent r.
 induction s.
-- unfold derive_lang.
+- unfold derive_langs.
   cbn.
   intros.
   reflexivity.
@@ -756,7 +756,7 @@ induction s.
   specialize commutes with (r := r) (a := a).
   unfold lang_iff in *.
   intros.
-  unfold derive_lang in *.
+  unfold derive_langs in *.
   unfold elem.
   specialize commutes with (s ++ s0).
   rewrite commutes.
