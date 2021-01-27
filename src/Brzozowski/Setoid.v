@@ -8,6 +8,7 @@ Require Import CoqStock.Untie.
 Require Import CoqStock.WreckIt.
 
 Require Import Brzozowski.Alphabet.
+Require Import Brzozowski.Derive.
 Require Import Brzozowski.Language.
 Require Import Brzozowski.Regex.
 
@@ -219,7 +220,7 @@ Qed.
 
 (* Allow \in expressions to also be rewritten using lang_iff expressions: *)
 
-Add Parametric Morphism {s}: (elem s)
+Add Parametric Morphism {s: str}: (elem s)
   with signature lang_iff ==> iff
   as elem_morph.
 Proof.
@@ -236,6 +237,56 @@ Example example_rewriting_using_lang_iff_in_iff:
   (pq: {{p}} {<->} {{q}}),
   forall s: str,
   s \in {{q}} <-> s \in {{p}}.
+Proof.
+intros.
+rewrite pq.
+reflexivity.
+Qed.
+
+(* Allow derive_langs expressions to also be rewritten using lang_iff expressions: *)
+
+Add Parametric Morphism {s: str}: (derive_langs s)
+  with signature lang_iff ==> lang_iff
+  as derive_langs_morph.
+Proof.
+unfold derive_langs.
+unfold "{<->}" in *.
+intros.
+unfold "\in" in *.
+specialize H with (s := (s ++ s0)).
+assumption.
+Qed.
+
+Example example_rewriting_using_lang_iff_in_derive_langs:
+  forall (p q: regex)
+  (pq: {{p}} {<->} {{q}}),
+  forall s: str,
+  derive_langs s {{q}} {<->} derive_langs s {{p}}.
+Proof.
+intros.
+rewrite pq.
+reflexivity.
+Qed.
+
+(* Allow derive_lang expressions to also be rewritten using lang_iff expressions: *)
+
+Add Parametric Morphism {a: alphabet}: (derive_lang a)
+  with signature lang_iff ==> lang_iff
+  as derive_lang_morph.
+Proof.
+unfold derive_lang.
+unfold "{<->}" in *.
+intros.
+unfold "\in" in *.
+specialize H with (s := (a :: s)).
+assumption.
+Qed.
+
+Example example_rewriting_using_lang_iff_in_derive_lang:
+  forall (p q: regex)
+  (pq: {{p}} {<->} {{q}}),
+  forall a: alphabet,
+  derive_lang a {{q}} {<->} derive_lang a {{p}}.
 Proof.
 intros.
 rewrite pq.
