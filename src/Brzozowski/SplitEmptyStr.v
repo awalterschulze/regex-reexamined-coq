@@ -9,6 +9,7 @@ Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.ConcatLang.
 Require Import Brzozowski.Decidable.
 Require Import Brzozowski.Null.
+Require Import Brzozowski.NullCommutes.
 Require Import Brzozowski.Language.
 Require Import Brzozowski.LogicOp.
 Require Import Brzozowski.Regex.

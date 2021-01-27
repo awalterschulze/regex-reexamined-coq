@@ -10,6 +10,7 @@ Require Import Brzozowski.ConcatLang.
 Require Import Brzozowski.Derive.
 Require Import Brzozowski.SplitEmptyStr.
 Require Import Brzozowski.Null.
+Require Import Brzozowski.NullCommutes.
 Require Import Brzozowski.LogicOp.
 Require Import Brzozowski.Regex.
 Require Import Brzozowski.Setoid.
