@@ -26,6 +26,7 @@ src/Brzozowski/ExampleR.v
 src/Brzozowski/Language.v
 src/Brzozowski/LogicOp.v
 src/Brzozowski/Null.v
+src/Brzozowski/NullCommutes.v
 src/Brzozowski/Regex.v
 src/Brzozowski/Ring.v
 src/Brzozowski/Setoid.v
