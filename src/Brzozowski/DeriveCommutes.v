@@ -435,22 +435,13 @@ Lemma commutes_a_concat: forall (a : alphabet) (p q: regex)
     {{derive_def (concat p q) a}}
   ).
 Proof.
-unfold derive_lang.
 intros a p q dp dq.
 cbn.
 specialize null_split_emptystr_or with (r := p) as Np.
 destruct Np as [e [p' [np [np' splitp]]]].
-set (commutes_a_concat_step_1 p q e p' np np' splitp) as step1.
-unfold "{<->}".
-unfold "\in".
-intros s.
-fold ((a :: s) \in (concat_lang {{p}} {{q}})).
-rewrite step1.
-(* specialize lift_or_lang_over_concat_lang_l {{e}} {{q0}} {{q}}. *)
+rewrite (commutes_a_concat_step_1 p q e p' np np' splitp).
+rewrite (lift_or_lang_over_concat_lang_l {{e}} {{p'}} {{q}}).
 
-(* specialize null_split_emptystr_or with (r := p) as splitp.
-destruct splitp as []
-rewrite lift_or_lang_over_concat_lang_l. *)
 
 
 (* TODO: Help Wanted *)
