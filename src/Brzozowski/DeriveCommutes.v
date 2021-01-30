@@ -389,6 +389,219 @@ rewrite splitp.
 reflexivity.
 Qed.
 
+Lemma or_lang_is_disj:
+  forall (P Q: lang) (s: str),
+  s \in or_lang P Q
+  <->
+  s \in P \/ s \in Q.
+Proof.
+intros.
+split; intros.
+- invs H.
+  auto.
+- constructor.
+  auto.
+Qed.
+
+
+(*
+  {s | (a :: s) \in (concat_lang (or_lang {{null_def(P)}} P_0) Q)}
+<->
+  {u | (a :: u) \in (concat_lang {{null_def(P)}} Q)}
+\/
+  {v | (a :: v) \in (concat_lang P_0 Q)}
+*)
+Lemma commutes_a_concat_step_2:
+  forall (p q r: regex) (a: alphabet),
+  derive_lang a (concat_lang (or_lang {{p}} {{q}}) {{r}})
+  {<->}
+  or_lang
+    (derive_lang a (concat_lang {{p}} {{r}}))
+    (derive_lang a (concat_lang {{q}} {{r}})).
+Proof.
+intros.
+rewrite (lift_or_lang_over_concat_lang_l {{p}} {{q}} {{r}}).
+unfold "{<->}".
+intros.
+setoid_rewrite (or_lang_is_disj (concat_lang {{p}} {{r}}) (concat_lang {{q}} {{r}})).
+setoid_rewrite (or_lang_is_disj (derive_lang a (concat_lang {{p}} {{r}})) (derive_lang a (concat_lang {{q}} {{r}}))).
+unfold derive_lang.
+unfold "\in".
+reflexivity.
+Qed.
+
+(*
+  null_def(P_0) = emptyset
+  {v | (a :: v) \in (concat_lang P_0 Q)}
+{<->}
+  {v_1 ++ v_2 | (a :: v_1) \in P_0, v_2 \in Q}
+*)
+Lemma commutes_a_concat_step_3a:
+  forall
+    (p q: regex)
+    (a: alphabet)
+    (s: str)
+    (np: null p emptyset),
+  (a::s) \in (concat_lang {{p}} {{q}})
+  <->
+  exists (s1 s2: str) (ss: s1 ++ s2 = s),
+    (a::s1) \in {{p}} /\ s2 \in {{q}}.
+Proof.
+intros.
+split; intros.
+- invs H.
+  apply list_app_uncons in H0.
+  destruct H0.
+  + destruct H.
+    invs np.
+    contradiction.
+  + destruct H as [p1 [psplit ss]].
+    exists p1, q0, ss.
+    subst.
+    auto.
+- destruct H as [s1 [s2 [ss [inp inq]]]].
+  destruct_concat_lang.
+  exists (a :: s1), s2.
+  assert ((a :: s1) ++ s2 = a :: s).
+  + subst.
+    reflexivity.
+  + exists H.
+    auto.
+Qed.
+
+Lemma commutes_a_concat_step_3:
+  forall
+    (p q: regex)
+    (a: alphabet)
+    (np: null p emptyset),
+  derive_lang a (concat_lang {{p}} {{q}})
+  {<->}
+  concat_lang (derive_lang a {{p}}) {{q}}.
+Proof.
+intros.
+unfold derive_lang.
+unfold "{<->}".
+unfold "\in".
+intros.
+fold ((a :: s) \in (concat_lang {{p}} {{q}})).
+rewrite commutes_a_concat_step_3a; try assumption.
+split; intros.
+- destruct H as [s1 [s2 [ss [inp inq]]]].
+  destruct_concat_lang.
+  exists s1, s2, ss.
+  unfold "\in" in *.
+  auto.
+- invs H.
+  unfold "\in" in *.
+  exists p0, q0, eq_refl.
+  auto.
+Qed.
+
+Lemma derive_lang_or_emptystr_l_is_r:
+  forall (R: lang) (a: alphabet),
+  derive_lang a (or_lang emptystr_lang R)
+  {<->}
+  derive_lang a R.
+Proof.
+intros.
+unfold "{<->}".
+unfold derive_lang.
+unfold "\in".
+intros.
+split.
+- intros.
+  invs H.
+  unfold "\in" in *.
+  invs H0.
+  + invs H.
+  + assumption.
+- intros.
+  constructor.
+  right.
+  assumption.
+Qed.
+
+(* derive_lang a P
+  {<->} derive_lang a (or_lang P_0 emptystr_lang)
+  {<->} derive_lang a P_0 *)
+Lemma commutes_a_concat_step_4:
+  forall (p p' e: regex) (a: alphabet)
+  (splitp: {{p}} {<->} {{or e p'}})
+  (np: null p e),
+  derive_lang a {{p}}
+  {<->}
+  derive_lang a {{p'}}.
+Proof.
+intros.
+rewrite splitp.
+invs np.
+- cbn.
+  rewrite derive_lang_or_emptystr_l_is_r.
+  reflexivity.
+- cbn.
+  rewrite or_lang_emptyset_l_is_r.
+  reflexivity.
+Qed.
+
+Lemma derive_lang_concat_with_emptyset:
+  forall
+    (R: lang)
+    (a: alphabet),
+  (derive_lang a (concat_lang emptyset_lang R))
+  {<->}
+  (derive_lang a emptyset_lang).
+Proof.
+intros.
+rewrite concat_lang_emptyset_l_is_emptyset.
+reflexivity.
+Qed.
+
+Lemma derive_lang_concat_with_emptystr:
+  forall
+    (R: lang)
+    (a: alphabet),
+  (derive_lang a (concat_lang emptystr_lang R))
+  {<->}
+  (derive_lang a R).
+Proof.
+intros.
+split; intros.
+- invs H.
+  invs H1.
+  listerine.
+  subst.
+  assumption.
+- unfold derive_lang.
+  unfold "\in".
+  destruct_concat_lang.
+  exists [], (a :: s).
+  listerine.
+  exists eq_refl.
+  split.
+  + constructor.
+  + assumption.
+Qed.
+
+Lemma derive_lang_concat_with_emptystr_or_emptyset:
+  forall
+    (p q e: regex)
+    (a: alphabet)
+    (np: null p e),
+  (derive_lang a (concat_lang {{e}} {{q}}))
+  {<->}
+  (concat_lang {{e}} (derive_lang a {{q}})).
+Proof.
+intros.
+invs np.
+- rewrite derive_lang_concat_with_emptystr.
+  rewrite concat_lang_emptystr_l_is_l.
+  reflexivity.
+- rewrite concat_lang_emptyset_l_is_emptyset.
+  rewrite concat_lang_emptyset_l_is_emptyset.
+  rewrite emptyset_terminates_a.
+  reflexivity.
+Qed.
+
 (*
   Next consider:
   derive_lang (a: alphabet) (R: lang) (t: str): Prop :=
@@ -440,12 +653,17 @@ cbn.
 specialize null_split_emptystr_or with (r := p) as Np.
 destruct Np as [e [p' [np [np' splitp]]]].
 rewrite (commutes_a_concat_step_1 p q e p' np np' splitp).
-rewrite (lift_or_lang_over_concat_lang_l {{e}} {{p'}} {{q}}).
-
-
-
-(* TODO: Help Wanted *)
-Abort.
+rewrite (commutes_a_concat_step_2 e p' q).
+rewrite (commutes_a_concat_step_3 p' q a np').
+rewrite <- (commutes_a_concat_step_4 p p' e a splitp np).
+rewrite or_lang_comm.
+rewrite (derive_lang_concat_with_emptystr_or_emptyset p q e a np).
+rewrite <- null_iff_null_def in np.
+rewrite np.
+rewrite dq.
+rewrite dp.
+reflexivity.
+Qed.
 
 (*
   Finally we have
