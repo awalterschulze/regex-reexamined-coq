@@ -84,8 +84,6 @@ constructor.
   assumption.
 Qed.
 
-Existing Instance or_lang_morph_Proper.
-
 Add Parametric Morphism: neg_lang
   with signature lang_iff ==> lang_iff as neg_lang_morph.
 Proof.
@@ -105,8 +103,6 @@ split.
   rewrite H.
   assumption.
 Qed.
-
-Existing Instance neg_lang_morph_Proper.
 
 (*
    concat_lang_morph allows rewrite to work inside concat_lang parameters

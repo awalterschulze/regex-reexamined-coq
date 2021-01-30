@@ -290,3 +290,10 @@ split; intros.
 - invs H. invs H0; assumption.
 - constructor. left. assumption.
 Qed.
+
+Theorem or_lang_comm: forall (P Q: lang),
+  or_lang P Q {<->} or_lang Q P.
+Proof.
+intros.
+split; intros; invs H; constructor; destruct H0; auto.
+Qed.
