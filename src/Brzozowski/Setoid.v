@@ -239,6 +239,39 @@ rewrite pq.
 reflexivity.
 Qed.
 
+Example example_rewriting_using_lang_iff_in_iff':
+  forall (P Q: lang)
+  (pq: P {<->} Q),
+  forall s: str,
+  s \in Q <-> s \in P.
+Proof.
+intros.
+rewrite pq.
+reflexivity.
+Qed.
+
+Example example_rewriting_using_lang_iff_in_iff'':
+  forall (P Q: lang)
+  (pq: P {<->} Q),
+  forall s: str,
+  s \in neg_lang Q <-> s \in neg_lang P.
+Proof.
+intros.
+rewrite pq.
+reflexivity.
+Qed.
+
+Example example_rewriting_using_lang_iff_in_iff''':
+  forall (R: lang)
+  (nnr: R {<->} neg_lang (neg_lang R)),
+  forall s: str,
+  s \in neg_lang R <-> s \in neg_lang (neg_lang (neg_lang R)).
+Proof.
+intros.
+rewrite <- nnr.
+reflexivity.
+Qed.
+
 (* Allow derive_langs expressions to also be rewritten using lang_iff expressions: *)
 
 Add Parametric Morphism {s: str}: (derive_langs s)

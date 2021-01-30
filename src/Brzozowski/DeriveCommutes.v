@@ -8,14 +8,15 @@ Require Import CoqStock.List.
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.ConcatLang.
 Require Import Brzozowski.Derive.
-Require Import Brzozowski.SplitEmptyStr.
+Require Import Brzozowski.Language.
 Require Import Brzozowski.Null.
 Require Import Brzozowski.NullCommutes.
 Require Import Brzozowski.LogicOp.
 Require Import Brzozowski.Regex.
 Require Import Brzozowski.Setoid.
 Require Import Brzozowski.Simplify.
-Require Import Brzozowski.Language.
+Require Import Brzozowski.SplitEmptyStr.
+Require Import Brzozowski.StarLang.
 
 
 (* Part of THEOREM 3.2
@@ -293,6 +294,28 @@ rewrite IHq.
 dubstep derive_def.
 cbn.
 reflexivity.
+Qed.
+
+(* A helper Lemma for derive_commutes_a *)
+Lemma commutes_a_neg: forall (p: regex) (a: alphabet)
+  (IHp: derive_lang a {{p}} {<->} {{derive_def p a}}),
+  derive_lang a {{ neg p }}
+  {<->}
+  {{ derive_def (neg p) a }}.
+Proof.
+intros.
+cbn.
+unfold derive_lang; split; unfold "\in"; intros.
+- fold (s \in neg_lang {{derive_def p a}}).
+  rewrite <- IHp.
+  invs H.
+  constructor.
+  assumption.
+- fold (s \in neg_lang {{derive_def p a}}) in H.
+  rewrite <- IHp in H.
+  constructor.
+  invs H.
+  assumption.
 Qed.
 
 (* A helper Lemma for commutes_a_concat *)
@@ -700,8 +723,35 @@ Lemma commutes_a_star: forall (a : alphabet) (r : regex)
     {{derive_def (star r) a}}
   ).
 Proof.
-(* TODO: Help Wanted *)
-Abort.
+intros.
+simpl derive_def.
+simpl denote_regex at 1.
+(* rewrite star_lang_ex_equivalent. *)
+split.
+- intros.
+  invs H.
+  destruct_concat_lang.
+  destruct p; try contradiction.
+  assert (p ++ q = s). listerine. reflexivity.
+  assert (a0 = a). listerine. reflexivity.
+  exists p, q, H.
+  subst.
+  split.
+  + rewrite <- IH.
+    assumption.
+  + assumption.
+- intros.
+  invs H.
+  unfold derive_lang.
+  unfold "\in".
+  fold ((a :: p ++ q) \in star_lang {{r}}).
+  rewrite decompose_star_lang.
+  right.
+  exists p, a, q, eq_refl.
+  cbn in H2.
+  rewrite <- IH in H1.
+  auto.
+Qed.
 
 Theorem derive_commutes_a: forall (r: regex) (a: alphabet),
   derive_lang a {{ r }}
@@ -715,23 +765,14 @@ induction r; intros.
 - apply commutes_a_or.
   + apply IHr1.
   + apply IHr2.
-(* - apply commutes_a_neg.
-  + apply IHr. *)
-- (*TODO Help Wanted
-    Proof theorem commutes_a_concat and then apply it.
-  apply commutes_a_concat.
+- apply commutes_a_neg.
+  + apply IHr.
+- apply commutes_a_concat.
   + apply IHr1.
   + apply IHr2.
-*) admit.
-- (*TODO Help Wanted
-Proof theorem commutes_a_concat and then apply it.
-  apply commutes_a_star.
+- apply commutes_a_star.
   + apply IHr.
-*) admit.
-
-Abort.
-
-
+Qed.
 
 (* derive_defs = fold_left derive_def s r. *)
 Theorem derive_defs_step: forall (r: regex) (a: alphabet) (s: str),
@@ -751,8 +792,6 @@ destruct r; (cbn; reflexivity).
 Qed.
 
 (*
-TODO: Help Wanted
-
 Prove that the derive square commutes
 Regex --denote_regex-{{}}-> Language
    |                            |
@@ -819,44 +858,6 @@ split; intros.
   rewrite derive_defs_empty in H2.
   exact H2.
 Qed.
-
-(* Part of Theorem 3.2 *)
-Theorem derive_langs_commutes_star:
-  forall (r: regex) (s: str),
-    (
-      forall (r': regex) (a: alphabet),
-      derive_lang a {{r'}} {<->} {{derive_def r' a}}
-    )
-  ->
-    derive_langs s {{r}} {<->} {{derive_defs r s}}
-  .
-Proof.
-intros.
-induction s.
-- apply derive_langs_commutes_empty.
-- intros.
-  induction s.
-  + apply derive_langs_commutes_single.
-    apply H.
-  + clear IHs0.
-    rewrite derive_defs_step.
-    unfold "{<->}" in *.
-    intros.
-    remember (derive_langs_step {{r}} a (a0 :: s) s0) as Dr.
-      clear HeqDr.
-      destruct Dr as [Dr0 Dr1].
-    remember (derive_langs_step {{derive_def r a}} a0 s s0) as Dr2.
-      clear HeqDr2.
-      destruct Dr2 as [Dr2 Dr3].
-    remember (H (derive_def r a) a0 (s ++ s0)) as H2.
-      clear HeqH2.
-      destruct H2 as [H0 H1].
-    remember (derive_langs_double {{r}} a a0 s s0) as DD.
-      clear HeqDD.
-      destruct DD as [DD0 DD1].
-    split; intros.
-    * apply DD0 in H2.
-Abort.
 
 Theorem commutes_emptyset: forall (s: str),
   derive_langs s {{ emptyset }}
@@ -947,9 +948,6 @@ Theorem derive_commutes: forall (r: regex) (s: str),
   {<->}
   {{ derive_defs r s }}.
 Proof.
-(* TODO: Help Wanted
-   Finish proving derive_commutes_a
-   and apply the following proof script:
 set derive_commutes_a as commutes.
 intros.
 generalize dependent r.
@@ -971,5 +969,4 @@ induction s.
   specialize commutes with (s ++ s0).
   rewrite commutes.
   reflexivity.
-*)
-Abort.
+Qed.

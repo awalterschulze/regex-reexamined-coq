@@ -1,9 +1,11 @@
+Require Import CoqStock.Invs.
 Require Import CoqStock.List.
 Require Import CoqStock.Listerine.
 
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.ConcatLang.
 Require Import Brzozowski.Language.
+Require Import Brzozowski.Setoid.
 
 (*
 This module shows off different possible definitions of star_lang and how they are all equivalent
@@ -245,4 +247,43 @@ Proof.
       * constructor 2 with (p := (a :: p)) (q := q); try assumption.
         listerine.
     + assumption.
+Qed.
+
+Proposition decompose_star_lang (R: lang):
+  forall (s: str),
+    s \in star_lang R
+  <->
+  (
+    s = []
+  \/
+    (exists
+      (p: str)
+      (a: alphabet)
+      (q: str)
+      (splits: (a :: p) ++ q = s),
+      (a :: p) \in R
+    /\
+      q \in (star_lang R)
+    )
+  ).
+Proof.
+intros.
+rewrite star_lang_ex_equivalent.
+split; intros.
+- invs H.
+  + auto.
+  + right.
+    invs H0.
+    destruct H as [p [a [q [splits [inr instarr]]]]].
+    exists p, a, q, splits.
+    rewrite <- star_lang_ex_equivalent in instarr.
+    auto.
+- invs H.
+  + constructor. reflexivity.
+  + destruct H0 as [p [a [q [splits [inr instarr]]]]].
+    apply mk_star_more_ex.
+    constructor.
+    exists p, a, q, splits.
+    rewrite star_lang_ex_equivalent in instarr.
+    auto.
 Qed.
