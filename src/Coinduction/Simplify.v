@@ -7,6 +7,7 @@ Require Import CoqStock.Untie.
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Decidable.
 Require Import Brzozowski.Derive.
+Require Import Brzozowski.DeriveCommutes.
 Require Import Brzozowski.Language.
 Require Import Brzozowski.LogicOp.
 Require Import Brzozowski.Regex.
@@ -14,12 +15,45 @@ Require Import Brzozowski.Regex.
 Require Import Coinduction.Bisimilar.
 Require Import Coinduction.Setoid.
 
-(* First example from the paper *)
-Theorem or_emptyset_is_l: forall (r: lang),
-  bisimilar
-  (or_lang r emptyset_lang)
-  r.
+Lemma or_emptyset_is_l_helper:
+  forall (r: regex),
+  [] \in or_lang {{r}} emptyset_lang <-> [] \in {{r}}.
 Proof.
+intros.
+split; intros.
+- invs H.
+  invs H0.
+  + assumption.
+  + invs H.
+- auto with lang.
+Qed.
+
+
+(* First example from the paper *)
+Theorem or_emptyset_is_l: forall (r: regex),
+  bisimilar
+  (or_lang {{r}} emptyset_lang)
+  {{r}}.
+Proof.
+cofix G.
+intros.
+constructor.
+split.
+- apply or_emptyset_is_l_helper.
+- intros.
+  specialize G with (r := (derive_def r a)).
+  rewrite bisimilar_is_equivalence in G.
+  rewrite <- (derive_commutes_a r a) in G.
+  rewrite <- bisimilar_is_equivalence in G.
+  specialize (derive_commutes_a (or r emptyset) a) as D.
+  rewrite <- bisimilar_is_equivalence in D.
+  rewrite D.
+  Fail Guarded.
+  cbn.
+  specialize (derive_commutes_a r a) as D1.
+  rewrite <- bisimilar_is_equivalence in D1.
+  rewrite <- D1.
+  assumption.
 (* TODO: Help Wanted *)
 Abort.
 

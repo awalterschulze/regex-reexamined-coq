@@ -1,6 +1,7 @@
 Require Import Coq.Setoids.Setoid.
 
 Require Import Brzozowski.Alphabet.
+Require Import Brzozowski.Derive.
 Require Import Brzozowski.Language.
 Require Import Brzozowski.Setoid.
 
@@ -42,3 +43,62 @@ Add Parametric Relation: lang bisimilar
 End BisimilarSetoid.
 
 Existing Instance bisimilar_setoid.
+
+Add Parametric Morphism: or_lang
+  with signature bisimilar ==> bisimilar ==> bisimilar as or_bisim_morph.
+Proof.
+intros.
+rewrite bisimilar_is_equivalence in *.
+apply or_lang_morph; assumption.
+Qed.
+
+Add Parametric Morphism: neg_lang
+  with signature bisimilar ==> bisimilar as neg_bisim_morph.
+Proof.
+intros.
+rewrite bisimilar_is_equivalence in *.
+apply neg_lang_morph; assumption.
+Qed.
+
+Add Parametric Morphism: concat_lang
+  with signature bisimilar ==> bisimilar ==> bisimilar as concat_bisim_morph.
+Proof.
+intros.
+rewrite bisimilar_is_equivalence in *.
+apply concat_lang_morph; assumption.
+Qed.
+
+Add Parametric Morphism: star_lang
+  with signature bisimilar ==> bisimilar as star_bisim_morph.
+Proof.
+intros.
+rewrite bisimilar_is_equivalence in *.
+apply star_lang_morph; assumption.
+Qed.
+
+Add Parametric Morphism {s: str}: (elem s)
+  with signature bisimilar ==> iff
+  as elem_bisim_morph.
+Proof.
+intros.
+rewrite bisimilar_is_equivalence in *.
+apply elem_morph; assumption.
+Qed.
+
+Add Parametric Morphism {s: str}: (derive_langs s)
+  with signature bisimilar ==> bisimilar
+  as derive_langs_bisim_morph.
+Proof.
+intros.
+rewrite bisimilar_is_equivalence in *.
+apply derive_langs_morph; assumption.
+Qed.
+
+Add Parametric Morphism {a: alphabet}: (derive_lang a)
+  with signature bisimilar ==> bisimilar
+  as derive_lang_bism_morph.
+Proof.
+intros.
+rewrite bisimilar_is_equivalence in *.
+apply derive_lang_morph; assumption.
+Qed.
