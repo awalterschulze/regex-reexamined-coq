@@ -8,13 +8,20 @@ Require Import CoqStock.WreckIt.
 Require Import Brzozowski.Alphabet.
 Require Import Brzozowski.Regex.
 
+Create HintDb lang.
+
 (* A string is a list of characters. *)
 Definition str := list alphabet.
 (* A regular expression denotes a set of strings called a _language_. *)
 Definition lang := str -> Prop.
+
 Definition elem (s: str) (l: lang): Prop := l s.
+
 Notation " p \in P " := (elem p P) (at level 20).
 Notation " p \notin P " := (not (elem p P)) (at level 20).
+
+#[export]
+Hint Unfold elem: lang.
 
 Definition lang_if (s1 s2: lang): Prop :=
   forall (s: str),
@@ -22,11 +29,17 @@ Definition lang_if (s1 s2: lang): Prop :=
 
 Notation "s1 {->} s2" := (lang_if s1 s2) (at level 80).
 
+#[export]
+Hint Unfold lang_if: lang.
+
 Definition lang_iff (s1 s2: lang): Prop :=
   forall (s: str),
   s \in s1 <-> s \in s2.
 
 Notation "s1 {<->} s2" := (lang_iff s1 s2) (at level 80).
+
+#[export]
+Hint Unfold lang_iff: lang.
 
 Inductive emptyset_lang: lang :=
   .
@@ -38,6 +51,9 @@ Inductive emptyset_lang: lang :=
     emptyset_lang s
   ```
   *)
+
+#[export]
+Hint Constructors emptyset_lang: lang.
 
 Inductive emptystr_lang: lang :=
   | mk_emptystr: emptystr_lang []
@@ -52,6 +68,9 @@ Inductive emptystr_lang: lang :=
   ```
   *)
 
+#[export]
+Hint Constructors emptystr_lang: lang.
+
 Inductive symbol_lang (a: alphabet): lang :=
   | mk_symbol: symbol_lang a [a].
   (*
@@ -64,6 +83,9 @@ Inductive symbol_lang (a: alphabet): lang :=
   ```
   *)
 
+#[export]
+Hint Constructors symbol_lang: lang.
+
 (*
     *Boolean function*. We shall denote any Boolean function of $P$ and $Q$ by $f(P, Q)$.
     Of course, all the laws of Boolean algebra apply.
@@ -75,11 +97,17 @@ Inductive or_lang (P Q: lang): lang :=
     or_lang P Q s
   .
 
+#[export]
+Hint Constructors or_lang: lang.
+
 Inductive neg_lang (P: lang): lang :=
   | mk_neg : forall s,
     s \notin P ->
     neg_lang P s
   .
+
+#[export]
+Hint Constructors neg_lang: lang.
 
 (* Concatenation*. $(P.Q) = \{ s | s = p.q; p \in P, q \in Q \}$. *)
 Inductive concat_lang (P Q: lang): lang :=
@@ -90,6 +118,9 @@ Inductive concat_lang (P Q: lang): lang :=
     concat_lang P Q s
   .
 
+#[export]
+Hint Constructors concat_lang: lang.
+
 Inductive star_lang (R: lang): lang :=
   | mk_star_zero : star_lang R []
   | mk_star_more : forall (s p q: str),
@@ -98,6 +129,9 @@ Inductive star_lang (R: lang): lang :=
       p \in R ->
       q \in (star_lang R) ->
       s \in star_lang R.
+
+#[export]
+Hint Constructors star_lang: lang.
 
 (*
   Here we use a mix of Fixpoint and Inductive predicates to define the denotation of regular expressions.
@@ -114,3 +148,6 @@ Fixpoint denote_regex (r: regex): lang :=
   | star r1 => star_lang {{r1}}
   end
 where "{{ r }}" := (denote_regex r).
+
+#[export]
+Hint Unfold denote_regex: lang.
