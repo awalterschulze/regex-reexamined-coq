@@ -19,11 +19,19 @@ destruct x, y.
 - right. discriminate.
 - right. discriminate.
 - left. reflexivity.
-Qed. 
+Qed.
 
 Definition eqa (x y: alphabet): bool :=
   match (x, y) with
   | (A0, A0) => true
   | (A1, A1) => true
   | _ => false
+  end.
+
+Definition compare_alphabet (x y: alphabet): comparison :=
+  match (x, y) with
+  | (A0, A0) => Eq
+  | (A1, A1) => Eq
+  | (A0, A1) => Lt
+  | (A1, A0) => Gt
   end.
