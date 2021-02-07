@@ -216,6 +216,16 @@ Qed.
 
 (* Allow \in expressions to also be rewritten using lang_iff expressions: *)
 
+Example example_fail_rewriting_using_lang_iff_in_iff:
+  forall (p q: regex)
+  (pq: {{p}} {<->} {{q}}),
+  forall s: str,
+  s \in {{q}} <-> s \in {{p}}.
+Proof.
+intros.
+Fail rewrite pq.
+Abort.
+
 Add Parametric Morphism {s: str}: (elem s)
   with signature lang_iff ==> iff
   as elem_morph.
