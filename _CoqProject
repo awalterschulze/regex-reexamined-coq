@@ -37,6 +37,7 @@ src/Brzozowski/SplitEmptyStr.v
 src/Brzozowski/StarLang.v
 
 src/Coinduction/Bisimilar.v
+src/Coinduction/DeriveTree.v
 src/Coinduction/Setoid.v
 src/Coinduction/Simplify.v
 src/Coinduction/Trace.v
