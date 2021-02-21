@@ -42,16 +42,12 @@ split.
 - apply or_emptyset_is_l_helper.
 - intros.
   specialize G with (r := (derive_def r a)).
-  rewrite bisimilar_is_equivalence in G.
   rewrite <- (derive_commutes_a r a) in G.
-  rewrite <- bisimilar_is_equivalence in G.
   specialize (derive_commutes_a (or r emptyset) a) as D.
-  rewrite <- bisimilar_is_equivalence in D.
   rewrite D.
   Fail Guarded.
   cbn.
   specialize (derive_commutes_a r a) as D1.
-  rewrite <- bisimilar_is_equivalence in D1.
   rewrite <- D1.
   assumption.
 (* TODO: Help Wanted *)

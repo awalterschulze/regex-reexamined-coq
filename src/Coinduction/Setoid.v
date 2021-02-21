@@ -44,6 +44,26 @@ End BisimilarSetoid.
 
 Existing Instance bisimilar_setoid.
 
+Add Parametric Morphism : bisimilar
+  with signature lang_iff ==> lang_iff ==> iff as bisimilar_lang_morphism.
+Proof.
+  intros ?? H ?? H'.
+  apply  bisimilar_is_equivalence in H, H'.
+  split; intro H0.
+  now rewrite <- H, H0.
+  now rewrite H, H'.
+Qed.
+
+Example example_rewriting_using_lang_iff_in_bisimilar:
+  forall (P Q: lang)
+  (pq: P {<->} Q),
+  bisimilar Q P.
+Proof.
+  intros.
+  rewrite pq.
+  reflexivity.
+Qed.
+
 Add Parametric Morphism: or_lang
   with signature bisimilar ==> bisimilar ==> bisimilar as or_bisim_morph.
 Proof.
