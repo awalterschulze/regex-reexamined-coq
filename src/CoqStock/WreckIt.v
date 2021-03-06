@@ -180,15 +180,85 @@ rewrite p.
 auto.
 Qed.
 
+(* State is used to avoid infinitely loops in wreckit_invert_one. It marks that a hypothesis
+ has already been inverted. *)
+Ltac add_state H :=
+  let T := type of H in
+    assert (T -> True) by constructor.
+
+Ltac has_state H :=
+  let T := type of H in
+    match goal with
+    | [ _: T -> True |- _ ] => idtac
+    | _ => fail "State doesn't contain the hypothesis:" T
+    end .
+
+Ltac clear_state :=
+  repeat (
+      match goal with
+      | [H : _ -> True |- _] => clear H
+      end).
+
+Example example_state_set_api:
+  forall (P Q : Prop),
+    (P /\ Q) -> P.
+Proof.
+  intros.
+  Fail (has_state H).
+  add_state H.
+  has_state H.
+  clear_state.
+  Fail (has_state H).
+  destruct H.
+  assumption.
+Qed.
+
+Ltac wreckit_invert_one :=
+  match goal with
+    | [ H: _ |- _ ] => tryif has_state H then fail else (inversion H; [idtac]; add_state H)
+  end.
+(* Question: why didn't has_state H || (inversion H; [idtac]; add_state H) work? *)
+
+Example example_invert_one:
+  forall (P Q : Prop),
+    (P /\ Q) -> P.
+Proof.
+  intros.
+  wreckit_invert_one.
+  assumption.
+Qed.
+
+Example example_invert_one_noop_because_two_goals:
+  forall (P Q : Prop),
+    (P \/ Q) -> Q \/ P.
+Proof.
+  intros.
+  Fail wreckit_invert_one.
+Abort.
+
+Example example_invert_one_multiple_hypotheses:
+  forall (P Q R : Prop),
+    (P /\ Q) -> P /\ R -> P.
+Proof.
+  intros.
+  wreckit_invert_one.
+  wreckit_invert_one.
+  has_state H0.
+  Fail wreckit_invert_one.
+  assumption.
+Qed.
+
+
 (* wreckit_step is helpful for seeing what wreckit does step by step *)
 Ltac wreckit_step :=
      wreck_exists
   || wreck_conj
   || wreck_disj
   || constructor_conj
+  || wreckit_invert_one
   .
 
-Ltac wreckit := repeat wreckit_step.
+Ltac wreckit := repeat wreckit_step ; clear_state.
 
 Example example_wreckit: forall (x: nat) (e: exists (y: nat), x = S y /\ y = O),
   x = S O /\ S O = x.
@@ -202,4 +272,14 @@ Example example_wreckit_disj: forall (x: nat) (e: exists (y: nat), (x = S y \/ S
 Proof.
 intros.
 wreckit; auto.
+Qed.
+
+Inductive example_type_for_inversion (T: Type) :=
+  | example_constructor: T -> example_type_for_inversion T.
+
+Example example_wreckit_inversion: example_type_for_inversion (example_type_for_inversion (2 = 3)) -> False.
+Proof.
+  intros.
+  wreckit.
+  discriminate.
 Qed.
