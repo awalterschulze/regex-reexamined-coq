@@ -98,7 +98,7 @@ wreckit.
 Qed.
 
 (*
-  To prove concat is decidable, we have to first show that: 
+  To prove concat is decidable, we have to first show that:
   - if a concat expression `concat P Q` matches
       then there exists some splitting where
       the prefix matches `P` and the suffix matches `Q`
@@ -146,10 +146,10 @@ split.
   unfold elem_of_concat_split in H.
   wreckit.
   destruct_concat_lang.
-  exists (firstn x s).
-  exists (skipn x s).
-  assert (firstn x s ++ skipn x s = s) by auto with list.
-  exists H.
+  exists (firstn index s).
+  exists (skipn index s).
+  assert (firstn index s ++ skipn index s = s) by auto with list.
+  exists H3.
   auto.
 Qed.
 
@@ -197,7 +197,7 @@ Theorem concat_lang_a_split_matches_or_no_split_matches:
       )
     \/
       (forall (index: nat) (index_range : index <= length s),
-        not (elem_of_concat_split P Q s index) 
+        not (elem_of_concat_split P Q s index)
       ).
 Proof.
 intros.
@@ -206,7 +206,7 @@ destruct (concat_lang_no_split_matches P Q s).
 split; intros decide; destruct decide; eauto.
 Qed.
 
-(* 
+(*
   lift_index_and_max_len_from_disjunction
   is used to lift the index and its max length bounds
   out of a disjunction, by applying it on the goal.
@@ -215,7 +215,7 @@ Theorem lift_index_and_max_len_from_disjunction
   (P: nat -> Prop) (len: nat):
   (forall (index : nat) (bounded_index: index <= len),
       P index
-    \/ 
+    \/
       ~ (P index)
   )
   ->
@@ -238,7 +238,7 @@ induction len.
     exists 0.
     split; assumption.
   + left.
-    intros. 
+    intros.
     assert (index = 0) as index0 by lia.
     rewrite index0.
     assumption.
@@ -462,7 +462,7 @@ Proof.
 Qed.
 
 (*
-  To prove star is decidable, we have to first show that: 
+  To prove star is decidable, we have to first show that:
   - if a star expression `star r` matches a non empty string
       then there exists some splitting where
       the prefix matches the contained regular expression `r`
@@ -561,7 +561,7 @@ Theorem star_lang_a_split_matches_or_no_split_matches:
       )
     \/
       (forall (index: nat) (index_range : 0 < index <= length s),
-        not (elem_of_star_split r s index) 
+        not (elem_of_star_split r s index)
       ).
 Proof.
 intros.
@@ -571,7 +571,7 @@ destruct (star_lang_no_split_matches r s s_is_not_empty).
 split; intros decide; destruct decide; eauto.
 Qed.
 
-(* 
+(*
   lift_index_and_non_empty_and_max_len_bounds_from_disjunction
   is used to lift the index and its bounds
   out of a disjunction, by applying it on the goal.
@@ -580,7 +580,7 @@ Theorem lift_index_and_non_empty_and_max_len_bounds_from_disjunction
   (P: nat -> Prop) (len: nat):
   (forall (index : nat) (bounded_index: 0 < index <= len),
       P index
-    \/ 
+    \/
       ~ (P index)
   )
   ->
