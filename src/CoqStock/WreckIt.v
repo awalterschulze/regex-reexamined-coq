@@ -32,6 +32,7 @@ wreckit is a tactic to break down:
   - conjuction in hypotheses
   - disjunction in hypotheses
   - conjuction in the goal
+  - constructors in the goal that solve the goal.
   - inductive predicates that when inverted do not create more goals.
 *)
 
@@ -269,6 +270,26 @@ rewrite p.
 auto.
 Qed.
 
+(* constructor_zero
+   apply constructor only if it solves the goal
+*)
+Ltac constructor_zero :=
+  constructor; fail.
+
+Example example_constructor_zero:
+  True -> True.
+Proof.
+intros.
+constructor_zero.
+Qed.
+
+Example example_constructor_zero_fail:
+  True -> True /\ True.
+Proof.
+intros.
+Fail constructor_zero.
+Abort.
+
 (* wreck_one
    If the goal is an inductive predicate,
    then deconstruct it only if it does not create extra goals.
@@ -396,6 +417,7 @@ Ltac wreckit_step :=
   || wreck_conj in *
   || wreck_disj in *
   || constructor_conj
+  || constructor_zero
   || wreck_one in *
   .
 
