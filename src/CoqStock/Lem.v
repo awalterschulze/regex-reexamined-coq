@@ -12,7 +12,7 @@ Theorem move_forall_inside_orl: forall (A: Type) (P: A -> Prop) (Q: Prop) (a : A
 Proof.
 intros.
 wreckit.
-- specialize B with x.
+- specialize H with x.
   left.
   assumption.
 - right.

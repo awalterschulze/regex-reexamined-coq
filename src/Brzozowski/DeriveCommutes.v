@@ -372,10 +372,10 @@ intros r2 a s C.
 cbn in C.
 invs C.
 wreckit.
-- invs B.
-  invs H0.
-- invs B.
-  invs H0.
+- invs H0.
+  invs H1.
+- invs H0.
+  invs H1.
 Qed.
 
 (* A helper Lemma for commutes_a_concat *)
