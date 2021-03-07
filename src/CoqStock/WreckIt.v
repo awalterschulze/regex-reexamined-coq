@@ -294,14 +294,20 @@ Ltac wreck_one H :=
   then
     fail
   else
-    let Hi := fresh H in
-    inversion H as [Hi];
-    add_state H;
-    try wreck_one Hi.
+    (
+      (* inversion completes the proof *)
+      inversion H; fail
+    ) || (
+      (* inversion doesn't create an extra goal *)
+      let Hi := fresh H in
+      inversion H as [Hi];
+      add_state H;
+      try wreck_one Hi
+    ).
 (* TODO: Help Wanted
    Question:
-     We found that `tryif` is necessary,
-     but we would think that `||` would have worked.
+     We found that `tryif has_state H then fail` is necessary,
+     but we would think that `has_state H ||` would have worked.
      Why is tryif necessary in this case?
 *)
 
@@ -331,6 +337,14 @@ Proof.
   intros.
   wreck_one in H.
   assumption.
+Qed.
+
+Example example_invert_zero:
+  forall (P: Prop),
+    False -> P.
+Proof.
+  intros.
+  wreck_one in H.
 Qed.
 
 Example example_invert_one_disj_fail:
