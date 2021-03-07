@@ -43,7 +43,6 @@ assert ([A1] ++ [A0] ++ [A1] = [A1; A0; A1]). reflexivity.
 exists H.
 constructor.
 - constructor.
-  wreckit.
   apply notelem_emptyset.
 - destruct_concat_lang.
   exists [A0].
@@ -63,65 +62,40 @@ apply H.
 apply test_elem_xI01_101.
 Qed.
 
-Local Ltac elemt :=
-  match goal with
-  | [ H : _ \in _ |- _ ] =>
-    inversion H; clear H
-  | [ |- context [_ \notin _ ] ] =>
-    unfold not; intros
-  end.
-
 Lemma test_notleme_xI01_empty:
     [] \notin {{xI01}}.
 Proof.
-elemt.
-elemt.
-elemt.
-subst.
+unfold not.
+intros.
+wreckit.
 listerine.
-elemt.
 Qed.
 
 Lemma test_notelem_xI01_10:
   ([A1] ++ [A0]) \notin {{xI01}}.
 Proof.
-elemt.
-elemt.
-elemt.
-elemt.
-elemt.
-elemt.
-subst.
-assert (p ++ [A0] ++ [A1] <> [A1] ++ [A0]).
+unfold not.
+intros.
+wreckit.
 listerine.
-contradiction.
 Qed.
 
 Lemma test_notelem_xI01_1110:
   ([A1] ++ [A1] ++ [A1] ++ [A0]) \notin {{xI01}}.
 Proof.
-elemt.
-elemt.
-elemt.
-elemt.
-elemt.
-subst.
+unfold not.
+intros.
+wreckit.
 listerine.
 Qed.
 
 Lemma test_notelem_x11star_0:
   [A0] \notin {{ x11star }}.
 Proof.
-elemt.
-elemt.
-elemt.
-- subst.
-  listerine.
-  subst.
-  elemt.
-- elemt.
-  + subst. elemt. subst. listerine.
-  + subst. invs H1. invs H5. invs H9. listerine.
+unfold not.
+intros.
+wreckit.
+listerine.
 Qed.
 
 Lemma test_notelem_starx1_0:
@@ -143,9 +117,9 @@ invs H.
 - listerine.
   + contradiction.
   + invs H3.
-    invs H4.
+    wreckit.
     listerine.
-  + invs H2.
+  + wreckit.
 Qed.
 
 Lemma test_notelem_starx1_110:
@@ -153,7 +127,7 @@ Lemma test_notelem_starx1_110:
 Proof.
 untie.
 invs H.
-invs H2.
+wreckit.
 listerine.
 apply test_notelem_starx1_10.
 assumption.
@@ -165,7 +139,7 @@ Proof.
 untie.
 invs H.
 wreckit.
-listerine; (try invs H1).
+listerine; wreckit.
 - apply test_notelem_starx1_110.
   assumption.
 Qed.
@@ -177,15 +151,14 @@ destruct_concat_lang.
 exists [].
 exists ([A1] ++ [A1] ++ [A1] ++ [A0]).
 exists eq_refl.
-split.
+wreckit.
 - constructor.
-  wreckit.
   untie.
 - destruct_concat_lang.
   exists [A1].
   exists ([A1] ++ [A1] ++ [A0]).
   exists eq_refl.
-  split.
+  wreckit.
   + constructor.
   + destruct_concat_lang.
     exists [A1].
@@ -200,7 +173,6 @@ split.
       split.
       --- constructor.
       --- constructor.
-          wreckit.
           untie.
 Qed.
 
@@ -209,17 +181,16 @@ Theorem test_exampleR_1110_elem:
 Proof.
 constructor.
 untie.
-invs H.
-destruct H0.
+wreckit.
 - invs H.
-  apply H0.
+  apply H5.
   apply test_elem_xI111I_1110.
 - invs H.
-  apply H0.
+  apply H5.
   constructor.
   untie.
   invs H.
-  destruct H1.
+  destruct H0.
   + apply  test_notelem_xI01_1110.
     assumption.
   + apply test_notelem_x11star_1110.
@@ -257,4 +228,4 @@ split.
     * listerine.
     * constructor.
     * constructor.
-Qed.    
+Qed.
