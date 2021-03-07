@@ -103,7 +103,7 @@ Proof.
   intros.
   apply concatP in H.
   wreckit.
-  apply concatP in L0.
+  apply concatP in H1.
   wreckit.
   rewrite <- app_assoc.
   apply concat_matches.

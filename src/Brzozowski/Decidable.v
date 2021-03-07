@@ -83,7 +83,7 @@ wreckit.
   auto.
 - right.
   untie.
-  invs H.
+  invs H1.
   wreckit; contradiction.
 Qed.
 
@@ -93,7 +93,7 @@ Lemma denotation_neg_is_decidable (p: regex) (s: str):
 Proof.
 intros.
 wreckit.
-- right. simpl. untie. invs H. contradiction.
+- right. simpl. untie. invs H0. contradiction.
 - left. simpl. untie. constructor. assumption.
 Qed.
 

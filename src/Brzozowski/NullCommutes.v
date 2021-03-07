@@ -458,16 +458,16 @@ inversion_clear H.
   + cbn. reflexivity.
   + inversion H0.
   + invs H0. wreckit.
-    * apply IHr1 in B as B1.
+    * apply IHr1 in H as B1.
       cbn.
       rewrite B1.
       reflexivity.
-    * apply IHr2 in B as B1.
+    * apply IHr2 in H as B1.
       cbn.
       rewrite B1.
       specialize null_def_is_emptystr_or_emptyset with (r := r1).
       intros.
-      destruct H; rewrite H; reflexivity.
+      destruct H0; rewrite H0; reflexivity.
   + invs H0.
     cbn.
     specialize null_def_is_emptystr_or_emptyset with (r := r).
@@ -556,13 +556,13 @@ induction r.
 - right.
   cbn; reflexivity.
 - wreckit; (cbn;
-  try rewrite B0;
-  try rewrite B);
+  try rewrite H0;
+  try rewrite H2);
   auto.
-- wreckit; cbn; rewrite B; auto.
+- wreckit; cbn; rewrite IHr; auto.
 - wreckit; (cbn;
-    try rewrite B0;
-    try rewrite B);
+    try rewrite H0;
+    try rewrite H2);
     auto.
 - left.
   cbn.
