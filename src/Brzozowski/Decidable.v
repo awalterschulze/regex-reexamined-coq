@@ -149,7 +149,7 @@ split.
   exists (firstn index s).
   exists (skipn index s).
   assert (firstn index s ++ skipn index s = s) by auto with list.
-  exists H3.
+  exists H1.
   auto.
 Qed.
 
