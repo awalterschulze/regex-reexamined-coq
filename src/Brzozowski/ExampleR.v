@@ -48,9 +48,7 @@ constructor.
   exists [A0].
   exists [A1].
   exists eq_refl.
-  constructor.
-  + constructor.
-  + constructor.
+  wreckit.
 Qed.
 
 Lemma test_notelem_xI01_101_false:
@@ -159,21 +157,18 @@ wreckit.
   exists ([A1] ++ [A1] ++ [A0]).
   exists eq_refl.
   wreckit.
-  + constructor.
-  + destruct_concat_lang.
-    exists [A1].
-    exists ([A1] ++ [A0]).
-    exists eq_refl.
-    split.
-    * constructor.
-    * destruct_concat_lang.
-      exists [A1].
-      exists [A0].
-      exists eq_refl.
-      split.
-      --- constructor.
-      --- constructor.
-          untie.
+  destruct_concat_lang.
+  exists [A1].
+  exists ([A1] ++ [A0]).
+  exists eq_refl.
+  wreckit.
+  destruct_concat_lang.
+  exists [A1].
+  exists [A0].
+  exists eq_refl.
+  wreckit.
+  constructor.
+  untie.
 Qed.
 
 Theorem test_exampleR_1110_elem:
