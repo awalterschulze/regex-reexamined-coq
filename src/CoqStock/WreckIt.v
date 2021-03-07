@@ -32,12 +32,15 @@ wreckit is a tactic to break down:
   - conjuction in hypotheses
   - disjunction in hypotheses
   - conjuction in the goal
+  - inductive predicates that when inverted do not create more goals.
 *)
 
+Require Import CoqStock.TacticState.
+
 (* wreck_exists:
-  - finds an exists in the hypotheses 
+  - finds an exists in the hypotheses
   - inverts that hypothesis
-  - removes that hypothesis and 
+  - removes that hypothesis and
   - substitutes all variables
   ```
   H: exists x : ?X, ?Y
@@ -48,12 +51,12 @@ wreckit is a tactic to break down:
 *)
 Ltac wreck_exists :=
 match goal with
-| [ H: exists _, _ = _ |- _ ] => 
+| [ H: exists _, _ = _ |- _ ] =>
   let E := fresh "E"
   in let B := fresh "B"
   in destruct H as [E B];
   try rewrite B in *
-| [ H: exists _, _ |- _ ] => 
+| [ H: exists _, _ |- _ ] =>
   destruct H
 end.
 
@@ -180,46 +183,47 @@ rewrite p.
 auto.
 Qed.
 
-(* State is used to avoid infinitely loops in wreckit_invert_one. It marks that a hypothesis
- has already been inverted. *)
-Ltac add_state H :=
-  let T := type of H in
-    assert (T -> True) by constructor.
-
-Ltac has_state H :=
-  let T := type of H in
-    match goal with
-    | [ _: T -> True |- _ ] => idtac
-    | _ => fail "State doesn't contain the hypothesis:" T
-    end .
-
-Ltac clear_state :=
-  repeat (
-      match goal with
-      | [H : _ -> True |- _] => clear H
-      end).
-
-Example example_state_set_api:
-  forall (P Q : Prop),
-    (P /\ Q) -> P.
-Proof.
-  intros.
-  Fail (has_state H).
-  add_state H.
-  has_state H.
-  clear_state.
-  Fail (has_state H).
-  destruct H.
-  assumption.
-Qed.
-
+(* wreckit_invert_one
+   If the goal is an inductive predicate,
+   then deconstruct it only if it does not create extra goals.
+   ```
+   H: ?X /\ ?Y ->
+   H0: ?X
+   H1: ?Y
+   ```
+   or given the following inductive type,
+   which simply boxes a type:
+   ```
+   Inductive box (T: Type) :=
+    | mk_box: T -> box T.
+   ```
+   inverts the box:
+   ```
+   box False ->
+   False
+   ```
+*)
 Ltac wreckit_invert_one :=
   match goal with
     | [ H: _ |- _ ] => tryif has_state H then fail else (inversion H; [idtac]; add_state H)
   end.
-(* Question: why didn't has_state H || (inversion H; [idtac]; add_state H) work? *)
+(* TODO: Help Wanted
+   Question: why didn't has_state H || (inversion H; [idtac]; add_state H) work?
+*)
+
+Inductive example_type_for_inversion (T: Type) :=
+  | example_constructor: T -> example_type_for_inversion T.
 
 Example example_invert_one:
+  example_type_for_inversion (example_type_for_inversion (2 = 3)) -> False.
+Proof.
+intros.
+wreckit_invert_one.
+wreckit_invert_one.
+discriminate.
+Qed.
+
+Example example_invert_one_conj:
   forall (P Q : Prop),
     (P /\ Q) -> P.
 Proof.
@@ -273,9 +277,6 @@ Proof.
 intros.
 wreckit; auto.
 Qed.
-
-Inductive example_type_for_inversion (T: Type) :=
-  | example_constructor: T -> example_type_for_inversion T.
 
 Example example_wreckit_inversion: example_type_for_inversion (example_type_for_inversion (2 = 3)) -> False.
 Proof.
