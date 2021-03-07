@@ -49,23 +49,34 @@ Require Import CoqStock.TacticState.
   H: ?Y
   ```
 *)
-Ltac wreck_exists :=
-match goal with
-| [ H: exists _, _ = _ |- _ ] =>
-  let E := fresh "E"
-  in let B := fresh "B"
-  in destruct H as [E B];
-  try rewrite B in *
-| [ H: exists _, _ |- _ ] =>
-  destruct H
-end.
+Ltac wreck_exists H :=
+  match type of H with
+  | exists E, _ = _ =>
+    destruct H as [E H];
+    try rewrite H in *;
+    try wreck_exists H
+  | exists E, _ =>
+    destruct H as [E H];
+    try wreck_exists H
+  end.
 
-Example example_wreck_exists: forall (x: nat) (e: exists (y: nat), x = S y /\ y = O),
+Tactic Notation "wreck_exists" "in" hyp(H) :=
+  wreck_exists H.
+
+Tactic Notation "wreck_exists" "in" "*" :=
+  match goal with
+  | [ H: exists _, _ = _ |- _ ] =>
+    wreck_exists in H
+  | [ H: exists _, _ |- _ ] =>
+    wreck_exists in H
+  end.
+
+Example example_wreck_exists: forall (x: nat) (e: exists (y: nat) (z: nat), x = S y /\ y = O),
   x = S O.
 Proof.
 intros.
-wreck_exists.
-inversion_clear H.
+wreck_exists in e.
+inversion_clear e.
 subst.
 reflexivity.
 Qed.
@@ -74,7 +85,7 @@ Example example_wreck_exists_neq: forall (x: nat) (e: exists (y: nat), x = S y),
   x <> O.
 Proof.
 intros.
-wreck_exists.
+wreck_exists in *.
 discriminate.
 Qed.
 
@@ -103,7 +114,7 @@ Example example_wreck_conj: forall (x: nat) (e: exists (y: nat), x = S y /\ y = 
   x = S O.
 Proof.
 intros.
-wreck_exists.
+wreck_exists in *.
 wreck_conj.
 reflexivity.
 Qed.
@@ -255,7 +266,7 @@ Qed.
 
 (* wreckit_step is helpful for seeing what wreckit does step by step *)
 Ltac wreckit_step :=
-     wreck_exists
+     wreck_exists in *
   || wreck_conj
   || wreck_disj
   || constructor_conj
