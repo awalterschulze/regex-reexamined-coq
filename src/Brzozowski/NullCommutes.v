@@ -556,13 +556,13 @@ induction r.
 - right.
   cbn; reflexivity.
 - wreckit; (cbn;
-  try rewrite H0;
-  try rewrite H2);
+  try rewrite IHr0;
+  try rewrite IHr3);
   auto.
 - wreckit; cbn; rewrite IHr; auto.
 - wreckit; (cbn;
-    try rewrite H0;
-    try rewrite H2);
+    try rewrite IHr0;
+    try rewrite IHr3);
     auto.
 - left.
   cbn.

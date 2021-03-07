@@ -136,6 +136,23 @@ wreck_conj in H.
 assumption.
 Qed.
 
+Ltac wreck_conj_as H I :=
+  match type of H with
+  | _ /\ _ =>
+    destruct H as I
+  end.
+
+Tactic Notation "wreck_conj" "in" hyp(H) "as" simple_intropattern(I) :=
+  wreck_conj_as H I.
+
+Example example_wreck_conj2_as: forall (P Q R :Prop),
+  P /\ Q /\ R -> R.
+Proof.
+intros.
+wreck_conj in H as [Hone [Htwo Hthree]].
+assumption.
+Qed.
+
 (* wreck_disj:
   - finds a disjunction in the hypotheses
   - inverts that hypothesis
@@ -182,6 +199,25 @@ wreck_disj in p.
 - auto.
 - auto.
 - auto.
+Qed.
+
+Ltac wreck_disj_as H I :=
+  match type of H with
+  | _ \/ _ =>
+    destruct H as I
+  end.
+
+Tactic Notation "wreck_disj" "in" hyp(H) "as" simple_intropattern(I) :=
+  wreck_disj_as H I.
+
+Example example_wreck_disj2_as: forall (x: nat) (p: x = 0 \/ x = 1 \/ x = 2),
+  x < 3.
+Proof.
+intros.
+wreck_disj in p as [p | [p | p]].
+- subst. auto.
+- subst. auto.
+- subst. auto.
 Qed.
 
 Local Theorem conj2: forall (P: Prop),
@@ -253,13 +289,30 @@ Qed.
    False
    ```
 *)
-Ltac wreck_one :=
-  match goal with
-    | [ H: _ |- _ ] => tryif has_state H then fail else (inversion H; [idtac]; add_state H)
-  end.
+Ltac wreck_one H :=
+  tryif has_state H
+  then
+    fail
+  else
+    let Hi := fresh H in
+    inversion H as [Hi];
+    add_state H;
+    try wreck_one Hi.
 (* TODO: Help Wanted
-   Question: why didn't has_state H || (inversion H; [idtac]; add_state H) work?
+   Question:
+     We found that `tryif` is necessary,
+     but we would think that `||` would have worked.
+     Why is tryif necessary in this case?
 *)
+
+Tactic Notation "wreck_one" "in" hyp(H) :=
+  wreck_one H.
+
+Tactic Notation "wreck_one" "in" "*" :=
+  match goal with
+  | [ H: _ |- _ ] =>
+    wreck_one H
+  end.
 
 Inductive example_type_for_inversion (T: Type) :=
   | example_constructor: T -> example_type_for_inversion T.
@@ -268,9 +321,7 @@ Example example_invert_one:
   example_type_for_inversion (example_type_for_inversion (2 = 3)) -> False.
 Proof.
 intros.
-wreck_one.
-wreck_one.
-discriminate.
+wreck_one in H.
 Qed.
 
 Example example_invert_one_conj:
@@ -278,16 +329,24 @@ Example example_invert_one_conj:
     (P /\ Q) -> P.
 Proof.
   intros.
-  wreck_one.
+  wreck_one in H.
   assumption.
 Qed.
+
+Example example_invert_one_disj_fail:
+  forall (P Q : Prop),
+    (P \/ Q) -> Q \/ P.
+Proof.
+  intros.
+  Fail wreck_one in H.
+Abort.
 
 Example example_invert_one_noop_because_two_goals:
   forall (P Q : Prop),
     (P \/ Q) -> Q \/ P.
 Proof.
   intros.
-  Fail wreck_one.
+  Fail wreck_one in H.
 Abort.
 
 Example example_invert_one_multiple_hypotheses:
@@ -295,13 +354,27 @@ Example example_invert_one_multiple_hypotheses:
     (P /\ Q) -> P /\ R -> P.
 Proof.
   intros.
-  wreck_one.
-  wreck_one.
+  wreck_one in *.
+  wreck_one in *.
   has_state H0.
   Fail wreck_one.
   assumption.
 Qed.
 
+Ltac wreck_one_as H I :=
+  inversion H as I.
+
+Tactic Notation "wreck_one" "in" hyp(H) "as" simple_intropattern(I) :=
+  wreck_one_as H I.
+
+Example example_wreck_one_as:
+  forall (P Q : Prop),
+    (P /\ Q) -> P.
+Proof.
+  intros.
+  wreck_one in H as [H1 H2].
+  exact H1.
+Qed.
 
 (* wreckit_step is helpful for seeing what wreckit does step by step *)
 Ltac wreckit_step :=
@@ -309,10 +382,17 @@ Ltac wreckit_step :=
   || wreck_conj in *
   || wreck_disj in *
   || constructor_conj
-  || wreck_one
+  || wreck_one in *
   .
 
-Ltac wreckit := repeat wreckit_step ; clear_state.
+Ltac wreckit := repeat wreckit_step ; clear_states.
+
+Tactic Notation "wreckit" "in" hyp(H) :=
+     wreck_exists in H
+  || wreck_conj in H
+  || wreck_disj in H
+  || wreck_one in H
+  .
 
 Example example_wreckit: forall (x: nat) (e: exists (y: nat), x = S y /\ y = O),
   x = S O /\ S O = x.
@@ -331,6 +411,19 @@ Qed.
 Example example_wreckit_inversion: example_type_for_inversion (example_type_for_inversion (2 = 3)) -> False.
 Proof.
   intros.
-  wreckit.
+  wreckit in H.
+Qed.
+
+Tactic Notation "wreckit" "in" hyp(H) "as" simple_intropattern(I) :=
+     wreck_conj in H as I
+  || wreck_disj in H as I
+  || wreck_one in H as I
+  .
+
+Example example_wreckit_as: example_type_for_inversion (example_type_for_inversion (2 = 3)) -> False.
+Proof.
+  intros.
+  wreckit in H as [H1].
+  wreckit in H1 as [H2].
   discriminate.
 Qed.
