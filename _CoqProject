@@ -5,8 +5,6 @@ src/CoqStock/comparable.v
 src/CoqStock/compare_nat.v
 src/CoqStock/dup.v
 src/CoqStock/DubStep.v
-src/CoqStock/list_set.v
-src/CoqStock/Truthy.v
 src/CoqStock/reorder.v
 src/CoqStock/reduce_orb.v
 src/CoqStock/sort.v
@@ -14,6 +12,9 @@ src/CoqStock/Invs.v
 src/CoqStock/Lem.v
 src/CoqStock/List.v
 src/CoqStock/Listerine.v
+src/CoqStock/list_set.v
+src/CoqStock/TacticState.v
+src/CoqStock/Truthy.v
 src/CoqStock/Untie.v
 src/CoqStock/WreckIt.v
 
