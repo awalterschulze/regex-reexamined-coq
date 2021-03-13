@@ -1,20 +1,23 @@
 (* DubStep
    "Beware of the drop!"
 
-   Essentially the dubstep tactic folds and unfolds a targeted function.
+   Essentially the dubstep tactic evaluates a targeted function.
+   Before this tactic used to unfold and fold a targeted function.
    It sounds like this would not really do much,
    but if used correctly it makes the targeted function take a step forward.
-   Unlike the cbn and simpl tactics, which would make all functions calculate as much as they can.
+   Unlike the cbn in general and simpl tactics, which would make all functions calculate as much as they can.
 
    If you are unfamiliar with dubstep, here is a tutorial:
    [UKF Dubstep Tutorial - Dubba Jonny](https://www.youtube.com/watch?v=CJzfTZlEl40)
 *)
 
 Ltac dubstep_goal F :=
-  unfold F; fold F.
+  cbn [F].
+  (* unfold F; fold F. *)
 
 Ltac dubstep_in F H :=
-  unfold F in H; fold F in H.
+  cbn [F] in H.
+  (* unfold F in H; fold F in H. *)
 
 Tactic Notation "dubstep" constr(F)  := (dubstep_goal F).
 Tactic Notation "dubstep" constr(F) "in" hyp(H) := (dubstep_in F H).
@@ -41,4 +44,16 @@ induction n.
   rewrite IHn.
   ring.
 Qed.
-   
+
+Example example_sum_n_is_n_mul_ssn: forall (n: nat),
+  2 * sum_n (S n) = (S n) * ((S n) + 1).
+Proof.
+induction n.
+- simpl.
+  reflexivity.
+- dubstep sum_n in IHn.
+  dubstep sum_n.
+  rewrite Nat.mul_add_distr_l.
+  rewrite IHn.
+  ring.
+Qed.
