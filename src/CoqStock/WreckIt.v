@@ -437,6 +437,14 @@ intros.
 wreckit; reflexivity.
 Qed.
 
+(* This example resulted in endless loop in previous version of wreck_one *)
+Example example_one_is_one:
+  forall (x: nat), x = 1 -> 1 = 1.
+Proof.
+intros.
+wreckit; auto.
+Qed.
+
 Example example_wreckit_disj: forall (x: nat) (e: exists (y: nat), (x = S y \/ S y = x) /\ y = O),
   x = S O \/ S O = x.
 Proof.
