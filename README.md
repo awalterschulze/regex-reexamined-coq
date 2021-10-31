@@ -1,5 +1,7 @@
 ![Check Proofs](https://github.com/awalterschulze/regex-reexamined-coq/workflows/Check%20Proofs/badge.svg)
 
+**This learning exercise has come to an end, we are continuing work in this [here](https://github.com/katydid/proofs)**
+
 # Derivatives for Regular reexamined with Coq
 
 This repo reexamines a few papers on regular expressions using Coq as a learning exercise.
