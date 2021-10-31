@@ -42,4 +42,4 @@ $ coq_makefile -f _CoqProject -o Makefile
 
 ## Pair Programming
 
-Join us in a pair programming session. The schedule is posted as meetups events on [meetup.com](https://www.meetup.com/London-TyDD/)
+We used to pair program. The schedule was posted as meetups events on [meetup.com](https://www.meetup.com/London-TyDD/)
