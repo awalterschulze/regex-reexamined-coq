@@ -18,6 +18,16 @@ We try to prove some things that are mentioned in the papers as a way to teach o
     since it has been not only been updated, but is also one of the easier papers to read.
   - [CoqStock](./src/CoqStock) standard library.
 
+## Background
+
+### Brzozowski's Derivatives of Regular Expressions
+
+If you are unfamiliar with Brzozowski's Derivatives you can watch this video.
+
+<a href="https://www.youtube.com/watch?v=k9linVmyIiE&list=PLYwF9EIrl42S9ldgii7kfBEIHPle7PqMk&index=1" target="_blank">
+ <img src="https://img.youtube.com/vi/k9linVmyIiE/maxres1.jpg" alt="Watch the video" width="480" border="10" />
+</a>
+
 ## Setup
 
 1. Install Coq 8.13.0
